@@ -32,7 +32,7 @@ The energy figures come from `calc/sizing.py` (see [SIZING](SIZING.md)):
 
 ## Saving energy in the field
 
-- Between sessions: `XE 0` frees the motors (about 1.8 W saved). The azimuth reference is cleared; the saved position or HOME restores it, and the elevation comes back from the IMU.
+- Between sessions: `XE 0` frees the motors (about 1.8 W saved). The motor encoders keep counting, so the position stays valid even if the wind turns the antenna. Re-enable with `XE 1` before the next pass.
 - Reduce `ihold` to 25 % in calm weather.
 - Run the Pi without the hotspot and use the phone's own hotspot: about 0.3 W saved.
 

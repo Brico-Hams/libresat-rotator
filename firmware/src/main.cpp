@@ -306,7 +306,7 @@ static void handle(const char *line, out_fn out) {
         case CMD_XSAVE: save_position(); out("XW ok\r\n"); break;
         case CMD_XENABLE:
             drivers_on = c[i].value != 0.0f; gpio_put(PIN_NEN, !drivers_on);
-            if (!drivers_on) { referenced[AZ] = false; errors |= E_AZ_REF; }
+            if (!drivers_on && S.enc_dir[AZ] == 0) { referenced[AZ] = false; errors |= E_AZ_REF; }   // with an encoder the position keeps being tracked
             snprintf(b, sizeof(b), "XE %d\r\n", drivers_on); out(b); break;
         case CMD_XBOOT: out("XB rebooting to USB bootloader\r\n"); sleep_ms(50); reset_usb_boot(0, 0); break;
         case CMD_XGPS:

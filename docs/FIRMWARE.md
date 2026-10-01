@@ -73,7 +73,7 @@ Hamlib's Easycomm extras (`UP000 XXX DN000 XXX`) are accepted and ignored.
 | `XCAL ELIMU` | The boom IMU now reads the current elevation |
 | `XCAL LEVEL` | The base IMU now reads 0/0 (the tripod is level) |
 | `XCAL HOMEAZ` | Store the current azimuth as the index magnet azimuth |
-| `XE 0` / `XE 1` | Disable or enable the drivers (disabling frees the motors and clears the AZ reference) |
+| `XE 0` / `XE 1` | Disable or enable the drivers. The motor encoders keep tracking the position while the motors are free; without encoders the AZ reference is cleared. |
 | `XG` | GPS fix details |
 | `XT` | TMC2209 diagnostics (DRV_STATUS: over-temperature, short to ground, open load) |
 | `XB` | Reboot into the USB bootloader |
