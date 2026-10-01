@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.13)
+# LibreSat Rotator LSR-1 firmware (Raspberry Pi Pico / Pico W / Pico 2)
+#   export PICO_SDK_PATH=/path/to/pico-sdk   (2.x)
+#   cmake -B build -DPICO_BOARD=pico && cmake --build build -j   -> build/lsr1.uf2
+include(pico_sdk_import.cmake)
+project(lsr1 C CXX ASM)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+pico_sdk_init()
+
+add_executable(lsr1 src/main.cpp src/core.cpp src/hw.cpp)
+pico_generate_pio_header(lsr1 ${CMAKE_CURRENT_LIST_DIR}/src/tmc_uart.pio)
+target_compile_options(lsr1 PRIVATE -Wall -Wno-unused-function -Wno-misleading-indentation)
+target_link_libraries(lsr1 pico_stdlib hardware_pio hardware_i2c hardware_uart hardware_adc
+                      hardware_flash hardware_sync hardware_watchdog)
+pico_enable_stdio_usb(lsr1 1)
+pico_enable_stdio_uart(lsr1 0)
+pico_set_program_name(lsr1 "LibreSat Rotator LSR-1")
+pico_set_program_version(lsr1 "1.0.0")
+pico_add_extra_outputs(lsr1)

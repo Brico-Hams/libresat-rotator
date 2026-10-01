@@ -1,0 +1,47 @@
+# LibreSat Rotator — amateur satellite transponder list used for Doppler control.
+# Frequencies in MHz. ALWAYS check https://www.amsat.org/status/ and
+# https://db.satnogs.org before a pass: satellites change modes, fail or get re-tasked.
+# `lsr satdb update` adds every alive amateur transmitter from SatNOGS DB to satellites_satnogs.yaml.
+#
+# type fm     : fixed uplink/downlink (CTCSS in Hz), the radio corrects Doppler on both.
+# type linear : passband transponder. invert: true -> LSB up / USB down, the uplink moves opposite.
+# type rx     : downlink only (beacons, telemetry, APT/LRPT).
+# norad is used to match the TLE.
+
+- name: ISS
+  norad: 25544
+  transponders:
+    - {label: "FM repeater V/U", type: fm, up: 145.990, down: 437.800, ctcss: 67.0, up_mode: FM, down_mode: FM}
+    - {label: "APRS digipeater", type: fm, up: 145.825, down: 145.825, up_mode: FM, down_mode: FM}
+    - {label: "SSTV / voice downlink", type: rx, down: 145.800, down_mode: FM}
+- name: SO-50
+  norad: 27607
+  transponders:
+    - {label: "FM V/U (67.0 Hz; 74.4 Hz arms the timer)", type: fm, up: 145.850, down: 436.795, ctcss: 67.0, up_mode: FM, down_mode: FM}
+- name: AO-91
+  norad: 43017
+  transponders:
+    - {label: "FM U/V (sunlight only)", type: fm, up: 435.250, down: 145.960, ctcss: 67.0, up_mode: FM, down_mode: FM}
+- name: PO-101
+  norad: 43678
+  transponders:
+    - {label: "FM U/V (scheduled)", type: fm, up: 437.500, down: 145.900, ctcss: 141.3, up_mode: FM, down_mode: FM}
+- name: RS-44
+  norad: 44909
+  transponders:
+    - {label: "Linear V/U inverting", type: linear, invert: true, up_low: 145.935, up_high: 145.995, down_low: 435.610, down_high: 435.670, up_mode: LSB, down_mode: USB}
+    - {label: "CW beacon", type: rx, down: 435.605, down_mode: CW}
+- name: AO-7
+  norad: 7530
+  transponders:
+    - {label: "Mode B linear U/V inverting", type: linear, invert: true, up_low: 432.125, up_high: 432.175, down_low: 145.925, down_high: 145.975, up_mode: LSB, down_mode: USB}
+    - {label: "Mode A linear V/10m", type: linear, invert: false, up_low: 145.850, up_high: 145.950, down_low: 29.400, down_high: 29.500, up_mode: USB, down_mode: USB}
+- name: FO-29
+  norad: 24278
+  transponders:
+    - {label: "Linear V/U inverting", type: linear, invert: true, up_low: 145.900, up_high: 146.000, down_low: 435.800, down_high: 435.900, up_mode: LSB, down_mode: USB}
+- name: AO-73
+  norad: 39444
+  transponders:
+    - {label: "Linear U/V inverting (eclipse)", type: linear, invert: true, up_low: 435.130, up_high: 435.150, down_low: 145.950, down_high: 145.970, up_mode: LSB, down_mode: USB}
+    - {label: "BPSK telemetry", type: rx, down: 145.935, down_mode: USB}

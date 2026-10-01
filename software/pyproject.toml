@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "libresat-rotator"
+version = "1.0.0"
+description = "LibreSat Rotator LSR-1: portable satellite antenna rotator head software (tracking, rotctld, Doppler CAT for Yaesu FTX-1 / Hamlib, OpenGD77 tools, web UI)"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+requires-python = ">=3.9"
+dependencies = ["sgp4>=2.20", "pyserial>=3.5", "aiohttp>=3.8", "PyYAML>=5.4"]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "skyfield>=1.45"]
+
+[project.scripts]
+lsr = "lsr.cli:main"
+
+[tool.setuptools]
+packages = ["lsr", "lsr.rigs", "lsr.web"]
+
+[tool.setuptools.package-data]
+"lsr.web" = ["static/*"]
+"lsr" = ["data/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,20 @@
+LibreSat Rotator LSR-1 — licensing
+
+Hardware design files (cad/, stl/, hardware/, bom/):
+    CERN Open Hardware Licence Version 2 - Strongly Reciprocal (CERN-OHL-S-2.0)
+    https://ohwr.org/cern_ohl_s_v2.txt
+
+Firmware and software (firmware/, software/, calc/, scripts/):
+    GNU General Public License v3.0 or later (GPL-3.0-or-later)
+    https://www.gnu.org/licenses/gpl-3.0.txt
+
+Documentation and images (docs/, README.md):
+    Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    https://creativecommons.org/licenses/by-sa/4.0/
+
+Third-party references, used only through their public interfaces / protocols:
+    Hamlib (LGPL/GPL), Gpredict (GPL), OpenGD77 and OpenGD77 WebCPS (their licences),
+    SatNOGS (AGPL/CERN-OHL), AntRunner (its licence), Raspberry Pi Pico SDK (BSD-3-Clause),
+    KiCad footprint libraries (CC-BY-SA 4.0 with exception), Freerouting (GPL-3.0, not bundled).
+
+No warranty. Radio amateurs are responsible for the legal operation of their stations.

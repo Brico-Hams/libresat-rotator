@@ -1,0 +1,58 @@
+# LibreSat Rotator LSR-1 — bill of materials for ONE rotator.
+# Prices: typical online prices (AliExpress / LCSC / local), EUR, 2026. Indicative only.
+# mass_g: per unit, used by scripts/bom.py for the weight estimate.
+printed:   # STL (stl/...) : quantity — PETG or ASA, 4 perimeters, 40 % gyroid unless noted
+  actuator/act_body: 2
+  actuator/act_front_AZ_with_hall_tab: 1
+  actuator/act_front_EL: 1
+  actuator/act_cover: 2
+  actuator/act_output: 2
+  actuator/act_washer: 2
+  actuator/act_disc: 4          # 100 % infill, 0.12 mm layers
+  actuator/act_cam: 2           # 100 % infill
+  actuator/enc_cap: 2
+  structure/base: 1
+  structure/head: 1             # 6 perimeters, 50 % infill
+  structure/stub_socket: 1
+  structure/cable_clip: 4
+  antenna/boom_clamp_D20: 1     # pick your boom size
+  antenna/sun_sight_D20: 1
+  tripod/adapter_3-8in_photo: 1 # pick your stand
+  electronics/ebox: 1
+  electronics/ebox_lid: 1
+  electronics/ebox_bracket: 1
+filament_eur_per_kg: 20
+items:
+  - {group: Motion, item: "NEMA17 stepper 17HS4401, DUAL shaft (40 mm, 1.7 A, 0.42 Nm)", qty: 2, eur: 9.0, mass_g: 280}
+  - {group: Motion, item: "Thin-section bearing 61810-2RS (6810) 50x65x7", qty: 4, eur: 3.5, mass_g: 35}
+  - {group: Motion, item: "Bearing 6803-2RS 17x26x5 (cycloid discs)", qty: 4, eur: 0.8, mass_g: 8}
+  - {group: Motion, item: "Steel dowel pin 4 x 20 mm (ISO 8734) - ring pins", qty: 52, eur: 0.06, mass_g: 2}
+  - {group: Motion, item: "Steel dowel pin 4 x 30 mm - output pins", qty: 12, eur: 0.08, mass_g: 3}
+  - {group: Motion, item: "Diametric magnet 6 x 2.5 mm (usually included with AS5600 boards)", qty: 2, eur: 0.3, mass_g: 1}
+  - {group: Electronics, item: "LSR-CTL PCB 100 x 80 mm 2 layers (JLCPCB/PCBWay, 5 pcs ~ 10 EUR)", qty: 1, eur: 2.0, mass_g: 25}
+  - {group: Electronics, item: "LSR-CTL components (see hardware/fab/lsr_ctl_bom.md)", qty: 1, eur: 8.0, mass_g: 20}
+  - {group: Electronics, item: "Raspberry Pi Pico (or Pico W / Pico 2) with headers", qty: 1, eur: 5.0, mass_g: 4}
+  - {group: Electronics, item: "TMC2209 StepStick module (UART, BTT/FYSETC) + heatsink", qty: 2, eur: 4.0, mass_g: 6}
+  - {group: Electronics, item: "Raspberry Pi Zero 2 WH (pre-soldered header)", qty: 1, eur: 20.0, mass_g: 11}
+  - {group: Electronics, item: "microSD 16 GB (A1)", qty: 1, eur: 4.0, mass_g: 1}
+  - {group: Sensors, item: "AS5600 magnetic encoder board", qty: 2, eur: 2.0, mass_g: 2}
+  - {group: Sensors, item: "MPU-6050 GY-521 (boom elevation + base level)", qty: 2, eur: 1.5, mass_g: 3}
+  - {group: Sensors, item: "DRV5032FB / AH1806 3.3 V hall switch + 6x3 mm magnet (AZ index)", qty: 1, eur: 1.0, mass_g: 2}
+  - {group: Sensors, item: "GPS ATGM336H (or NEO-M8N) with 25 mm patch", qty: 1, eur: 6.0, mass_g: 10}
+  - {group: Hardware, item: "Heat-set inserts M3 (x20) and M4 (x16)", qty: 1, eur: 3.0, mass_g: 20}
+  - {group: Hardware, item: "M4 x 35 socket screws + nuts (actuator through-bolts)", qty: 8, eur: 0.15, mass_g: 6}
+  - {group: Hardware, item: "M4 x 12/16/20 screws assortment (turntable, stub, clamps, adapters)", qty: 30, eur: 0.06, mass_g: 3}
+  - {group: Hardware, item: "M3 x 8/10 screws (motor, covers, lid, PCB, washer)", qty: 32, eur: 0.04, mass_g: 1}
+  - {group: Hardware, item: "M2.5 x 11 mm standoffs + screws (Pi Zero under the board)", qty: 4, eur: 0.2, mass_g: 2}
+  - {group: Hardware, item: "3/8-16 hex nut (+ brass 3/8 to 1/4 reducer for photo tripods)", qty: 1, eur: 1.0, mass_g: 12}
+  - {group: Structure, item: "EL stub tube 20 x 2 mm aluminium (or 20 mm fiberglass), 250 mm", qty: 1, eur: 3.0, mass_g: 80}
+  - {group: Wiring, item: "4-core motor cable 22 AWG, 1.5 m (EL loop) + JST-XH housings/crimps kit", qty: 1, eur: 5.0, mass_g: 60}
+  - {group: Wiring, item: "CAT5e patch cable 1.5 m (EL encoder + boom IMU, I2C)", qty: 1, eur: 1.5, mass_g: 50}
+  - {group: Wiring, item: "PG7 cable glands", qty: 4, eur: 0.3, mass_g: 3}
+  - {group: Wiring, item: "XT30 pigtail / USB-C PD 12 V trigger cable to 5.5x2.1", qty: 1, eur: 3.0, mass_g: 25}
+  - {group: Misc, item: "12 mm bubble level, push button, cable ties, spiral wrap", qty: 1, eur: 2.0, mass_g: 15}
+optional:
+  - {item: "LiFePO4 12.8 V 6 Ah battery with BMS (+ XT30)", eur: 35}
+  - {item: "USB-C PD power bank >= 20 000 mAh with 12 V PD output", eur: 30}
+  - {item: "Survey tripod 5/8-11 (aluminium) or photo tripod >= 3 kg rating", eur: 30}
+  - {item: "17HS08-1004S pancake motors (Lite version, light antennas only)", eur: 16}

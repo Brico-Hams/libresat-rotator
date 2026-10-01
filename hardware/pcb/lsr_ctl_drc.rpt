@@ -1,0 +1,19 @@
+** Drc report for /home/claude/rot/libresat-rotator/hardware/pcb/lsr_ctl.kicad_pcb **
+** Created on 2026-10-01 08:27:26 **
+
+** Found 3 DRC violations **
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(117.5000 mm, 52.0000 mm): Rect on B.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; Severity: warning
+    @(145.0000 mm, 67.4500 mm): Reference 'J10'
+[lib_footprint_issues]: The current configuration does not include the library 'LSR'.
+    Local override; Severity: warning
+    @(130.5000 mm, 110.0000 mm): Footprint U1
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** End of Report **

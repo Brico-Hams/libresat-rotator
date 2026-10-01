@@ -1,0 +1,13 @@
+firmware/build/
+firmware/build-test/
+tools/*.jar
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+software/build/
+hardware/pcb/*.kicad_prl
+hardware/pcb/freerouting.log
+hardware/pcb/logs/
+hardware/pcb/lsr_ctl-backups/
+fp-info-cache

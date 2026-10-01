@@ -1,0 +1,102 @@
+# Electronics: LSR-CTL v1.0 controller board
+
+![Top](../hardware/fab/lsr_ctl_top.png)
+
+## Overview
+
+The board is 100 × 80 mm with 2 layers, 1.6 mm FR4 and 1 oz copper, with ground pours on both sides. Everything is hand-solderable: 0805, SOD-123, SMB, SOIC-8 and TSOT-23-6 parts, plus plug-in modules.
+
+| Block | Parts | Notes |
+|---|---|---|
+| Input 9–24 V | J1 XT30 (male), J2 5.5 × 2.1 jack, F1 PTC 2.5 A, D1 SMBJ24A TVS, Q1 AO4407A P-MOSFET reverse protection (gate clamp D3 12 V, R1 10 k), C1 470 µF bulk | Inputs are paralleled; use one at a time. The protected rail is **VM**. |
+| 5 V / 2 A | U2 **AP63205WU** buck (fixed 5 V), L1 6.8 µH (SRN6045TA), C2/C3 10 µF 50 V, C5/C6 22 µF, C4 boot, R2 enable | Feeds the Pi Zero 2 W (header pins 2/4) and the Pico VSYS through D2. |
+| MCU | U1 **Raspberry Pi Pico** (Pico W / Pico 2 also fit) on headers | USB stays usable; D2 isolates VSYS. |
+| Motor drivers | A1/A2 **TMC2209 StepStick** (UART, addresses 0 and 1 set by MS1), C9/C10 100 µF at VM, C11/C12 100 nF | Single-wire UART: GP8 → 1 kΩ → PDN_UART ← GP9. |
+| Sensors | J5/J6 on I²C0 (AZ encoder, base IMU), J7/J8 on I²C1 (EL encoder, boom IMU), 4.7 kΩ pull-ups R7–R10, J9/J10 hall inputs, J12 GPS (UART1 + PPS) | All 3.3 V from the Pico regulator. |
+| Pi link | J11 2×20 socket on the **bottom side**; UART0 ↔ Pi GPIO14/15; Pi GPIO23 → RUN (R12); J14 SWD header wired to Pi GPIO24/25 | The Pi can reset and re-flash the Pico (`flash_pico_from_pi.sh`). |
+| User I/O | J13 PARK/STOP button, D4 power LED, D5 status LED (GP15), voltage divider R5/R6 (÷11) on GP26 | |
+
+The netlist **is** the schematic: `hardware/gen_pcb.py` (the `PICO`, `PIHDR`, `PARTS` tables) and the generated `hardware/fab/lsr_ctl_netlist.md`.
+
+## Pico pin map
+
+| GPIO | Pico pin | Function | | GPIO | Pico pin | Function |
+|---|---|---|---|---|---|---|
+| GP0 | 1 | UART0 TX → Pi RXD (GPIO15) | | GP13 | 17 | DIR EL |
+| GP1 | 2 | UART0 RX ← Pi TXD (GPIO14) | | GP14 | 19 | /EN both drivers (10 k pull-up) |
+| GP4 | 6 | UART1 TX → GPS RX | | GP15 | 20 | status LED |
+| GP5 | 7 | UART1 RX ← GPS TX | | GP16/17 | 21/22 | I²C0 SDA/SCL (AZ side) |
+| GP6 | 9 | GPS PPS | | GP18/19 | 24/25 | I²C1 SDA/SCL (EL side) |
+| GP7 | 10 | PARK/STOP button | | GP20 | 26 | hall AZ index |
+| GP8 | 11 | TMC UART TX (via 1 k) | | GP21 | 27 | hall/limit EL (optional) |
+| GP9 | 12 | TMC UART RX | | GP26 | 31 | ADC0 VM sense (÷11) |
+| GP10/11 | 14/15 | STEP/DIR AZ | | VSYS | 39 | 5 V through D2 |
+| GP12 | 16 | STEP EL | | 3V3 | 36 | sensors, driver logic |
+
+## Connectors (JST-XH 2.5 mm)
+
+| Ref | Pins (1 → n) | Goes to |
+|---|---|---|
+| J3 / J4 | 1A, 1B, 2A, 2B | AZ / EL motor. One coil on 1A/1B, the other on 2A/2B. If an axis turns the wrong way, use `XC dir_az=-1` instead of rewiring. |
+| J5 / J7 | 3V3, SDA, SCL, GND | AS5600 AZ / EL |
+| J6 / J8 | 3V3, SDA, SCL, GND | MPU-6050 base (in the e-box) / boom (on the stub socket) |
+| J9 / J10 | 3V3, SIG, GND | 3.3 V hall switch (DRV5032FB / AH1806, open drain, internal pull-up) |
+| J12 | 3V3, GND, RX (to GPS), TX (from GPS), PPS | ATGM336H / NEO-M8N at 9600 baud |
+| J13 | BTN, GND | Short press: stop. 2 s press: park. |
+| J14 (2.54) | SWCLK, GND, SWDIO | Short jumper wires to the Pico's SWD pads (debug end) |
+
+**EL harness.** One CAT5e cable carries both I²C1 devices: the EL encoder at the motor rear and the boom IMU on the stub socket. Use these pairs:
+- orange: SDA + GND;
+- green: SCL + GND;
+- blue: 3V3 + GND.
+
+At the head, split it with a 4-way JST-XH Y. I²C1 runs at 100 kHz for this length (about 1.5 m).
+
+## Assembly order
+
+1. SMD parts first: U2, then L1, C2–C6, D1–D3, F1, Q1, the resistors, C7/C8/C11/C12 and the LEDs.
+2. **Test the supply before fitting any module.**
+   - Apply 12 V on J2 from a current-limited supply set to 200 mA.
+   - Check VM ≈ 12 V and 5 V on C5.
+   - Reverse the polarity briefly: VM must stay at 0 V.
+3. THT parts:
+   - J1–J14, C1, C9, C10;
+   - the 2 × 1×20 headers for the Pico;
+   - 4 × 1×8 female headers for the StepSticks;
+   - the 2×20 socket J11 on the **bottom** side, soldered from the top.
+4. Solder jumpers JP1/JP2: leave them **open** unless your TMC2209 module needs its pin 5 (PDN) on the UART line. See VERIFY 1.
+5. Plug in the Pico and flash it (see [FIRMWARE](FIRMWARE.md)). `XS` should answer over USB.
+6. Plug in the TMC2209 modules **with the power off**.
+   - Set the Vref potentiometer to mid-range. It is ignored in UART mode but used as the fallback current.
+   - `XT` must report `ok=1` for both drivers, and `XS` must show `tmc=1,1`.
+7. Fit the Pi Zero 2 WH under the board (11 mm M2.5 standoffs).
+
+## VERIFY before ordering or powering
+
+1. **TMC2209 module pinout.** The footprint assumes the common BTT/FYSETC StepStick layout:
+   - left row: EN, MS1, MS2, PDN_UART, (PDN/NC), CLK, STEP, DIR;
+   - right row: VM, GND, 2B, 2A, 1A, 1B, VIO, GND.
+   Some clones put UART on pin 5: close JP1/JP2 and check `XT`.
+2. **AP63205WU pinout (TSOT-23-6):** 1 FB, 2 EN, 3 VIN, 4 GND, 5 SW, 6 BST. Check the datasheet revision you buy. The pin-compatible AP63203 gives 3.3 V: do not swap them.
+3. **Inductor:** 6.8 µH with Isat ≥ 3 A, 6 × 6 mm (Bourns SRN6045TA-6R8M or similar).
+4. **Input voltage:** the TVS starts conducting at about 26.7 V. The TMC2209 limit is 29 V and the AP63205 limit 32 V. Do not exceed 24 V nominal, and do not use 28 V USB-PD profiles.
+
+## Sensors
+
+- **AS5600:** diametric 6 × 2.5 mm magnet on the motor rear shaft, 1–2 mm air gap. `XS enc=1` confirms the magnet is detected (status bit MD).
+- **MPU-6050 boom IMU:** board X along the stub. Calibrate with `XCAL EL=0` on a level boom, then `XCAL ELIMU`. Change `imu_el_dir` if the elevation reads with the wrong sign.
+- **MPU-6050 base IMU:** stuck flat in the e-box. It reports tripod tilt; zero it with `XCAL LEVEL` on a surface you know is level.
+- **Hall index:** a 3.3 V hall switch such as the DRV5032 (omnipolar variant) or AH1806. **Not the A3144**, whose minimum supply is 4.5 V. The magnet sits under the turntable at radius 45 mm.
+- **GPS:** UART at 9600 baud, NMEA RMC and GGA. It gives the position and UTC to the Pi, which needs no internet in the field. The PPS pin is wired for future use.
+
+## Regenerating the board
+
+```bash
+sh hardware/build_pcb.sh          # place -> DSN -> Freerouting -> pours -> DRC (about 1 min)
+python3 hardware/export_fab.py    # Gerbers, drill, BOM, pos, netlist, PNG previews
+```
+
+The committed board in `hardware/pcb/` is fully routed:
+- **0 unconnected pads and 0 clearance errors.**
+- The remaining DRC items are three cosmetic silkscreen warnings and one library-table note (the project `fp-lib-table` fixes the latter when you open it in KiCad).
+- Order with `hardware/fab/lsr_ctl_gerbers.zip`: 2 layers, 1.6 mm, HASL or ENIG, any colour.

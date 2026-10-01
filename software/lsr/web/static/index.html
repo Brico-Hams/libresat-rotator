@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LibreSat Rotator</title>
+<style>
+:root{--bg:#fcfcfb;--card:#ffffff;--ink:#22211f;--mute:#6b6a66;--line:#e4e3df;--acc:#2a78d6;--warn:#eb6834;--ok:#1baf7a;--sun:#e2a700}
+@media (prefers-color-scheme:dark){:root{--bg:#121212;--card:#1d1d1c;--ink:#ecebe7;--mute:#a19f99;--line:#33322f;--acc:#5aa0ff;--warn:#ff8a50;--ok:#3ccf98;--sun:#ffd23f}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:2}
+header h1{font-size:16px;margin:0}header small{color:var(--mute)}
+nav{display:flex;gap:4px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--line)}
+nav button{flex:0 0 auto}
+main{padding:12px 16px;max-width:900px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kv{display:flex;flex-direction:column}.kv b{font-size:22px;font-variant-numeric:tabular-nums}.kv span{color:var(--mute);font-size:12px}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:15px;cursor:pointer}
+button.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}button.warn{background:var(--warn)}
+button.tab.on{background:var(--ink);color:var(--bg)}button.tab{background:transparent;color:var(--ink);border:1px solid var(--line)}
+input,select{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:15px;min-width:0}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+canvas{width:100%;max-width:420px;aspect-ratio:1;display:block;margin:auto}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;border:1px solid var(--line)}
+.err{color:var(--warn)}.ok{color:var(--ok)}.mute{color:var(--mute)}
+.pad{display:grid;grid-template-columns:repeat(3,64px);gap:6px;justify-content:center}.pad button{padding:14px 0}
+section{display:none}section.on{display:block}
+</style>
+</head>
+<body>
+<header><div><h1>LibreSat Rotator</h1><small id="clock">--</small></div><span id="state" class="pill">connecting</span></header>
+<nav>
+  <button class="tab on" data-t="track">Track</button><button class="tab" data-t="manual">Manual</button>
+  <button class="tab" data-t="cal">Calibrate</button><button class="tab" data-t="radio">Radio</button><button class="tab" data-t="setup">Setup</button>
+</nav>
+<main>
+<div class="card">
+  <canvas id="sky" width="600" height="600"></canvas>
+  <div class="grid" style="margin-top:8px">
+    <div class="kv"><b id="az">--</b><span>antenna AZ</span></div><div class="kv"><b id="el">--</b><span>antenna EL</span></div>
+    <div class="kv"><b id="saz">--</b><span>satellite AZ</span></div><div class="kv"><b id="sel">--</b><span>satellite EL</span></div>
+  </div>
+  <div id="msg" class="mute" style="margin-top:6px"></div>
+</div>
+
+<section id="track" class="on">
+  <div class="card">
+    <div class="row"><input id="q" placeholder="Search satellite (ISS, SO-50, RS-44 ...)" style="flex:1"><select id="satsel" style="flex:1"></select></div>
+    <div class="row" style="margin-top:8px"><select id="tpsel" style="flex:1"></select><button id="trackbtn">Track</button><button class="warn" id="stopbtn">Stop</button></div>
+    <div id="passinfo" class="mute" style="margin-top:8px"></div>
+  </div>
+  <div class="card"><div class="row" style="justify-content:space-between"><b>Next passes (satellites with transponders)</b><button class="alt" id="refreshp">Refresh</button></div>
+    <table id="ptable"><thead><tr><th>Sat</th><th>AOS (local)</th><th>Max</th><th>Plan</th><th></th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<section id="manual">
+  <div class="card"><div class="row"><input id="maz" type="number" step="0.1" placeholder="AZ" style="width:100px"><input id="mel" type="number" step="0.1" placeholder="EL" style="width:100px"><button id="gobtn">Go</button></div>
+  <p class="pad" style="margin-top:12px"><span></span><button data-j="up">&#9650;</button><span></span><button data-j="left">&#9664;</button><button class="warn" id="jstop">&#9632;</button><button data-j="right">&#9654;</button><span></span><button data-j="down">&#9660;</button><span></span></p>
+  <div class="row"><button class="alt" id="parkbtn">Park</button><button class="alt" id="homebtn">Home AZ (index)</button></div></div>
+</section>
+
+<section id="cal">
+  <div class="card"><b>1. Level the tripod</b><p class="mute">Base tilt: <span id="tilt">--</span>. Adjust the legs until both are below 0.5&deg;.</p><button class="alt" id="levelbtn">Base is level now (zero the base IMU)</button></div>
+  <div class="card"><b>2. True north with the Sun</b><p class="mute">Sun now: <span id="sun">--</span>. Clip the sun sight on the boom, jog the rotator until the light spot sits on the cross-hair, then press:</p>
+    <div class="row"><button id="sunbtn">Antenna is on the Sun (set AZ)</button><button class="alt" id="sunelbtn">Set AZ + EL</button></div></div>
+  <div class="card"><b>3. Elevation zero</b><p class="mute">Put the boom level (bubble on the boom), then:</p><div class="row"><button class="alt" id="el0btn">Boom is level: EL = 0</button><button class="alt" id="elimubtn">IMU reads current EL</button></div></div>
+  <div class="card"><b>Index magnet</b><p class="mute">After HOME (or sun alignment) with the magnet over the sensor:</p><button class="alt" id="homeazbtn">Store index azimuth</button></div>
+</section>
+
+<section id="radio">
+  <div class="card"><b>Doppler</b><div class="grid" style="margin-top:6px"><div class="kv"><b id="rxf">--</b><span>RX (downlink) MHz</span></div><div class="kv"><b id="txf">--</b><span>TX (uplink) MHz</span></div><div class="kv"><b id="rr">--</b><span>range rate km/s</span></div></div><div id="tpname" class="mute"></div></div>
+  <div class="card"><b>OpenGD77</b><p class="mute">The radio computes Doppler itself. Keep its clock and keps up to date (radio on USB to the Pi).</p>
+    <div class="row"><button class="alt" id="gdinfo">Radio info</button><button class="alt" id="gdclock">Sync clock (UTC)</button><button class="alt" id="gdkeps">Upload keps (experimental)</button></div><pre id="gdout" class="mute"></pre></div>
+</section>
+
+<section id="setup">
+  <div class="card"><b>Station</b><div class="row" style="margin-top:6px"><input id="lat" placeholder="lat" style="width:110px"><input id="lon" placeholder="lon" style="width:110px"><input id="alt" placeholder="alt m" style="width:90px"><button id="savest">Save</button></div><p class="mute" id="stinfo"></p></div>
+  <div class="card"><b>Orbital elements</b><p class="mute" id="tleinfo"></p><button class="alt" id="tleupd">Update from CelesTrak</button><textarea id="tletext" rows="4" style="width:100%;margin-top:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px" placeholder="...or paste TLE text here"></textarea><button class="alt" id="tleadd">Add pasted TLEs</button></div>
+  <div class="card"><b>Controller</b><pre id="ctl" class="mute" style="white-space:pre-wrap"></pre></div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s), api=(p,b)=>fetch('/api/'+p,b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{}).then(r=>r.json());
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===b.dataset.t));});
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let S={},fails=0;
+function sky(){const c=$('#sky'),g=c.getContext('2d'),W=c.width,R=W/2-28,cx=W/2,cy=W/2;g.clearRect(0,0,W,W);
+ const P=(az,el)=>{const r=R*(90-Math.max(0,Math.min(90,el)))/90,a=az*Math.PI/180;return[cx+r*Math.sin(a),cy-r*Math.cos(a)]};
+ g.strokeStyle=css('--line');g.lineWidth=2;[0,30,60].forEach(e=>{g.beginPath();g.arc(cx,cy,R*(90-e)/90,0,7);g.stroke()});
+ for(let a=0;a<360;a+=30){const[x,y]=P(a,0);g.beginPath();g.moveTo(cx,cy);g.lineTo(x,y);g.stroke()}
+ g.fillStyle=css('--mute');g.font='22px system-ui';g.textAlign='center';g.textBaseline='middle';[['N',0],['E',90],['S',180],['W',270]].forEach(([t,a])=>{const[x,y]=P(a,-13.5);g.fillText(t,x,y)});
+ if(S.pass&&S.pass.track){g.strokeStyle=css('--acc');g.lineWidth=4;g.beginPath();S.pass.track.forEach(([a,e],i)=>{const[x,y]=P(a,e);i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()}
+ if(S.sun&&S.sun.el>0){const[x,y]=P(S.sun.az,S.sun.el);g.fillStyle=css('--sun');g.beginPath();g.arc(x,y,10,0,7);g.fill()}
+ if(S.sat&&S.sat.el>-5){const[x,y]=P(S.sat.az,S.sat.el);g.fillStyle=css('--acc');g.beginPath();g.arc(x,y,11,0,7);g.fill()}
+ const st=S.status||{};if(st.az!=null){let az=st.az,el=st.el;if(el>90){az+=180;el=180-el}const[x,y]=P(((az%360)+360)%360,el);g.strokeStyle=css('--warn');g.lineWidth=4;g.beginPath();g.arc(x,y,16,0,7);g.moveTo(x-24,y);g.lineTo(x+24,y);g.moveTo(x,y-24);g.lineTo(x,y+24);g.stroke()}}
+const f1=v=>v==null?'--':(+v).toFixed(1), mhz=v=>v?(v/1e6).toFixed(5):'--';
+async function poll(){try{S=await api('status');fails=0;const st=S.status||{};
+ $('#az').textContent=st.az!=null?f1(((st.az%360)+360)%360)+(st.az>=360||st.az<0?' (wrap)':''):'--';$('#el').textContent=f1(st.el);
+ $('#saz').textContent=S.sat?f1(S.sat.az):'--';$('#sel').textContent=S.sat?f1(S.sat.el):'--';
+ $('#state').textContent=(S.target?S.target+' · ':'')+S.mode;$('#state').className='pill '+(st.err?'err':'ok');
+ $('#clock').textContent=new Date().toUTCString().slice(17,25)+' UTC · '+S.station.locator+(S.station.source==='gps'?' (GPS)':'');
+ const errs=[];if(st.err&1)errs.push('AZ not referenced');if(st.err&2)errs.push('EL not referenced');if(st.err&4)errs.push('TMC UART');if(st.err&8)errs.push('encoder');if(st.err&16)errs.push('low voltage '+f1(st.vin)+' V');
+ $('#msg').innerHTML=(errs.length?'<span class="err">'+errs.join(' · ')+'</span> ':'')+(S.message||'')+(st.vin?` · ${f1(st.vin)} V`:'');
+ $('#tilt').textContent=st.tilt?st.tilt.map(f1).join(' / ')+'°':'--';$('#sun').textContent=S.sun?`AZ ${f1(S.sun.az)}° EL ${f1(S.sun.el)}°`:'--';
+ if(S.pass){const p=S.pass,pl=S.plan;$('#passinfo').innerHTML=`AOS ${new Date(p.aos).toLocaleTimeString()} · max ${p.max_el}° · LOS ${new Date(p.los).toLocaleTimeString()}`+(pl?` · plan <b>${pl.mode}</b> (peak AZ ${pl.peak_az_rate}°/s)`:'')}
+ if(S.doppler){$('#rxf').textContent=mhz(S.doppler.rx);$('#txf').textContent=mhz(S.doppler.tx);$('#tpname').textContent=S.doppler.transponder}
+ $('#rr').textContent=S.sat?S.sat.range_rate.toFixed(3):'--';
+ $('#stinfo').textContent=`${S.station.lat.toFixed(5)}, ${S.station.lon.toFixed(5)}, ${Math.round(S.station.alt)} m · ${S.station.locator} · source: ${S.station.source}`;
+ $('#ctl').textContent=JSON.stringify(st);sky()}catch(e){if(++fails>2){$('#state').textContent='offline';$('#state').className='pill err'}console.log(e)}}
+setInterval(poll,1000);poll();
+async function loadSats(){const r=await api('sats?q='+encodeURIComponent($('#q').value));const sel=$('#satsel');sel.innerHTML='';const w=new Set(r.with_transponders);
+ [...r.with_transponders,...r.sats.filter(n=>!w.has(n))].forEach(n=>{const o=document.createElement('option');o.textContent=n+(w.has(n)?' ★':'');o.value=n;sel.appendChild(o)});
+ $('#tleinfo').textContent=`TLE age: ${r.tle_age_days==null||r.tle_age_days>1e6?'none (update!)':r.tle_age_days.toFixed(1)+' days'}`;loadTp()}
+async function loadTp(){const t=await api('transponders?sat='+encodeURIComponent($('#satsel').value));const s=$('#tpsel');s.innerHTML='';
+ if(!t.length){s.innerHTML='<option value="">(no transponder: rotator only)</option>'}t.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x.label;s.appendChild(o)})}
+$('#q').oninput=()=>loadSats();$('#satsel').onchange=loadTp;loadSats();
+$('#trackbtn').onclick=async()=>{const r=await api('track',{sat:$('#satsel').value,transponder:$('#tpsel').value===''?null:+$('#tpsel').value});if(r.error)alert(r.error)};
+$('#stopbtn').onclick=()=>api('stop',{});$('#jstop').onclick=()=>api('stop',{});
+document.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>api('jog',{dir:b.dataset.j}));
+$('#gobtn').onclick=()=>api('goto',{az:+$('#maz').value,el:+$('#mel').value});$('#parkbtn').onclick=()=>api('park',{});$('#homebtn').onclick=()=>api('home',{});
+const show=r=>alert(JSON.stringify(r));
+$('#levelbtn').onclick=async()=>show(await api('cal/level',{}));$('#sunbtn').onclick=async()=>show(await api('cal/sun',{}));$('#sunelbtn').onclick=async()=>show(await api('cal/sun',{el:true}));
+$('#el0btn').onclick=async()=>show(await api('cal/el',{value:0}));$('#elimubtn').onclick=async()=>show(await api('cal/elimu',{}));$('#homeazbtn').onclick=async()=>show(await api('cal/homeaz',{}));
+$('#refreshp').onclick=async()=>{const tb=$('#ptable tbody');tb.innerHTML='<tr><td colspan=5>computing…</td></tr>';const ps=await api('upcoming?hours=8');tb.innerHTML='';
+ ps.slice(0,15).forEach(p=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${p.label}</td><td>${new Date(p.aos).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td><td>${p.max_el}°</td><td>${p.plan?p.plan.mode:'-'}</td><td><button class="alt">Track</button></td>`;
+ tr.querySelector('button').onclick=()=>api('track',{sat:p.sat,transponder:0});tb.appendChild(tr)})};
+$('#gdinfo').onclick=async()=>$('#gdout').textContent=JSON.stringify(await api('gd77/info',{}),null,1);
+$('#gdclock').onclick=async()=>$('#gdout').textContent=JSON.stringify(await api('gd77/clock',{}),null,1);
+$('#gdkeps').onclick=async()=>{if(confirm('Write satellites into the radio? A backup is saved on the Pi first.'))$('#gdout').textContent=JSON.stringify(await api('gd77/keps',{}),null,1)};
+$('#savest').onclick=async()=>show(await api('station',{lat:+$('#lat').value,lon:+$('#lon').value,alt:+$('#alt').value}));
+$('#tleupd').onclick=async()=>{$('#tleinfo').textContent='downloading…';show(await api('tle/update',{}));loadSats()};
+$('#tleadd').onclick=async()=>{show(await api('tle/add',{text:$('#tletext').value}));loadSats()};
+</script>
+</body>
+</html>

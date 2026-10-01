@@ -1,0 +1,58 @@
+# /etc/lsr/config.yaml — LibreSat Rotator head configuration (all keys optional, see lsr/config.py)
+station:
+  name: EA4XXX portable
+  lat: 40.4168          # used until the GPS has a fix
+  lon: -3.7038
+  alt: 650
+  use_gps: true         # take position from the controller GPS (and set the clock when offline)
+
+rotator:
+  port: /dev/serial0    # Pi Zero 2 W on the LSR-CTL header (UART). Pico over USB: /dev/ttyACM0
+  baud: 115200
+
+limits:                 # keep equal to the firmware (XC min_az/max_az/max_el/vmax_az)
+  az_min: 0
+  az_max: 450           # cable wrap: 0..450 deg
+  el_min: 0
+  el_max: 180           # 180 enables flip / over-the-top passes
+  vmax_az: 20
+  vmax_el: 15
+  allow_flip: true
+
+tracking:
+  lead_s: 0.6           # aim slightly ahead (planner + mechanics lag)
+  update_hz: 2
+  min_pass_el: 10       # ignore passes lower than this
+  preposition_s: 120    # move to the AOS point 2 min before
+  park_after_pass: true
+  park: [0, 90]
+  auto_next: false      # true: keep tracking the same satellite pass after pass
+
+tle:
+  groups: [amateur, cubesat, stations, weather]
+  max_age_days: 3
+
+rig:
+  type: ftx1            # none | ftx1 | hamlib | opengd77 | dummy
+  ftx1:
+    port: /dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_XXXXXXXX-if00-port0
+    baud: 38400
+    cat_tone: false     # CTCSS by CAT (FT-991 syntax): enable only after checking on your radio
+    sub_tx: true        # uplink on SUB (FB), downlink on MAIN (FA)
+  hamlib:
+    host: 127.0.0.1
+    port: 4532          # rigctld -m 1051 -r <port> -s 38400 --vfo
+    vfo_mode: true
+    rx_vfo: Main
+    tx_vfo: Sub
+  opengd77:
+    port: /dev/ttyACM0
+
+doppler:
+  fm_step_hz: 100
+  ssb_step_hz: 10
+  knob_follow: true     # linear transponders: tune the RX knob, the uplink follows
+  knob_threshold_hz: 30
+
+web: {host: 0.0.0.0, port: 8080}
+rotctld: {host: 0.0.0.0, port: 4533, enabled: true}
