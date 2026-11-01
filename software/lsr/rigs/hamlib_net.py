@@ -38,14 +38,22 @@ class HamlibRig(Rig):
     def cmd(self, line: str, nlines: int = 1) -> list[str]:
         """Set commands (upper case) answer 'RPRT n'; get commands answer `nlines` value lines."""
         with self.lock:
-            self.open()
-            self.f.write((line + '\n').encode())
-            out = []
-            while True:
-                r = self.f.readline().decode(errors='replace').strip()
-                out.append(r)
-                if r.startswith('RPRT') or (not line[0].isupper() and len(out) >= nlines) or r == '':
-                    return out
+            for attempt in (0, 1):
+                try:
+                    self.open()
+                    self.f.write((line + '\n').encode())
+                    out = []
+                    while True:
+                        r = self.f.readline().decode(errors='replace').strip()
+                        if r == '' and not out:
+                            raise ConnectionError('rigctld closed the connection')
+                        out.append(r)
+                        if r.startswith('RPRT') or (not line[0].isupper() and len(out) >= nlines) or r == '':
+                            return out
+                except OSError:
+                    self.close()          # reconnect on the next open(); retry once
+                    if attempt:
+                        raise
 
     def _v(self, vfo):
         return f' {vfo}' if self.vfo_mode else ''

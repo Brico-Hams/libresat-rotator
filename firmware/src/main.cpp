@@ -340,6 +340,7 @@ static void handle(const char *line, out_fn out) {
             if (found) {
                 float keep[2] = {cur_deg(AZ), cur_deg(EL)};
                 apply_cfg();
+                dirty = true;
                 for (int a = 0; a < 2; a++) if (referenced[a]) set_current_deg(a, keep[a]);   // ratio/dir changes keep the angle
                 if (!strncmp(c[i].key, "irun", 4) || !strcmp(c[i].key, "ihold") || !strcmp(c[i].key, "usteps")) configure_drivers();
                 snprintf(b, sizeof(b), "XC ok %s\r\n", c[i].key);

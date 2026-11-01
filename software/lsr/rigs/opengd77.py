@@ -250,7 +250,7 @@ class OpenGD77:
         except Exception:
             self.exit_cps()
             raise
-        return dict(model=info['model'], satellites=len(sats), backup=str(bfile))
+        return dict(model=info['model'], satellites=min(len(sats), MAX_SATS), backup=str(bfile))
 
     def read_nmea(self, seconds: float = 3.0) -> list[str]:
         """Collect NMEA sentences streamed by GPS-equipped radios (outside CPS mode)."""
