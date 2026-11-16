@@ -71,10 +71,11 @@ EL_RANGE = (-30.0, 150.0)
 
 # --- Photo-interrupter index (SARCTrac Mk5 idea, SARCNET data; our own printed geometry), one per axis ---------------------------
 # Printed ASA disc (ring 8 mm wide, 3 mm thick) with one radial notch on its rim; a slotted photo-interrupter (EE-SX1103 class, 5 mm
-# gap: VERIFY with the datasheet) straddles the rim. AZ disc sits on the DIN 705 Ø28 collar (fixed to the shaft/mast), EL disc on the
-# boom_socket hub (turns with the boom); the sensors ride on the head (AZ: under the PCD110 bolt; EL: zip-tied to the bearing housing).
+# gap: VERIFY with the datasheet) straddles the rim. Phase 11: AZ disc is pinned on the stationary Ø14 AZ shaft stub in the free air
+# z 115..140 between the body pillar top and the gearbox shelf (PARAMETRIC, VERIFY), its sensor bracket stands on the pillar top (rotates
+# with the body, post az_post high); EL disc on the boom_socket hub (turns with the boom), sensor zip-tied to the bearing housing.
 INDEX = dict(material='ASA', t=3.0, ring=8.0, notch_arc=4.0, notch_depth=5.0, gap=5.0, fit_clear=0.2,
-             sensor_holes=19.0, sensor_hole_d=3.2, az_collar_d=28.0, az_z=(70.0, 73.0), min_notch_deg=4.0, edge_margin_deg=3.0)
+             sensor_holes=19.0, sensor_hole_d=3.2, az_shaft_d=14.0, az_z=(130.0, 133.0), az_post=12.0, min_notch_deg=4.0, edge_margin_deg=3.0)
 # Mk5 uses M14 stainless threaded rod + 5x8 roll pins as the axis shafts; calc/lsr2_sizing.py evaluates it against our turned keyed shafts.
 M14_ROD = dict(name='M14 A2-70 threaded rod', d_stress=12.1, yield_mpa=450.0, pin_d=5.0)   # A2-70 Rp0.2 450 MPa, M14x2 stress-area d: VERIFY
 

@@ -8,14 +8,14 @@ import params as P
 import cast_parts as CP
 
 I = P.INDEX
-AZ_DISC = dict(bore=I['az_collar_d'] + I['fit_clear'], z=I['az_z'])
+AZ_DISC = dict(bore=I['az_shaft_d'] + I['fit_clear'], z=I['az_z'])
 EL_DISC = dict(bore=2 * CP.SOCK['R_HUB'] + I['fit_clear'], y=CP.SOCK['y0'] + 1.0)   # 1 mm in from the hub face
 for _d in (AZ_DISC, EL_DISC):
     _d['r_out'] = _d['bore'] / 2 + I['ring']
     _d['notch_deg'] = math.degrees(I['notch_arc'] / _d['r_out'])
     _d['r_sensor'] = _d['r_out'] - I['notch_depth'] / 2    # the interrupter gap is centred on the notch depth
 BRACKET = dict(t=3.0, foot=(24.0, 16.0), post_w=12.0, pad=(30.0, 12.0))
-AZ_BRACKET = dict(bolt_xy=(-47.6, -27.5))   # PCD110 hole at 210 deg: outside the AZ gearbox envelope (x >= -40), M6x25 instead of M6x20
+AZ_BRACKET = dict(foot_z=115.0)   # foot on the body pillar top (z 115); post height I['az_post'] puts the sensor slot at the disc (z 130..133)
 
 
 def _v(*a):
@@ -40,17 +40,17 @@ def disc(d, axis):
     return s.cut(notch)
 
 
-def bracket():
-    """Printed ASA L bracket in its own frame (foot on z=0, post up, pad toward +x); one design for both axes, 2 x M3 on the sensor holes."""
+def bracket(post_h=60.0):
+    """Printed ASA L bracket in its own frame (foot on z=0, post up, pad toward +x); one design for both axes (post_h 60 EL, I['az_post'] AZ), 2 x M3 on the sensor holes."""
     import Part
     b = BRACKET
     fx, fy = b['foot']
     foot = Part.makeBox(fx, fy, b['t'], _v(0, 0, 0))
-    post = Part.makeBox(b['t'], fy, 60.0, _v(0, 0, 0))
+    post = Part.makeBox(b['t'], fy, post_h, _v(0, 0, 0))
     padx, pady = b['pad']
-    pad = Part.makeBox(padx, pady, b['t'], _v(0, (fy - pady) / 2, 60.0 - b['t']))
+    pad = Part.makeBox(padx, pady, b['t'], _v(0, (fy - pady) / 2, post_h - b['t']))
     s = foot.fuse(post).fuse(pad)
-    holes = [Part.makeCylinder(I['sensor_hole_d'] / 2, b['t'] + 2, _v(padx / 2 + sx * I['sensor_holes'] / 2, fy / 2, 60.0 - b['t'] - 1), _v(0, 0, 1))
+    holes = [Part.makeCylinder(I['sensor_hole_d'] / 2, b['t'] + 2, _v(padx / 2 + sx * I['sensor_holes'] / 2, fy / 2, post_h - b['t'] - 1), _v(0, 0, 1))
              for sx in (-1, 1)]
     holes.append(Part.makeCylinder(3.3, b['t'] + 2, _v(fx - 8.0, fy / 2, -1), _v(0, 0, 1)))   # M6 bolt / zip-tie anchor
     for h in holes:
@@ -64,7 +64,8 @@ def self_test():
         assert I['ring'] - I['notch_depth'] >= 3.0                    # printed web left under the notch
         assert I['t'] < I['gap']                                      # disc fits the 5 mm interrupter gap
     assert AZ_DISC['z'][1] - AZ_DISC['z'][0] == I['t']
-    assert abs(math.hypot(*AZ_BRACKET['bolt_xy']) - 55.0) < 0.05      # on the PCD110 circle
+    assert 115.0 < AZ_DISC['z'][0] and AZ_DISC['z'][1] + I['gap'] < 140.0   # disc and slotted sensor stay between pillar top and shelf
+    assert AZ_BRACKET['foot_z'] + I['az_post'] <= AZ_DISC['z'][1] + 1.0
     assert I['sensor_holes'] + I['sensor_hole_d'] + 2 * 3.0 <= BRACKET['pad'][0]
 
 

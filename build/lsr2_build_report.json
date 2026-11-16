@@ -86,7 +86,6 @@
       "boom_socket/el_index_disc": 0.0,
       "az_shaft/base": 0.0,
       "az_shaft/spacer": 0.0,
-      "az_index_disc/az_shaft": 0.0,
       "el_index_disc/el_shaft": 0.0
     },
     "failures": [],
@@ -319,7 +318,7 @@
   },
   "index": {
     "notch_deg": {
-      "az": 10.37,
+      "az": 15.18,
       "el": 7.14
     },
     "disc_t_mm": 3.0,

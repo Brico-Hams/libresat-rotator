@@ -96,7 +96,7 @@ shafts = {'az_shaft': CP.az_shaft(), 'el_shaft': CP.el_shaft()}
 import index_parts as IX   # Mk5-style photo-interrupter index: printed ASA notch discs + sensor bracket (own geometry)
 IX.self_test()
 index = {'az_index_disc': IX.disc(IX.AZ_DISC, 'z'), 'el_index_disc': IX.disc(IX.EL_DISC, 'y').cut(cast['boom_socket'])}   # EL disc is cut to the hub + pinch lug profile
-index_bracket = IX.bracket()
+index_bracket = IX.bracket(IX.I['az_post'])
 pre = {'az_housing': CP.az_housing_pattern(), 'mast_clamp': CP.mast_clamp(True), 'el_bearing_housing': CP.el_bearing_housing(True),
        'boom_socket': CP.boom_socket(True)}
 cores = Part.makeCompound(list(CP.az_cores()))

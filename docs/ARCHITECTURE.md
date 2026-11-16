@@ -202,6 +202,20 @@ Head-side software ([CALIBRATION](CALIBRATION.md)); the RP2040 only exposes raw 
 
 Credit: the structure of this chain (level → north → Sun → index/backlash → pointing terms → closed loop) follows ideas from the SARCNET MK1 derivatives and Rotator7. No external code is used.
 
+## 7d. Phase 11 (11b): Mk5-schematic architecture
+
+Replaces the phase-6 two-block layout (base, spacer, el_bracket, el_bearing_housing, boom_socket, one-sided boom). Binding brief: `reference/BRICOHAMS_LSR2_BRIEF.md`. Frame: origin at the body bottom face, AZ = z, EL = horizontal y, boresight x. Every number is DATASHEET / MEASURE / PARAMETRIC in `cad/lsr2/inputs.py`, `axes.py`, `body.py`, `cables.py`.
+
+- **Body** (`body.py`): aluminium open box (5 mm walls and ribs from `params.CAST`), removable lid with gasket groove, AZ pillar low, EL gearbox high on the +y wall, both motors inside on the same side, drivers on the −y inner wall pad (thermal path through the wall and external ribs), glands and drain at the bottom, breather and BricoHams nameplate recess on the front face. One finished solid serves casting (route A) and CNC (route B).
+- **Layout** (`layout_study.py` → `LSR2_LAYOUT_STUDY.md`): A parallel stacked vs B staggered motors; A chosen (most compact, driver heat within limit, EL sweep −30…150 clear of the body with a forward-offset narrow saddle).
+- **AZ** (`axes.py`): Ø30 shaft on 2×6206 + 51206 in the pillar; the gearbox transmits torque only (coupling by key). Mast split-clamp bracket with labyrinth cup under the skirt. Index disc inside the pillar.
+- **EL**: Ø20 through-shaft on two 6004 in the side walls, torque coupling to the gearbox; two yoke arms (U) → saddle → two boom clamp blocks → cross boom Ø40 (1.6 m) → lift arms with antennas and sliding counterweights at the ends.
+- **Load path**: antenna → lift arm → boom → clamps → saddle → yoke arms → EL shaft/bearings → body walls → AZ pillar (radial 2×6206, axial 51206) → mast bracket → mast. Gearboxes see torque only.
+- **Cables**: coax clock-spring coils at the EL bearings, harness wrap around the mast bracket (`cables.py`); bend radius ≥ 10×OD; stops (EL pin on the arm, AZ software limit + index sensor); AZ wrap vs slip ring is an open decision.
+- **Sealing**: lid gasket, shaft seals, glands with drip loop, breather and drain; IP target defined but **to be tested** (no IP claim).
+- **Noise (VHF/UHF)**: shielded motor/driver cables with ferrites, driver chopping frequency kept off the 144/435 MHz harmonics, drivers separated from the coax path inside the body; to be measured.
+- **Status**: geometry files written; build.py, renders, BOM and materials rewrite pending the orchestrator run. Mass/CG feedback (>10 % → update `inputs.py`) is applied from the build report.
+
 ## 8. Credits
 
 The architecture is inspired by the SARCNET SARCTrac Mk5. No SARCNET file or geometry was used: their files carry no licence. See [DESIGN_ANALYSIS](DESIGN_ANALYSIS.md) §5 and the [spec](superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md).
