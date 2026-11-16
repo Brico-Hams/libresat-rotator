@@ -4,6 +4,7 @@
 #   make test       firmware host tests + software tests
 #   make verify     tests + STL watertight check + PCB DRC summary + cycloid check
 PY ?= python3
+FREECADCMD ?= freecadcmd
 export KICAD7_FOOTPRINT_DIR ?= /usr/share/kicad/footprints
 
 all: stl fab firmware calc bom test
@@ -20,6 +21,10 @@ calc:
 	$(PY) calc/cycloid_check.py
 	$(PY) calc/sizing.py > /dev/null
 	$(PY) calc/lsr2_sizing.py
+	$(PY) calc/lsr2_materials.py
+lsr2:
+	$(PY) cad/lsr2/plates.py
+	cd $(CURDIR) && REPO=$(CURDIR) $(FREECADCMD) -c "exec(open(r'$(CURDIR)/cad/lsr2/build.py').read())"
 bom:
 	$(PY) scripts/bom.py
 test:
@@ -28,9 +33,10 @@ test:
 verify: test
 	$(PY) calc/cycloid_check.py
 	$(PY) calc/lsr2_sizing.py --check
+	$(PY) calc/lsr2_materials.py --check
 	$(PY) scripts/verify_stl.py
 	@grep -E "^\*\* Found" hardware/pcb/lsr_ctl_drc.rpt
 sim:
 	cd software && $(PY) -m lsr run --sim
 
-.PHONY: all stl fab pcb firmware calc bom test verify sim
+.PHONY: all stl fab pcb firmware calc lsr2 bom test verify sim

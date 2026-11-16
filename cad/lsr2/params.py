@@ -21,6 +21,14 @@ GEARBOX = {
     'NMRV050': dict(ratio=80, m2_rated=55.0, fr2=2400.0, bore=25.0, key_w=8.0, centre=50.0),
 }
 GEARBOX_DEFAULT = 'NMRV030'
+# NMRV030 envelope (generic catalogue drawing, oyostepper NMRV030-40-50.pdf). Axes: 'out' = output
+# axis, 'worm' = worm axis, 'n' = the third direction. Output centre sits 40 from the worm-free end
+# along 'worm' and 40 from the foot along 'n'; worm axis is 30 from the output axis along 'n'.
+NMRV030_GEO = dict(
+    out_width=56.0, hub_len=63.0, worm_len=80.0, worm_len_flange=95.0, worm_from_end=40.0,
+    n_len=97.0, out_from_foot=40.0, face_holes='M6', face_hole_depth=11.0, face_pcd=65.0,
+    pilot_clear_d=55.2,   # clearance for the output boss/hub: VERIFY on the real part
+)
 WORM_EFF_RUN = 0.45      # 80:1 worm at ~150 rpm input (low-speed efficiency, conservative)
 GEAR_PEAK_FACTOR = 2.0   # short-term/standstill torque vs rating (catalogue fs, VERIFY)
 GEAR_REF_ARM = 0.030     # m: lever from housing face to where fr2 is quoted (VERIFY)
@@ -44,3 +52,5 @@ EL_RANGE = (-30.0, 150.0)
 CAST = dict(alloy='A356-T6', shrink=1.013, draft_out=2.0, draft_in=3.0,
             machining=2.5, min_wall=5.0, min_fillet=3.0, max_section_ratio=3.0)
 PLATE = dict(alloy='6061-T6 or 5083', thickness=(8.0, 10.0))
+LIGHTEN = dict(min_web=6.0, keep_out=20.0)   # mm: web between cut-outs/edges; clear ring around functional holes
+ALU_PLATE_G_CM3, ALU_CAST_G_CM3, PLA_G_CM3 = 2.70, 2.68, 1.24

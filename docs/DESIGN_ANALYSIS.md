@@ -96,6 +96,22 @@ A cycloid suits printing because:
 - **Printed tolerances.** The meshing clearance (0.15 mm design) depends on the printer. `PROFILE_CLR` in `lsr_params.scad` adjusts it. Backlash at the output should measure about 0.2–0.5°; [TESTING](TESTING.md) T-M3 checks it.
 - **The cantilevered elevation stub** puts a small tipping moment on the tripod. Hang the battery from the tripod hook.
 
+## 7. SARCTrac Mk5 (SARCNET) -> LSR-2
+
+LSR-2 is our own redesign of the architecture SARCNET published for the SARCTrac Mk5 (2 × NMRV030 80:1 + NEMA23, 51206 thrust bearing, 10 mm aluminium saddle plates, Pico-class MicroPython controller). The Mk5 FreeCAD files carry no licence, only an "as-is, no warranty" note. We used them only as a local reference to read the architecture: no file, geometry or drawing is copied, and all LSR-2 geometry comes from our own scripts. Full details in the [LSR-2 spec](superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md).
+
+| Mk5 weak point | LSR-2 decision |
+|---|---|
+| A single index slot, open loop between indexes | Absolute magnetic encoder on each **output** shaft (AS5048A/AS5600, same closed loop as LSR-1); the index stays only as a cross-check (PLANNED) |
+| Thrust bearing housed in PVC pipe with silicone | Bearing housing in **cast A356** with a machined seat, V-ring/lip seal and drain hole (phase 3, PLANNED) |
+| Threaded rod used as shaft, roll-pin keys | Ø14 h7 stainless 1.4404 shaft with an A5×5 DIN 6885 key, matching the NMRV030 bore |
+| Galvanised angle iron (corrosion, mixed metals) | Plates and brackets in 6061-T6/5083; A2/A4 fasteners with Tef-Gel or Duralac at Al–steel joints |
+| MicroPython on a separate board | **LSR-CTL RP2040 firmware** gains a step/dir output for external drivers (DM542 or TMC5160); EasyComm II and rotctld unchanged (PLANNED) |
+| 48 V only | 24–48 V input; 5 V and 3.3 V rails stay on the board |
+| No wind or torque budget published | `calc/lsr2_sizing.py` gives wind moment, worm self-locking, bearing life and the safe payload limit ([LSR2_SIZING](LSR2_SIZING.md)) |
+
+Credit: the architecture idea comes from SARCNET. No SARCNET file was used or derived.
+
 ## Sources
 
 - SatNOGS Rotator v3: [wiki.satnogs.org/SatNOGS_Rotator_v3](https://wiki.satnogs.org/SatNOGS_Rotator_v3), [GitLab satnogs-rotator](https://gitlab.com/librespacefoundation/satnogs/satnogs-rotator)

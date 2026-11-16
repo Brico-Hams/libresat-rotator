@@ -6,6 +6,10 @@ LSR-1 starts from two open designs, the [SatNOGS Rotator v3](https://gitlab.com/
 
 ![LSR-1 assembly](docs/img/assembly.png)
 
+## LSR family / LSR-2 heavy station
+
+LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator in design (NMRV030 worm gearbox + NEMA23, CNC aluminium plates and sand-cast parts), driven by the same firmware, protocol and head software. See the [family architecture](docs/ARCHITECTURE.md), the [design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md), the [LSR-2 sizing](docs/LSR2_SIZING.md) and the [LSR-2 materials and cost](docs/LSR2_MATERIALS.md).
+
 | | LSR-1 | AntRunner | SatNOGS Rotator v3 |
 |---|---|---|---|
 | Weight (rotator + controller) | **≈ 2.3 kg** (estimate, [BOM](docs/BOM.md)) | 3 kg | ≈ 5 kg |
@@ -43,6 +47,10 @@ LSR-1 starts from two open designs, the [SatNOGS Rotator v3](https://gitlab.com/
 8. [Power](docs/POWER.md): batteries, USB-C PD, protection and the energy budget.
 9. [Calibration and field use](docs/FIELD_GUIDE.md): from the bag to the first QSO in 10 minutes.
 10. [Testing](docs/TESTING.md): unit, bench and acceptance tests with result sheets.
+11. [Family architecture](docs/ARCHITECTURE.md): LSR-1 and LSR-2, shared stack, LSR-2 mechanics and fabrication route.
+12. [LSR-2 design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md): goals, licence position, changes against the SARCTrac Mk5, phases.
+13. [LSR-2 engineering budget](docs/LSR2_SIZING.md): torque, overturning moment and gearbox choice per payload.
+14. [LSR-2 materials and cost](docs/LSR2_MATERIALS.md): plate mass, stock, waste and cost.
 
 ## Key ideas
 
