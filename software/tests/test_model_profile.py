@@ -27,6 +27,7 @@ def test_lsr2_profile(tmp_path):
     l = c['limits']
     assert (l['az_min'], l['az_max'], l['el_min'], l['el_max']) == (-360.0, 360.0, -30.0, 150.0)
     assert l['vmax_az'] == l['vmax_el'] == 12.0 and l['allow_flip'] is False
+    assert c['rotator']['baud'] == 9600 and l['anti_windup'] is False      # EasyComm II default of SARCTrac Mk5
 
 
 def test_yaml_overrides_profile_and_rejects_unknown(tmp_path):

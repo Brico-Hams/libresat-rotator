@@ -32,10 +32,13 @@ One firmware drives both rotators. The profile comes from `lsr_model()` in `core
 
 | | LSR-1 (`LSR_MODEL=1`) | LSR-2 (`LSR_MODEL=2`) |
 |---|---|---|
-| Gearbox / microsteps | cycloid 25:1 / 16 | NMRV030 80:1 / 8 (355.6 steps/°) |
+| Gearbox / microsteps | cycloid 25:1 / 16 | NMRV030 80:1 / 2 (400 microsteps/rev as SARCTrac Mk5, SARCNET; 88.9 steps/°) |
 | AZ range (wire frame) | 0..450° | 0..720°, i.e. user −360..+360° (wire = user + 360); same wrap logic |
 | EL range | 0..180° (flip) | −30..150°, no flip |
 | vmax / acc | 20 / 15 °/s, 25 / 20 °/s² | 12 °/s, 10 °/s² |
+| Serial | 115200 | 9600 8N1 (EasyComm II default, as Mk5) |
+| Index | hall magnet (AZ) | photo-interrupter + notch disc per axis (GP20 AZ, GP21 EL), `HOME` and backlash calibration |
+| Power loss | – | `PIN_PWRFAIL` GP22: opto-isolated 48 V detect, position saved to flash |
 
 With `LSR_DRIVER=EXT_STEPDIR` (DM542, or a TMC5160 in step/dir mode, behind opto-isolated inputs) the firmware makes no TMC UART call: `XT` answers `XT n/a ext driver`, and `tmc=0,0` / error bit 4 are not used. STEP and DIR stay on the LSR-1 pins; the enables are per axis:
 
@@ -53,7 +56,15 @@ Levels are set in `config.h`: `EXT_STEP_ACTIVE`, `EXT_DIR_POS_LEVEL`, `EXT_EN_AC
 | DIR set-up before the first STEP edge | `SD_DIR_SETUP_US` | 5 µs | ≥ 5 µs, VERIFY |
 | ENABLE settled before the first STEP | `SD_ENABLE_SETTLE_US` | 200 ms (also after `XE 1`) | ≥ 200 ms, VERIFY |
 
-At 12 °/s the step rate is 4.3 kHz, far below the optocoupler limit. The wiring is in [ELECTRONICS](ELECTRONICS.md#lsr-2-external-drivers).
+At 12 °/s the step rate is 1066.7 steps/s (80 × 400 / 30), far below the optocoupler limit. The wiring is in [ELECTRONICS](ELECTRONICS.md#lsr-2-external-drivers).
+
+### LSR-2 index, backlash and power loss (Mk5-style, SARCNET)
+
+- **Index.** One slotted photo-interrupter per axis reads a notch in a printed disc. The slot edge is the reference: AZ = north (wire 360°), EL = horizon (0°). `HOME` on LSR-2 searches both axes: seek at 6°/s, clear the slot at 4°/s, creep over the edge at 1°/s always coming from the positive side (so the reference is backlash-free), then park 2° past it. The AZ slot repeats every 360°, so the firmware takes the multiple of 360° nearest to the position estimate: if power was lost without a save, unwind the cable by hand to north before `HOME`. Error bit 32 = slot not found.
+- **Backlash.** `XCAL BACKLASH` runs the index search and also crosses the edge from the other side: the difference is the backlash of the gearbox and couplings, stored as `backlash_az` / `backlash_el` (degrees, saved to flash with `XW`). The planner then adds it on every reversal so the output follows the commanded angle; a one-off calibration at assembly, as in the Mk5. `XCAL HOMEEL` stores the current elevation as the EL index angle (`home_el`).
+- **Power loss.** The 48 V opto input on GP22 goes high when the supply fails; after 5 ms of debounce the firmware stops the motors, disables the drivers, saves the position and the backlash side to flash and sets error bit 64 (`E_PWR`). When 48 V returns the drivers are re-enabled. Detection is armed only after 48 V has been seen once. The 2200 µF bulk capacitor on the 48 V rail holds the XL7015 long enough for the ~60 ms flash write (VERIFY).
+- **Serial.** EasyComm II at 9600 8N1 is the LSR-2 default on UART0 (`PI_BAUD`), as the Mk5 trackers expect; USB CDC ignores the baud rate. Compatible trackers: **PstRotator, Gpredict, SatPC32 and Orbitron** (EasyComm II), plus our own path through Hamlib `rotctld -m 202` and the `lsr` software.
+- **Anti-windup.** Shortest-path slewing is native (±360° range, the planner picks the wrap equivalent nearest to the target). `software/lsr` has an optional `anti_windup` limit (profile key `limits.anti_windup`, default off; CLI planner) that prefers the pass geometry ending near the middle of the AZ range, so the cable is unwound between passes. The firmware needs nothing for it. Wiring it into the live tracker takes one line in `tracker.py`: pass `l.get('anti_windup', False)` as the last argument of `Limits(...)`; this file is not touched in phase 6c.
 
 ## How it works
 
@@ -73,7 +84,7 @@ At 12 °/s the step rate is 4.3 kHz, far below the optocoupler limit. The wiring
 
 There are two ports with the same commands:
 - USB CDC, for a PC, a Pi 4/5 or Hamlib directly;
-- UART0 at 115200 baud, for the Pi Zero on the header.
+- UART0 at 115200 baud (9600 8N1 on LSR-2, the EasyComm II default), for the Pi Zero on the header.
 
 Lines end with CR, LF or `;`.
 
@@ -105,6 +116,8 @@ Hamlib's Easycomm extras (`UP000 XXX DN000 XXX`) are accepted and ignored.
 | `XCAL ELIMU` | The boom IMU now reads the current elevation |
 | `XCAL LEVEL` | The base IMU now reads 0/0 (the tripod is level) |
 | `XCAL HOMEAZ` | Store the current azimuth as the index magnet azimuth |
+| `XCAL BACKLASH` | LSR-2: index search on both axes plus backlash measurement, stored in flash |
+| `XCAL HOMEEL` | LSR-2: store the current elevation as the EL index angle |
 | `XE 0` / `XE 1` | Disable or enable the drivers. The motor encoders keep tracking the position while the motors are free; without encoders the AZ reference is cleared. |
 | `XG` | GPS fix details |
 | `XT` | TMC2209 diagnostics (DRV_STATUS: over-temperature, short to ground, open load) |
@@ -126,7 +139,9 @@ Hamlib's Easycomm extras (`UP000 XXX DN000 XXX`) are accepted and ignored.
 | `ihold` | 35 % | hold current |
 | `deadband` | 0.05° | |
 | `park_az`, `park_el` | 0, 90 | |
-| `home_az` | 0 | azimuth of the index magnet |
+| `home_az` | 0 | azimuth of the index magnet / slot edge |
+| `home_el` | 0 | LSR-2: elevation of the EL slot edge |
+| `backlash_az`, `backlash_el` | 0 | LSR-2: measured backlash (°), `XCAL BACKLASH` |
 | `enc_az`, `enc_el` | 1 | encoder sense; 0 disables the encoder |
 | `imu_el`, `imu_el_dir`, `imu_el_zero` | 1, 1, 0 | boom IMU referencing |
 
@@ -139,7 +154,8 @@ Hamlib's Easycomm extras (`UP000 XXX DN000 XXX`) are accepted and ignored.
 | 4 | TMC UART not answering | check the module pinout, JP1/JP2 and the power |
 | 8 | encoder missing or magnet not detected | check the gap (1–2 mm) and the cable |
 | 16 | supply below 8.5 V | charge the battery |
-| 32 | index magnet not found during HOME | check the magnet polarity, sensor and gap |
+| 32 | index magnet / slot not found during HOME | check the magnet polarity or the notch disc, sensor and gap |
+| 64 | 48 V lost (LSR-2) | position was saved; restore power, then check the reference or `HOME` |
 
 ## Example session
 

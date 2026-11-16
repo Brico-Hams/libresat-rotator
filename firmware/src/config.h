@@ -20,7 +20,7 @@
 #else
 #define FW_NAME     "LSR-1"
 #endif
-#define FW_VERSION  "1.0.0"
+#define FW_VERSION  "1.1.0"
 
 // ---------------- pins (Raspberry Pi Pico GPIO numbers)
 #define PIN_PI_TX        0    // UART0 TX -> Pi GPIO15 (RXD)
@@ -43,6 +43,7 @@
 #define PIN_SCL1        19
 #define PIN_HALL_AZ     20    // AZ index (active low, DRV5032FB / AH1806 at 3.3 V)
 #define PIN_HALL_EL     21    // optional EL index / limit
+#define PIN_PWRFAIL     22    // LSR-2: 48 V opto-isolated power-loss detect (high = 48 V gone), see PWR_* below
 #define PIN_VSENSE      26    // ADC0: VM / 11
 #define ADC_VSENSE       0
 #define PIN_ONBOARD_LED 25    // plain Pico; Pico W uses the CYW43 LED (not driven)
@@ -55,8 +56,20 @@
 #define EXT_DIR_POS_LEVEL 1   // DIR pin level for +1
 #define EXT_EN_ACTIVE    0    // DM542 ENA is often active-low: enabled = low, disabled = high (VERIFY)
 
+// LSR-2 index (photo-interrupter + slotted disc, as SARCTrac Mk5): the NPN open-collector output pulls the pin low
+// while the slot is in the beam (3.3 V pull-up on the RP2040, so no 5 V on the pin). LSR-1 keeps its hall sensor.
+#define IDX_SLOT_LEVEL   0
+// LSR-2 power-loss detect: the opto transistor pulls PIN_PWRFAIL low while 48 V is present. On loss the firmware stops the
+// motors and saves the position to flash (bulk capacitance on the 48 V rail keeps the 5 V buck alive for the ~60 ms write).
+// Armed only after 48 V has been seen once since boot, so a bench build without the circuit still works.
+#define PWR_LOSS_LEVEL   1
+
 // ---------------- serial
+#if LSR_MODEL == 2
+#define PI_BAUD       9600       // EasyComm II 9600 8N1: what SARCTrac Mk5 trackers (PstRotator, Gpredict, SatPC32, Orbitron) expect
+#else
 #define PI_BAUD     115200
+#endif
 #define GPS_BAUD      9600
 #define TMC_BAUD    115200
 

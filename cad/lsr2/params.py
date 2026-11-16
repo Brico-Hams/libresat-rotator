@@ -7,6 +7,7 @@ No geometry here is taken from the SARCTrac Mk5 files (see docs/superpowers/spec
 
 # --- Stepper motor: NEMA23, 57BYG250H class (2.8 N·m, 3 A) -------------------------------
 NEMA23 = dict(
+    model='57BYG250H-8',                                                  # the motor SARCTrac Mk5 uses (SARCNET); 8-lead, 112 mm body
     face=56.4, hole_square=47.14, hole_d=5.1, pilot_d=38.1, pilot_h=1.6,  # NEMA ICS 16 standard
     shaft_d=8.0, length=112.0,                                            # 8 mm keyed shaft: VERIFY
     t_hold=2.8, i_rated=3.0, steps_rev=200,
@@ -37,6 +38,9 @@ GEAR_REF_ARM = 0.030     # m: lever from housing face to where fr2 is quoted (VE
 THRUST = dict(name='51206', d=30.0, D=52.0, H=16.0, C=25.1e3, C0=40.0e3)   # catalogue values
 RADIAL = dict(name='6206', d=30.0, D=62.0, B=16.0, C=20.3e3, C0=11.2e3)    # external pair
 RADIAL_SPAN = 0.120      # m between the two radial bearings in the AZ housing
+# Mk5 (SARCNET) stacks M30x56x3 stainless washers as shims under the 51206; here one replaces the old 3 mm ring, up to SHIM_N_MAX adjust
+# the preload. DIN 471 circlip 1.5 mm + SHIM_N_MAX x 3 mm must fit the 10 mm between the shaft washer and the mast clamp (calc checks). VERIFY.
+SHIM = dict(name='M30x56x3 washer, A2/A4', d=30.0, D=56.0, t=3.0, n_fitted=1, n_max=2, circlip_t=1.5)
 
 # --- EL head (phase 6b) ---------------------------------------------------------------------
 # The one-sided cross boom (along the EL axis) makes a bending moment that only a bearing PAIR can carry (as on AZ).
@@ -61,9 +65,18 @@ MAST_D = (40.0, 60.0)    # accepted mast range, mm
 
 # --- Motion ---------------------------------------------------------------------------------
 VMAX_DPS = 12.0          # output deg/s (both axes)
-MICROSTEP = 8
+MICROSTEP = 2            # DM542 at 400 microsteps/rev as on SARCTrac Mk5 (SARCNET): 1066.7 steps/s at 12 deg/s
 AZ_RANGE = (-360.0, 360.0)
 EL_RANGE = (-30.0, 150.0)
+
+# --- Photo-interrupter index (SARCTrac Mk5 idea, SARCNET data; our own printed geometry), one per axis ---------------------------
+# Printed ASA disc (ring 8 mm wide, 3 mm thick) with one radial notch on its rim; a slotted photo-interrupter (EE-SX1103 class, 5 mm
+# gap: VERIFY with the datasheet) straddles the rim. AZ disc sits on the DIN 705 Ø28 collar (fixed to the shaft/mast), EL disc on the
+# boom_socket hub (turns with the boom); the sensors ride on the head (AZ: under the PCD110 bolt; EL: zip-tied to the bearing housing).
+INDEX = dict(material='ASA', t=3.0, ring=8.0, notch_arc=4.0, notch_depth=5.0, gap=5.0, fit_clear=0.2,
+             sensor_holes=19.0, sensor_hole_d=3.2, az_collar_d=28.0, az_z=(70.0, 73.0), min_notch_deg=4.0, edge_margin_deg=3.0)
+# Mk5 uses M14 stainless threaded rod + 5x8 roll pins as the axis shafts; calc/lsr2_sizing.py evaluates it against our turned keyed shafts.
+M14_ROD = dict(name='M14 A2-70 threaded rod', d_stress=12.1, yield_mpa=450.0, pin_d=5.0)   # A2-70 Rp0.2 450 MPa, M14x2 stress-area d: VERIFY
 
 # --- Fabrication (casting) ------------------------------------------------------------------
 CAST = dict(alloy='A356-T6', shrink=1.013, draft_out=2.0, draft_in=3.0,

@@ -101,7 +101,8 @@ SOCK['L'] = SOCK['L_HUB'] + SOCK['web'] + SOCK['depth']
 SOCK_Y1 = SOCK['y0'] + SOCK['L']                  # socket mouth: antenna stations are measured from here
 
 # --- shafts, (lo, hi, d) along their axis (Z for az, Y for el) ------------------------------------
-# No integral collar: the 51206 shaft washer (z=-165) rests on a bought DIN 471 Ø30 circlip + 3 mm ring, so the bar
+# No integral collar: the 51206 shaft washer (z=-165) rests on a bought DIN 471 Ø30 circlip + an M30x56x3 stainless washer (the Mk5 shim, SARCNET;
+# up to P.SHIM n_max of them adjust the preload), so the bar
 # stock is Ø30 + 3 mm. Circlip (~0.3 EUR) + ring (~0.5 EUR) beat a DIN 705 Ø30 set collar (~4 EUR, 20 mm wide: does
 # not fit the 10 mm between the washer and the clamp). Prices and DIN sizes VERIFY.
 # AZ top: bought DIN 705 Ø14 collar (about 1.5 EUR, no extra fabricated part) beats a turned disc + M6 into the 1.4404 shaft top.

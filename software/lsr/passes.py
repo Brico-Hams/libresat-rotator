@@ -107,6 +107,7 @@ class Limits:
     el_max: float = 180.0
     vmax_az: float = 20.0       # deg/s (firmware vmax_az)
     vmax_el: float = 15.0
+    anti_windup: bool = False   # choose the wrap that leaves the cable near mid-range (config limits.anti_windup)
 
 
 @dataclass
@@ -235,5 +236,7 @@ def plan_pass(p: Pass, lim: Limits, current_az: float | None = None, allow_flip:
         over = max(0.0, c.peak_az_rate - 0.8 * lim.vmax_az)      # too fast for the rotator
         flips = max(e for _, _, e in c.points) > 90.0
         pen = (0.0 if c.mode == 'normal' else 0.3) + (0.2 if flips and c.points[0][2] > 90.0 else 0.0)
-        return (over > 1e-6, round(over, 3), c.slew_deg / max(lim.vmax_az, 1e-6) / 30.0 + pen + c.max_error / 10.0)
+        # anti-windup (as SARCTrac Mk5): prefer the wrap that ends near the middle of the range, so the cable unwinds between passes
+        wind = abs(c.points[-1][1] - 0.5 * (lim.az_min + lim.az_max)) / max(0.5 * (lim.az_max - lim.az_min), 1e-6) if lim.anti_windup else 0.0
+        return (over > 1e-6, round(over, 3), c.slew_deg / max(lim.vmax_az, 1e-6) / 30.0 + pen + c.max_error / 10.0 + wind)
     return min(candidates, key=score)

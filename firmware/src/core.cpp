@@ -35,7 +35,7 @@ float az_resolve(float req, float cur, float min_deg, float max_deg) {
 // ------------------------------------------------------------------ model profiles
 static const lsr_model_t MODELS[2] = {
     {"LSR-1", 25.0f, 16,   0.0f, 450.0f,   0.0f,   0.0f, 180.0f, 20.0f, 15.0f, 25.0f, 20.0f, true},
-    {"LSR-2", 80.0f,  8,   0.0f, 720.0f, 360.0f, -30.0f, 150.0f, 12.0f, 12.0f, 10.0f, 10.0f, false},
+    {"LSR-2", 80.0f,  2,   0.0f, 720.0f, 360.0f, -30.0f, 150.0f, 12.0f, 12.0f, 10.0f, 10.0f, false},   // 400 usteps/rev as Mk5: 1066.7 steps/s at 12 deg/s
 };
 
 const lsr_model_t *lsr_model(int model) { return &MODELS[model == 2 ? 1 : 0]; }
@@ -64,6 +64,80 @@ void sd_enable_set(sd_enable_t *e, bool on, uint32_t now) {
 }
 bool sd_enable_ready(const sd_enable_t *e, uint32_t now) {
     return e->on && (uint32_t)(now - e->t_on) >= SD_ENABLE_SETTLE_US;
+}
+
+// ------------------------------------------------------------------ index homing and backlash
+float idx_resolve(float est, float home, float period, float lo, float hi) {
+    float best = NAN, bestd = 1e9f;
+    for (int k = -3; k <= 3; k++) {
+        float a = home + period * (float)k;
+        if (a < lo - 1e-3f || a > hi + 1e-3f) continue;
+        float d = fabsf(a - est);
+        if (d < bestd) { bestd = d; best = a; }
+    }
+    return isnan(best) ? home : best;
+}
+
+static bool idx_reached(const idx_t *x, float now) { return fabsf(x->target - now) < 0.2f; }
+
+static void idx_enter_clear(idx_t *x, float now) {
+    x->st = IDX_CLEAR; x->target = fmaxf(x->lo, now - 30.0f); x->vmax = IDX_CLEAR_DPS;
+}
+
+void idx_start(idx_t *x, bool cal, float lo, float hi, float home, float now, bool slot) {
+    memset(x, 0, sizeof(*x));
+    x->cal = cal; x->lo = lo; x->hi = hi; x->home_base = home; x->home = home;
+    x->far_lim = (now - lo) > (hi - now) ? lo : hi;
+    x->near_lim = x->far_lim == lo ? hi : lo;
+    if (slot) { idx_enter_clear(x, now); return; }
+    x->st = IDX_SEEK1; x->target = x->far_lim; x->vmax = IDX_SEEK_DPS;
+}
+
+void idx_tick(idx_t *x, float now, bool slot) {
+    switch (x->st) {
+    case IDX_SEEK1: case IDX_SEEK2:
+        if (slot) idx_enter_clear(x, now);
+        else if (idx_reached(x, now)) {
+            if (x->st == IDX_SEEK1) { x->st = IDX_SEEK2; x->target = x->near_lim; }
+            else x->st = IDX_FAIL;
+        }
+        break;
+    case IDX_CLEAR:                                   // back out of the slot, below its lower edge
+        if (!slot) { x->st = IDX_MARGIN; x->target = fmaxf(x->lo, now - IDX_MARGIN_DEG); }
+        else if (idx_reached(x, now)) x->st = IDX_FAIL;
+        break;
+    case IDX_MARGIN:
+        if (idx_reached(x, now)) { x->st = IDX_APPR; x->target = fminf(x->hi, now + 10.0f); x->vmax = IDX_FINE_DPS; }
+        else if (slot) x->st = IDX_FAIL;
+        break;
+    case IDX_APPR:                                    // always approach the lower edge in the + direction
+        if (slot) {
+            x->home = idx_resolve(now, x->home_base, IDX_PERIOD_DEG, x->lo, x->hi);
+            x->edge_fwd = x->home; x->ref = true;     // caller re-references: angle := home at this instant
+            if (x->cal) { x->st = IDX_BL_IN; x->target = x->home + 2.0f; }
+            else x->st = IDX_DONE;
+        } else if (idx_reached(x, now)) x->st = IDX_FAIL;
+        break;
+    case IDX_BL_IN:                                   // 2 deg into the slot, then back to the same edge in the - direction
+        if (!slot) x->st = IDX_FAIL;
+        else if (idx_reached(x, now)) { x->st = IDX_BL_BACK; x->target = fmaxf(x->lo, x->home - 10.0f); }
+        break;
+    case IDX_BL_BACK:                                 // same physical edge, other direction: the difference is the backlash
+        if (!slot) { x->backlash = fmaxf(0.0f, x->edge_fwd - now); x->st = IDX_DONE; }
+        else if (idx_reached(x, now)) x->st = IDX_FAIL;
+        break;
+    default: break;
+    }
+}
+
+float backlash_out(float motor_deg, int side, float backlash_deg) { return motor_deg + (side < 0 ? backlash_deg : 0.0f); }
+
+bool pwr_tick(pwr_t *p, uint32_t now, bool raw_loss) {
+    if (raw_loss == p->lost) { p->cand = false; return false; }
+    if (!p->cand) { p->cand = true; p->t0 = now; return false; }
+    if ((uint32_t)(now - p->t0) < PWR_DEBOUNCE_US) return false;
+    p->lost = raw_loss; p->cand = false;
+    return raw_loss;
 }
 
 // ------------------------------------------------------------------ planner

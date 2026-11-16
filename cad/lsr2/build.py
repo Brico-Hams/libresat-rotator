@@ -93,6 +93,10 @@ CP.self_test()
 cast = {'az_housing': CP.az_housing(), 'mast_clamp': CP.mast_clamp(), 'el_bearing_housing': CP.el_bearing_housing(),
         'boom_socket': CP.boom_socket()}
 shafts = {'az_shaft': CP.az_shaft(), 'el_shaft': CP.el_shaft()}
+import index_parts as IX   # Mk5-style photo-interrupter index: printed ASA notch discs + sensor bracket (own geometry)
+IX.self_test()
+index = {'az_index_disc': IX.disc(IX.AZ_DISC, 'z'), 'el_index_disc': IX.disc(IX.EL_DISC, 'y').cut(cast['boom_socket'])}   # EL disc is cut to the hub + pinch lug profile
+index_bracket = IX.bracket()
 pre = {'az_housing': CP.az_housing_pattern(), 'mast_clamp': CP.mast_clamp(True), 'el_bearing_housing': CP.el_bearing_housing(True),
        'boom_socket': CP.boom_socket(True)}
 cores = Part.makeCompound(list(CP.az_cores()))
@@ -150,9 +154,10 @@ for n, s in shafts.items():
 report['clamp_m20_exit'] = CP.M20_EXIT
 report['core_box'] = dict(volume_cm3=round(corebox.Volume / 1000.0, 3), bbox=bbox(corebox))
 
-ALLOWED = {('az_shaft', 'az_gearbox'), ('el_shaft', 'el_gearbox'), ('az_shaft', 'mast_clamp'), ('az_shaft', 'az_collar'),
+# az_index_disc sits on the round DIN 705 collar, which is modelled as a box envelope: its corners overlap the disc ring by design
+ALLOWED = {('az_index_disc', 'az_collar'), ('az_shaft', 'az_gearbox'), ('el_shaft', 'el_gearbox'), ('az_shaft', 'mast_clamp'), ('az_shaft', 'az_collar'),
            ('el_shaft', 'boom_socket'), ('el_shaft', 'el_bearing_housing')}   # intended fits: shaft in gearbox bore / clamp bore / socket hub bore / bearing seats
-mine = {**cast, **shafts}
+mine = {**cast, **shafts, **index}
 others = {**shapes, **envs}
 for n, s in mine.items():
     for on, os_ in list(others.items()) + [(k, v) for k, v in mine.items() if k > n]:
@@ -171,8 +176,8 @@ if abs(report['cast']['boom_socket']['mass_g'] - P.SOCKET_MASS_KG * 1000) > 0.15
 
 # EL sweep: socket + cross-boom + antenna envelopes turn about the EL axis (y, x=0, z=EL_Z) over -30..150 deg, 5 deg steps;
 # static = head, az_housing, mast_clamp, plates, gearboxes ... and the mast envelope
-moving_names = ['boom_socket', 'cross_boom'] + [n for n in envs if n.startswith('ant_')]
-allsh = {**shapes, **cast, **envs}
+moving_names = ['boom_socket', 'cross_boom', 'el_index_disc'] + [n for n in envs if n.startswith('ant_')]
+allsh = {**shapes, **cast, **envs, **index}
 moving = {n: allsh[n] for n in moving_names}
 static = {n: s for n, s in {**allsh, **shafts, 'mast': mast}.items() if n not in moving_names and n != 'el_shaft'}
 sweep_worst, sweep_at = 0.0, None
@@ -202,7 +207,13 @@ for n, s in (('az_housing_corebox', corebox), ('az_housing_cores', cores)):
 for n, s in shafts.items():
     s.exportStep(os.path.join(OUT, 'cnc', 'lsr2', n + '.step'))
     s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
-
+for n, s in list(index.items()) + [('index_bracket', index_bracket)]:   # printed ASA parts: STL (and STEP) only
+    if not s.isValid():
+        failures.append(f'{n}: invalid shape')
+    s.exportStep(os.path.join(OUT, 'cnc', 'lsr2', n + '.step'))
+    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
+report['index'] = dict(notch_deg={'az': round(IX.AZ_DISC['notch_deg'], 2), 'el': round(IX.EL_DISC['notch_deg'], 2)},
+                       disc_t_mm=IX.I['t'], material=IX.I['material'], parts=list(index) + ['index_bracket'])
 report['checks'] = dict(max_interference_mm3=max(worst.values()), limit_mm3=MAX_INTERFERENCE_MM3,
                         interference_mm3=worst, failures=failures, passed=not failures, el_sweep=report['checks']['el_sweep'])
 Part.makeCompound(list(shapes.values()) + list(envs.values()) + list(mine.values())).exportStep(

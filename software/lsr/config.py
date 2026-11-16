@@ -39,7 +39,8 @@ PROFILES = {
     'lsr1': {},
     'lsr2': {'station': {'name': 'LSR-2'},
              'limits': {'az_min': -360.0, 'az_max': 360.0, 'el_min': -30.0, 'el_max': 150.0,
-                        'vmax_az': 12.0, 'vmax_el': 12.0, 'allow_flip': False}},
+                        'vmax_az': 12.0, 'vmax_el': 12.0, 'allow_flip': False, 'anti_windup': False},
+             'rotator': {'baud': 9600}},   # EasyComm II 9600 8N1 as SARCTrac Mk5 trackers expect
 }
 
 

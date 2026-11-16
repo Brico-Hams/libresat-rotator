@@ -105,6 +105,10 @@ def lsr2():
           f'| **Mass, rotator and electronics** | **{tot_g / 1000:.2f} kg** |',
           '\nBy group: ' + ', '.join(f'{k} {v:.0f} €' for k, v in groups.items()) + f', fabricated {eur_fab:.0f} €, PLA {pla["eur"]:.0f} €.\n',
           'The two NMRV030 gearboxes and the two NEMA23 motors dominate the mass and the cost of the bought parts; see [LSR2_MATERIALS](LSR2_MATERIALS.md) for the cost model and [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) for the build.']
+    if c.get('budget'):   # separate variant: not in the totals above
+        o += ['\n## Budget build variant (not the default, not in the totals above)\n', c['budget_note'], '',
+              '| Item | Qty | Unit € (VERIFY) | Total € | Replaces / consequence |', '|---|---|---|---|---|']
+        o += [f"| {b['item']} | {b['qty']} | {b['eur']:.2f} | {b['qty'] * b['eur']:.2f} | {b['replaces']} |" for b in c['budget']]
     open(os.path.join(ROOT, 'docs', 'BOM_LSR2.md'), 'w', encoding='utf-8', newline='\n').write('\n'.join(o) + '\n')
     print(f'LSR-2 total {tot_eur:.0f} EUR, {tot_g / 1000:.2f} kg (fabricated {fab_g:.0f} g, report {rep_g:.0f} g)')
 

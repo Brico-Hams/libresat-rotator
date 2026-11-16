@@ -4,7 +4,7 @@
 
 | ID | What | Where | Pass criterion |
 |---|---|---|---|
-| T-U1 | Firmware core: kinematics, cable-wrap resolution, planner (no overshoot, follows 1°/s with < 0.1° lag), Easycomm/LSR parser, NMEA, CRC | `firmware/test/test_core.cpp` | 46 checks, 0 failures |
+| T-U1 | Firmware core: kinematics, cable-wrap resolution, planner (no overshoot, follows 1°/s with < 0.1° lag), Easycomm/LSR parser, NMEA, CRC | `firmware/test/test_core.cpp` | all checks, 0 failures (count printed by the runner; phase 6c added the 400 microstep rate, index/backlash, power-loss and parser checks) |
 | T-U2 | Look angles and range rate vs Skyfield; Sun vs equinox/solstice; locator | `software/tests/test_astro.py` | \|Δaz\|, \|Δel\| < 0.01°; \|Δṙ\| < 2 m/s |
 | T-U3 | Passes and planner: limits respected, line of sight within 5° in flip, high pass uses flip under 0.8·vmax | `test_passes.py` | all pass |
 | T-U4 | Doppler FM / linear inverting with knob follow; SatDB | `test_doppler.py` | exact formulas, 1 Hz |

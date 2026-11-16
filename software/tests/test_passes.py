@@ -66,6 +66,18 @@ def test_plan_interpolation(tle_text):
     assert 0 <= el <= 180
 
 
+def test_anti_windup_unwinds_cable():
+    from lsr.passes import Pass
+    t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    track = [(t0 + timedelta(seconds=10 * i), 10.0 + i, 30.0) for i in range(51)]       # az 10 -> 60 deg
+    p = Pass('X', track[0][0], track[25][0], track[-1][0], 30.0, 10.0, 60.0, track)
+    kw = dict(az_min=-360.0, az_max=360.0, el_min=-30.0, el_max=150.0, vmax_az=12.0, vmax_el=12.0)
+    plain = plan_pass(p, Limits(**kw), current_az=-250.0)
+    unwound = plan_pass(p, Limits(**kw, anti_windup=True), current_az=-250.0)
+    assert plain.wrap == -360.0 and unwound.wrap == 0.0         # shortest slew vs ends near mid-range
+    assert unwound.feasible and abs(unwound.points[-1][1]) < abs(plain.points[-1][1])
+
+
 def test_no_flip_when_el_limited(tle_text):
     p = max(_passes(tle_text, 'SO-50', 96), key=lambda p: p.max_el)
     pl = plan_pass(p, Limits(0, 450, 0, 90, 20, 15), 0.0)

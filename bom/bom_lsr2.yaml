@@ -17,17 +17,17 @@ fabricated:
   - {part: az_shaft,     report: shafts.az_shaft,     route: Turned + gun-drilled, material: "stainless 1.4404, bar 33 x 316", source: "cnc/lsr2/az_shaft.step, stl/lsr2/az_shaft.stl", qty: 1, eur: 12.9, alt: "1.4301 (A2) bar is cheaper; keep 1.4404 for the coast"}
   - {part: el_shaft,     report: shafts.el_shaft,     route: Turned,              material: "stainless 1.4404, bar 33 x 216", source: "cnc/lsr2/el_shaft.step, stl/lsr2/el_shaft.stl", qty: 1, eur: 8.5}
 items:
-  - {group: Motion, item: "NMRV030 worm gearbox 80:1, Ø14 hollow output (AZ and EL)", qty: 2, eur: 55.0, mass_g: 1100, alt: "second-hand or Mk5-style imports; check ratio and bore"}
-  - {group: Motion, item: "NEMA23 stepper 2.8 N·m (57BYG250H class)", qty: 2, eur: 18.0, mass_g: 900}
+  - {group: Motion, item: "NMRV030 worm gearbox 80:1, Ø14 hollow output (AZ and EL)", qty: 2, eur: 55.0, mass_g: 1100, alt: "second-hand or Mk5-style imports; check ratio and bore (SARCTrac Mk5 uses the same NMRV030 80:1, SARCNET)"}
+  - {group: Motion, item: "NEMA23 stepper 57BYG250H-8, 2.8 N·m, 3 A, 112 mm (the Mk5 motor, SARCNET; VERIFY wiring/model)", qty: 2, eur: 18.0, mass_g: 900}
   - {group: Bearings, item: "6206-2RS bearing (AZ radial pair)", qty: 2, eur: 3.5, mass_g: 200}
-  - {group: Bearings, item: "51206 thrust bearing (AZ axial)", qty: 1, eur: 6.0, mass_g: 170}
+  - {group: Bearings, item: "51206 thrust bearing (AZ axial; smaller-bore ring on top as Mk5)", qty: 1, eur: 6.0, mass_g: 170}
   - {group: Bearings, item: "6206-2RS bearing (EL pair, 62 mm apart, in el_bearing_housing)", qty: 2, eur: 3.5, mass_g: 200}
   - {group: Cross boom, item: "Square tube 6063 40x40x3, 1100 mm, one-sided along the EL axis (antennas at 0.45 and 0.95 m)", qty: 1, eur: 10.6, alt: "buy a 2 m length and cut two; mass is cheaper than steel"}
   - {group: Hardware, item: "Keys DIN 6885 (2x 5x5, 1x 8x7)", qty: 3, eur: 0.5, mass_g: 3}
   - {group: Hardware, item: "M6 U-bolts for the Yagi boom", qty: 4, eur: 1.5, mass_g: 40, alt: "match the boom diameter; zinc 8.8 is cheaper than A4"}
   - {group: Hardware, item: "M8 U-bolts for the mast (A4-80 or 8.8)", qty: 2, eur: 2.5, mass_g: 90, alt: "8.8 zinc-flake instead of A4-80"}
   - {group: Hardware, item: "V-ring seals (AZ + EL) + Ø6 cross pin", qty: 1, eur: 3.0, mass_g: 15}
-  - {group: Hardware, item: "DIN 471 Ø30 circlip + 3 mm ring under the 51206", qty: 1, eur: 0.8, mass_g: 10, alt: "cheaper than a DIN 705 Ø30 set collar (~4 EUR)"}
+  - {group: Hardware, item: "DIN 471 Ø30 circlip + 1 x M30x56x3 stainless washer under the 51206 (Mk5 shim, SARCNET; a 2nd washer adjusts the preload)", qty: 2, eur: 0.7, mass_g: 14, alt: "cheaper than a DIN 705 Ø30 set collar (~4 EUR); ring replaced by the standard washer"}
   - {group: Hardware, item: "EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62", qty: 1, eur: 1.2, mass_g: 6}
   - {group: Hardware, item: "DIN 705 Ø14 flanged set collar + M6 screw (AZ shaft top)", qty: 1, eur: 2.5, mass_g: 25, alt: "cheaper than a turned disc (~5 EUR with machining)"}
   - {group: Fasteners, item: "A4 M6x20 socket screw (housing to base 6, bracket to base 4, EL gearbox to bracket 4)", qty: 14, eur: 0.15, mass_g: 12, alt: "8.8 zinc-flake screws; use Tef-Gel either way"}
@@ -36,17 +36,28 @@ items:
   - {group: Fasteners, item: "A4 M6x30 pinch screw (boom_socket hub, slit)", qty: 1, eur: 0.2, mass_g: 17}
   - {group: Fasteners, item: "A4 M8x65 through-bolt + nut + washers (tube in the boom_socket, drilled at assembly)", qty: 2, eur: 0.6, mass_g: 50}
   - {group: Fasteners, item: "A4 M5x12 screw (NEMA23 to NMRV030 B14 flange; check the real flange)", qty: 8, eur: 0.1, mass_g: 4}
-  - {group: Corrosion, item: "Tef-Gel or Duralac 25 g tube (Al-steel joints)", qty: 1, eur: 6.0, mass_g: 40}
+  - {group: Corrosion, item: "Tef-Gel 25 g tube (Al-steel joints, bearing seats, all stainless threads; Duralac is the alternative)", qty: 1, eur: 6.0, mass_g: 40}
   - {group: Electronics, item: "LSR-CTL PCB 100 x 80 mm (JLCPCB/PCBWay, 5 pcs ~ 10 EUR)", qty: 1, eur: 2.0, mass_g: 25}
   - {group: Electronics, item: "LSR-CTL components (hardware/fab/lsr_ctl_bom.md)", qty: 1, eur: 8.0, mass_g: 20}
-  - {group: Electronics, item: "Raspberry Pi Pico (or Pico W / Pico 2) with headers", qty: 1, eur: 5.0, mass_g: 4}
-  - {group: Electronics, item: "Raspberry Pi Zero 2 WH", qty: 1, eur: 20.0, mass_g: 11}
+  - {group: Electronics, item: "Raspberry Pi Pico (or Pico W / Pico 2) with headers", qty: 1, eur: 5.0, mass_g: 4, alt: "Mk5 alternative: Elecrow Pico W5 board with Wi-Fi AP + Telnet (SARCNET), see docs/ELECTRONICS.md"}
+  - {group: Electronics, item: "Raspberry Pi Zero 2 WH", qty: 1, eur: 20.0, mass_g: 11, alt: "optional: not needed when the PC tracker talks EasyComm II 9600 8N1 over USB/UART"}
   - {group: Electronics, item: "microSD 16 GB (A1)", qty: 1, eur: 4.0, mass_g: 1}
-  - {group: Electronics, item: "DM542 stepper driver (external, step/dir)", qty: 2, eur: 12.0, mass_g: 150, alt: "clones from ~9 EUR; TB6600 is cheaper but rougher"}
-  - {group: Electronics, item: "Power supply 48 V 6 A (24-48 V accepted)", qty: 1, eur: 25.0, mass_g: 600, alt: "24 V 8 A at ~18 EUR if the torque at 12 deg/s is still enough (VERIFY)"}
+  - {group: Electronics, item: "DM542 stepper driver (external, step/dir, 48 V, 400 microsteps/rev as Mk5)", qty: 2, eur: 12.0, mass_g: 150, alt: "clones from ~9 EUR; TB6600 is cheaper but rougher"}
+  - {group: Electronics, item: "Level converter 3.3 V to 5 V, 4 channels (STEP/DIR/ENA for the DM542 opto inputs, shared by both drivers)", qty: 1, eur: 1.5, mass_g: 3, alt: "74HCT245/74AHCT125 on the LSR-CTL board is cheaper (VERIFY)"}
+  - {group: Electronics, item: "Power supply 48 V 6 A (24-48 V accepted; 288 W covers 2 x DM542 at 3 A with margin)", qty: 1, eur: 25.0, mass_g: 600, alt: "Mk5 uses the Mean Well S-400-48 (48 V 8.3 A, ~45 EUR, ~1.1 kg, SARCNET): adopt it only if you want the spare power; dearer and heavier without benefit here"}
+  - {group: Electronics, item: "XL7015 buck module, 48 V to 5 V (Pico / logic supply, Mk5)", qty: 1, eur: 2.0, mass_g: 10}
+  - {group: Electronics, item: "48 V power-loss detect: opto-isolated (PC817 + 47 k 2 W-class series resistor, 1N4007) on LSR-CTL, plus 2200 uF 63 V bulk capacitor", qty: 1, eur: 3.0, mass_g: 40, alt: "values VERIFY on the bench: hold-up time must cover the ~60 ms flash save"}
   - {group: Sensors, item: "AS5600 magnetic encoder board + magnet (one per output shaft)", qty: 2, eur: 2.0, mass_g: 2}
+  - {group: Sensors, item: "Slotted photo-interrupter, EE-SX1103 class, 5 mm gap (index, one per axis; Mk5 idea, SARCNET). VERIFY part and output type (NPN open collector, 5-24 V)", qty: 2, eur: 2.0, mass_g: 5, alt: "cheaper generic LM393 slot-sensor boards (~1 EUR, 3.3 V logic) work too"}
+  - {group: Sensors, item: "Printed ASA index disc (AZ, EL) + 2 sensor brackets (STL from build.py; ASA not PLA, outdoors)", qty: 1, eur: 0.8, mass_g: 25, alt: "PETG if no ASA printer; no machining"}
+  - {group: Sensors, item: "M3x8 screws + nuts (sensors, brackets, disc set screws)", qty: 10, eur: 0.05, mass_g: 1}
   - {group: Wiring, item: "M20 cable gland (e-box feed)", qty: 1, eur: 1.0, mass_g: 25}
   - {group: Wiring, item: "Shielded cable 4 x 0.75 mm², motors, 2 x 3 m", qty: 1, eur: 8.0, mass_g: 250}
   - {group: Wiring, item: "CAT5e 3 m (encoder / sensor I2C)", qty: 1, eur: 2.0, mass_g: 60}
   - {group: Wiring, item: "Connectors: screw terminals, ferrules, JST-XH kit", qty: 1, eur: 4.0, mass_g: 30}
   - {group: Wiring, item: "Fuse holder 5 A + 48 V DC switch", qty: 1, eur: 2.0, mass_g: 40}
+budget_note: "SARCTrac Mk5 (SARCNET) builds the mast platform and boom socket from galvanised angle brackets. This variant is NOT the default: it is not covered by calc/lsr2_sizing.py (no demonstrated clamp friction or boom bending path), galvanised steel next to the aluminium and stainless parts invites galvanic corrosion on the coast, and the steel is heavier than the 7 EUR / 9 EUR cast parts it replaces. Prices VERIFY."
+budget:
+  - {item: "Galvanised angle bracket 50x50x5, 100 mm (mast platform, replaces mast_clamp)", qty: 4, eur: 1.5, replaces: "mast_clamp (cast, 7 EUR): friction hold of the gearbox standstill torque not shown; use Tef-Gel/isolating washers against aluminium"}
+  - {item: "Galvanised angle bracket 50x50x5, 100 mm + 2 U-bolts (boom socket, replaces boom_socket)", qty: 4, eur: 1.5, replaces: "boom_socket (cast, 9 EUR): does not give the Ø30 keyed hub, so the EL shaft would need a flange: fails the bending path of the one-sided boom"}
+  - {item: "Galvanised M8 hardware set (U-bolts, nuts, washers)", qty: 1, eur: 4.0, replaces: "A4 M8 hardware: rusts within a season at the coast; mixed metals need Tef-Gel"}

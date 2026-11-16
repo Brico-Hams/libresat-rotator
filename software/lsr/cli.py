@@ -130,7 +130,7 @@ def main(argv=None):
         ts = TleStore(cfg); sat = ts.get(a.sat)
         if not sat:
             print('unknown satellite (lsr tle update?)'); return 1
-        l = cfg['limits']; lim = Limits(l['az_min'], l['az_max'], l['el_min'], l['el_max'], l['vmax_az'], l['vmax_el'])
+        l = cfg['limits']; lim = Limits(l['az_min'], l['az_max'], l['el_min'], l['el_max'], l['vmax_az'], l['vmax_el'], l.get('anti_windup', False))
         print(f'{sat.name} (NORAD {sat.norad}), TLE epoch {sat.epoch:%Y-%m-%d}, station {maidenhead(obs.lat, obs.lon)}')
         print(f'{"AOS (UTC)":20s} {"LOS":8s} {"max el":>6s} {"AOS az":>6s} {"LOS az":>6s}  plan')
         for ps in find_passes(sat, obs, utcnow(), a.hours, 0.0, a.min_el):

@@ -83,8 +83,11 @@
       "el_bearing_housing/el_gearbox": 0.0,
       "boom_socket/cross_boom": 0.0,
       "boom_socket/ant_1": 0.0,
+      "boom_socket/el_index_disc": 0.0,
       "az_shaft/base": 0.0,
-      "az_shaft/spacer": 0.0
+      "az_shaft/spacer": 0.0,
+      "az_index_disc/az_shaft": 0.0,
+      "el_index_disc/el_shaft": 0.0
     },
     "failures": [],
     "passed": true,
@@ -97,6 +100,7 @@
       "moving": [
         "boom_socket",
         "cross_boom",
+        "el_index_disc",
         "ant_1",
         "ant_2"
       ],
@@ -293,6 +297,7 @@
     ]
   },
   "allowed_pairs": [
+    "az_index_disc / az_collar",
     "az_shaft / az_collar",
     "az_shaft / az_gearbox",
     "az_shaft / mast_clamp",
@@ -311,5 +316,18 @@
       ],
       "length_mm": 1100.0
     }
+  },
+  "index": {
+    "notch_deg": {
+      "az": 10.37,
+      "el": 7.14
+    },
+    "disc_t_mm": 3.0,
+    "material": "ASA",
+    "parts": [
+      "az_index_disc",
+      "el_index_disc",
+      "index_bracket"
+    ]
   }
 }

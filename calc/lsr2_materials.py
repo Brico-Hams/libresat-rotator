@@ -28,13 +28,14 @@ SS_G_CM3 = CP.SS_G_CM3
 PRICE_PLA_EUR_KG = 20.0     # VERIFY
 PRICE_TUBE_EUR_KG = 8.0     # 6063 square tube 40x40x3: VERIFY
 BOUGHT = [                  # (item, qty, unit EUR): every price VERIFY with a quote
-    ('NMRV030 worm gearbox 80:1, Ø14 hollow', 2, 55.0), ('NEMA23 stepper 2.8 N·m', 2, 18.0), ('6206-2RS bearing (AZ pair + EL pair)', 4, 3.5),
+    ('NMRV030 worm gearbox 80:1, Ø14 hollow', 2, 55.0), ('NEMA23 stepper 57BYG250H-8 2.8 N·m', 2, 18.0), ('6206-2RS bearing (AZ pair + EL pair)', 4, 3.5),
     ('51206 thrust bearing', 1, 6.0), ('Keys DIN 6885 (2x 5x5, 1x 8x7)', 3, 0.5),
     ('M6 U-bolts for the Yagi boom', 4, 1.5), ('M8 U-bolts for the mast', 2, 2.5), ('V-ring seals (AZ + EL VA15/20) + Ø6 cross pin', 1, 3.0),
-    ('DIN 471 Ø30 circlip + 3 mm ring under the 51206 (cheaper than a DIN 705 Ø30 set collar, ~4 EUR)', 1, 0.8),
+    ('DIN 471 Ø30 circlip + M30x56x3 stainless washer shim(s) under the 51206 (Mk5 shim; cheaper than a DIN 705 Ø30 set collar, ~4 EUR)', 2, 0.7),
     ('AZ top retaining collar: DIN 705 Ø14 flanged set collar + M6 screw (cheaper than a turned disc)', 1, 2.5),
     ('M8 through-bolts + nuts + washers, boom in the socket (2 sets)', 1, 1.0), ('M6 screws, motors/gearboxes/bracket/hub/housing (about 40)', 1, 4.0),
-    ('EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62', 1, 1.2)]
+    ('EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62', 1, 1.2),
+    ('2x slotted photo-interrupter (EE-SX1103 class) + printed ASA index discs/brackets + M3 hardware', 1, 5.0)]
 REPORT = os.path.join(ROOT, 'build', 'lsr2_build_report.json')
 
 
@@ -222,7 +223,7 @@ def report():
     o += ['', 'az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit '
           'at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 80 keyed top (key 5x5, slot 40 long) into the gearbox '
           'hollow output and up to the flanged retaining collar (DIN 705 Ø14, M6 set screw), Ø30 bearing seats, no integral collar (the 51206 shaft '
-          'washer rests on a DIN 471 circlip + 3 mm ring, see bought '
+          'washer rests on a DIN 471 circlip + M30x56x3 stainless washer shim(s), see bought '
           'parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, '
           'VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 h7 through the EL gearbox hub (key 5, torque only) and 37 mm '
           'beyond it, Ø30 through the two 6206 of the el_bearing_housing (DIN 471 circlips) to the boom_socket hub (key 8x7). Cross-boom tube 6063 '

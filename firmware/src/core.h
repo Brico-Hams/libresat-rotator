@@ -68,6 +68,42 @@ typedef struct { bool on; uint32_t t_on; } sd_enable_t;
 void sd_enable_set(sd_enable_t *e, bool on, uint32_t now_us);
 bool sd_enable_ready(const sd_enable_t *e, uint32_t now_us);   // on and settled
 
+// ------------------------------------------------------------------ index homing (slotted disc + photo-interrupter) and backlash
+// One slot per output revolution. The state machine runs in the axis angle frame (it only needs relative angles) and is
+// driven by the planner: target/vmax are its outputs, `slot` = the slot is in the beam.
+//   SEEK1/SEEK2 sweep (6 deg/s) to the farther limit, then the other, until the slot shows; CLEAR backs out below the lower edge;
+//   MARGIN goes 2 deg further; APPR comes back at 1 deg/s and stops on the lower edge (high->low): `ref` asks the caller to set
+//   angle := home (nearest multiple of 360 deg to the old estimate inside the limits). With `cal`: BL_IN goes 2 deg into the slot,
+//   BL_BACK returns to the same edge (low->high); edge_fwd - angle there = backlash (deg of output). The slot must be >= 4 deg wide
+//   and its edges >= 3 deg inside the limits.
+#define IDX_SEEK_DPS   6.0f
+#define IDX_CLEAR_DPS  4.0f
+#define IDX_FINE_DPS   1.0f
+#define IDX_MARGIN_DEG 2.0f
+#define IDX_PERIOD_DEG 360.0f
+typedef enum { IDX_IDLE = 0, IDX_SEEK1, IDX_SEEK2, IDX_CLEAR, IDX_MARGIN, IDX_APPR, IDX_BL_IN, IDX_BL_BACK, IDX_DONE, IDX_FAIL } idx_state_t;
+typedef struct {
+    idx_state_t st;
+    bool  cal, ref;
+    float lo, hi, far_lim, near_lim;
+    float home_base, home;      // slot edge angle (one turn) and the resolved one
+    float target, vmax;         // outputs for the planner
+    float edge_fwd, backlash;   // backlash in deg (output)
+} idx_t;
+
+void  idx_start(idx_t *x, bool cal, float lo, float hi, float home, float now, bool slot);
+void  idx_tick(idx_t *x, float now, bool slot);
+float idx_resolve(float est, float home, float period, float lo, float hi);
+// Output angle from the motor-side angle: after a move in the - direction the output lags by the backlash.
+float backlash_out(float motor_deg, int side, float backlash_deg);
+
+// ------------------------------------------------------------------ 48 V power-loss detect (LSR-2)
+// Feed the raw "48 V gone" level every loop. Returns true once, when the loss has lasted PWR_DEBOUNCE_US (save the position now).
+// The state clears (returns false) when the power has been back for the same time, so a glitch re-arms it.
+#define PWR_DEBOUNCE_US 5000u
+typedef struct { bool lost, cand; uint32_t t0; } pwr_t;
+bool pwr_tick(pwr_t *p, uint32_t now_us, bool raw_loss);
+
 // ------------------------------------------------------------------ velocity planner
 // Square-root (trapezoidal) profile: v_des = sign(e) * min(vmax, sqrt(2 a |e|)), slewed by a.
 typedef struct { float v; } plan_state_t;

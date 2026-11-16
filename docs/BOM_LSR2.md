@@ -23,17 +23,17 @@ Plate cost is the cheaper of full sheet and cut-to-size blank plus cutting (LSR2
 
 | Group | Item | Qty | Unit € (VERIFY) | Total € | Cheaper |
 |---|---|---|---|---|---|
-| Motion | NMRV030 worm gearbox 80:1, Ø14 hollow output (AZ and EL) | 2 | 55.00 | 110.00 | second-hand or Mk5-style imports; check ratio and bore |
-| Motion | NEMA23 stepper 2.8 N·m (57BYG250H class) | 2 | 18.00 | 36.00 |  |
+| Motion | NMRV030 worm gearbox 80:1, Ø14 hollow output (AZ and EL) | 2 | 55.00 | 110.00 | second-hand or Mk5-style imports; check ratio and bore (SARCTrac Mk5 uses the same NMRV030 80:1, SARCNET) |
+| Motion | NEMA23 stepper 57BYG250H-8, 2.8 N·m, 3 A, 112 mm (the Mk5 motor, SARCNET; VERIFY wiring/model) | 2 | 18.00 | 36.00 |  |
 | Bearings | 6206-2RS bearing (AZ radial pair) | 2 | 3.50 | 7.00 |  |
-| Bearings | 51206 thrust bearing (AZ axial) | 1 | 6.00 | 6.00 |  |
+| Bearings | 51206 thrust bearing (AZ axial; smaller-bore ring on top as Mk5) | 1 | 6.00 | 6.00 |  |
 | Bearings | 6206-2RS bearing (EL pair, 62 mm apart, in el_bearing_housing) | 2 | 3.50 | 7.00 |  |
 | Cross boom | Square tube 6063 40x40x3, 1100 mm, one-sided along the EL axis (antennas at 0.45 and 0.95 m) | 1 | 10.60 | 10.60 | buy a 2 m length and cut two; mass is cheaper than steel |
 | Hardware | Keys DIN 6885 (2x 5x5, 1x 8x7) | 3 | 0.50 | 1.50 |  |
 | Hardware | M6 U-bolts for the Yagi boom | 4 | 1.50 | 6.00 | match the boom diameter; zinc 8.8 is cheaper than A4 |
 | Hardware | M8 U-bolts for the mast (A4-80 or 8.8) | 2 | 2.50 | 5.00 | 8.8 zinc-flake instead of A4-80 |
 | Hardware | V-ring seals (AZ + EL) + Ø6 cross pin | 1 | 3.00 | 3.00 |  |
-| Hardware | DIN 471 Ø30 circlip + 3 mm ring under the 51206 | 1 | 0.80 | 0.80 | cheaper than a DIN 705 Ø30 set collar (~4 EUR) |
+| Hardware | DIN 471 Ø30 circlip + 1 x M30x56x3 stainless washer under the 51206 (Mk5 shim, SARCNET; a 2nd washer adjusts the preload) | 2 | 0.70 | 1.40 | cheaper than a DIN 705 Ø30 set collar (~4 EUR); ring replaced by the standard washer |
 | Hardware | EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62 | 1 | 1.20 | 1.20 |  |
 | Hardware | DIN 705 Ø14 flanged set collar + M6 screw (AZ shaft top) | 1 | 2.50 | 2.50 | cheaper than a turned disc (~5 EUR with machining) |
 | Fasteners | A4 M6x20 socket screw (housing to base 6, bracket to base 4, EL gearbox to bracket 4) | 14 | 0.15 | 2.10 | 8.8 zinc-flake screws; use Tef-Gel either way |
@@ -42,32 +42,48 @@ Plate cost is the cheaper of full sheet and cut-to-size blank plus cutting (LSR2
 | Fasteners | A4 M6x30 pinch screw (boom_socket hub, slit) | 1 | 0.20 | 0.20 |  |
 | Fasteners | A4 M8x65 through-bolt + nut + washers (tube in the boom_socket, drilled at assembly) | 2 | 0.60 | 1.20 |  |
 | Fasteners | A4 M5x12 screw (NEMA23 to NMRV030 B14 flange; check the real flange) | 8 | 0.10 | 0.80 |  |
-| Corrosion | Tef-Gel or Duralac 25 g tube (Al-steel joints) | 1 | 6.00 | 6.00 |  |
+| Corrosion | Tef-Gel 25 g tube (Al-steel joints, bearing seats, all stainless threads; Duralac is the alternative) | 1 | 6.00 | 6.00 |  |
 | Electronics | LSR-CTL PCB 100 x 80 mm (JLCPCB/PCBWay, 5 pcs ~ 10 EUR) | 1 | 2.00 | 2.00 |  |
 | Electronics | LSR-CTL components (hardware/fab/lsr_ctl_bom.md) | 1 | 8.00 | 8.00 |  |
-| Electronics | Raspberry Pi Pico (or Pico W / Pico 2) with headers | 1 | 5.00 | 5.00 |  |
-| Electronics | Raspberry Pi Zero 2 WH | 1 | 20.00 | 20.00 |  |
+| Electronics | Raspberry Pi Pico (or Pico W / Pico 2) with headers | 1 | 5.00 | 5.00 | Mk5 alternative: Elecrow Pico W5 board with Wi-Fi AP + Telnet (SARCNET), see docs/ELECTRONICS.md |
+| Electronics | Raspberry Pi Zero 2 WH | 1 | 20.00 | 20.00 | optional: not needed when the PC tracker talks EasyComm II 9600 8N1 over USB/UART |
 | Electronics | microSD 16 GB (A1) | 1 | 4.00 | 4.00 |  |
-| Electronics | DM542 stepper driver (external, step/dir) | 2 | 12.00 | 24.00 | clones from ~9 EUR; TB6600 is cheaper but rougher |
-| Electronics | Power supply 48 V 6 A (24-48 V accepted) | 1 | 25.00 | 25.00 | 24 V 8 A at ~18 EUR if the torque at 12 deg/s is still enough (VERIFY) |
+| Electronics | DM542 stepper driver (external, step/dir, 48 V, 400 microsteps/rev as Mk5) | 2 | 12.00 | 24.00 | clones from ~9 EUR; TB6600 is cheaper but rougher |
+| Electronics | Level converter 3.3 V to 5 V, 4 channels (STEP/DIR/ENA for the DM542 opto inputs, shared by both drivers) | 1 | 1.50 | 1.50 | 74HCT245/74AHCT125 on the LSR-CTL board is cheaper (VERIFY) |
+| Electronics | Power supply 48 V 6 A (24-48 V accepted; 288 W covers 2 x DM542 at 3 A with margin) | 1 | 25.00 | 25.00 | Mk5 uses the Mean Well S-400-48 (48 V 8.3 A, ~45 EUR, ~1.1 kg, SARCNET): adopt it only if you want the spare power; dearer and heavier without benefit here |
+| Electronics | XL7015 buck module, 48 V to 5 V (Pico / logic supply, Mk5) | 1 | 2.00 | 2.00 |  |
+| Electronics | 48 V power-loss detect: opto-isolated (PC817 + 47 k 2 W-class series resistor, 1N4007) on LSR-CTL, plus 2200 uF 63 V bulk capacitor | 1 | 3.00 | 3.00 | values VERIFY on the bench: hold-up time must cover the ~60 ms flash save |
 | Sensors | AS5600 magnetic encoder board + magnet (one per output shaft) | 2 | 2.00 | 4.00 |  |
+| Sensors | Slotted photo-interrupter, EE-SX1103 class, 5 mm gap (index, one per axis; Mk5 idea, SARCNET). VERIFY part and output type (NPN open collector, 5-24 V) | 2 | 2.00 | 4.00 | cheaper generic LM393 slot-sensor boards (~1 EUR, 3.3 V logic) work too |
+| Sensors | Printed ASA index disc (AZ, EL) + 2 sensor brackets (STL from build.py; ASA not PLA, outdoors) | 1 | 0.80 | 0.80 | PETG if no ASA printer; no machining |
+| Sensors | M3x8 screws + nuts (sensors, brackets, disc set screws) | 10 | 0.05 | 0.50 |  |
 | Wiring | M20 cable gland (e-box feed) | 1 | 1.00 | 1.00 |  |
 | Wiring | Shielded cable 4 x 0.75 mm², motors, 2 x 3 m | 1 | 8.00 | 8.00 |  |
 | Wiring | CAT5e 3 m (encoder / sensor I2C) | 1 | 2.00 | 2.00 |  |
 | Wiring | Connectors: screw terminals, ferrules, JST-XH kit | 1 | 4.00 | 4.00 |  |
 | Wiring | Fuse holder 5 A + 48 V DC switch | 1 | 2.00 | 2.00 |  |
-| **Bought total** | | | | **317** | |
+| **Bought total** | | | | **330** | |
 
 ## Totals (VERIFY)
 
 | Item | Value |
 |---|---|
 | Fabricated parts | 71 € / 3.61 kg |
-| Bought parts, fasteners, electronics | 317 € / 8.52 kg (estimated masses) |
+| Bought parts, fasteners, electronics | 330 € / 8.63 kg (estimated masses) |
 | PLA patterns, core box and prototype | 28 € (1.40 kg PLA, not in the mass) |
-| **Total, one rotator without mast, antenna and cable run** | **417 €** |
-| **Mass, rotator and electronics** | **12.12 kg** |
+| **Total, one rotator without mast, antenna and cable run** | **429 €** |
+| **Mass, rotator and electronics** | **12.24 kg** |
 
-By group: Motion 146 €, Bearings 20 €, Cross boom 11 €, Hardware 20 €, Fasteners 6 €, Corrosion 6 €, Electronics 88 €, Sensors 4 €, Wiring 17 €, fabricated 71 €, PLA 28 €.
+By group: Motion 146 €, Bearings 20 €, Cross boom 11 €, Hardware 21 €, Fasteners 6 €, Corrosion 6 €, Electronics 94 €, Sensors 9 €, Wiring 17 €, fabricated 71 €, PLA 28 €.
 
 The two NMRV030 gearboxes and the two NEMA23 motors dominate the mass and the cost of the bought parts; see [LSR2_MATERIALS](LSR2_MATERIALS.md) for the cost model and [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) for the build.
+
+## Budget build variant (not the default, not in the totals above)
+
+SARCTrac Mk5 (SARCNET) builds the mast platform and boom socket from galvanised angle brackets. This variant is NOT the default: it is not covered by calc/lsr2_sizing.py (no demonstrated clamp friction or boom bending path), galvanised steel next to the aluminium and stainless parts invites galvanic corrosion on the coast, and the steel is heavier than the 7 EUR / 9 EUR cast parts it replaces. Prices VERIFY.
+
+| Item | Qty | Unit € (VERIFY) | Total € | Replaces / consequence |
+|---|---|---|---|---|
+| Galvanised angle bracket 50x50x5, 100 mm (mast platform, replaces mast_clamp) | 4 | 1.50 | 6.00 | mast_clamp (cast, 7 EUR): friction hold of the gearbox standstill torque not shown; use Tef-Gel/isolating washers against aluminium |
+| Galvanised angle bracket 50x50x5, 100 mm + 2 U-bolts (boom socket, replaces boom_socket) | 4 | 1.50 | 6.00 | boom_socket (cast, 9 EUR): does not give the Ø30 keyed hub, so the EL shaft would need a flange: fails the bending path of the one-sided boom |
+| Galvanised M8 hardware set (U-bolts, nuts, washers) | 1 | 4.00 | 4.00 | A4 M8 hardware: rusts within a season at the coast; mixed metals need Tef-Gel |

@@ -156,7 +156,7 @@ void gps_poll(gps_fix_t *fix) {
 
 void settings_defaults(settings_t *s) {
     memset(s, 0, sizeof(*s));
-    s->magic = SETTINGS_MAGIC; s->version = 1; s->size = sizeof(*s);
+    s->magic = SETTINGS_MAGIC; s->version = 2; s->size = sizeof(*s);
     const lsr_model_t *m = lsr_model(LSR_MODEL);
     s->reserved[0] = LSR_MODEL;
     s->ratio[0] = s->ratio[1] = m->ratio;
@@ -170,6 +170,8 @@ void settings_defaults(settings_t *s) {
     s->deadband = DEF_DEADBAND;
     s->imu_el_dir = 1.0f;
     s->park_az = 0.0f; s->park_el = 90.0f;
+    s->home_az = m->az_user_offset;           // LSR-2: the slot edge is north (user 0 deg); LSR-1 has offset 0
+    s->home_el = 0.0f;                        // LSR-2: horizon
     s->enc_dir[0] = s->enc_dir[1] = 1;
     s->use_imu_el = 1;
 }

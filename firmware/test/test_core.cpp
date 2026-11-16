@@ -30,12 +30,12 @@ int main() {
     CHECK(m1->el_min == 0 && m1->el_max == 180 && m1->vmax_az == 20 && m1->vmax_el == 15 && m1->flip);
     CHECK(m1->acc_az == 25 && m1->acc_el == 20 && m1->az_user_offset == 0);
     CHECK(lsr_model(7) == m1);
-    CHECK(m2->ratio == 80.0f && m2->microsteps == 8 && m2->vmax_az == 12 && m2->vmax_el == 12 && !m2->flip);
+    CHECK(m2->ratio == 80.0f && m2->microsteps == 2 && m2->vmax_az == 12 && m2->vmax_el == 12 && !m2->flip);
     axis_cfg_t a1 = {m1->ratio, m1->microsteps * 200, 1, 0, m1->az_min, m1->az_max, 20, 25, 0.05f};
     axis_cfg_t a2 = {m2->ratio, m2->microsteps * 200, 1, 0, m2->az_min, m2->az_max, 12, 10, 0.05f};
     NEAR(axis_steps_per_deg(&a1), 3200 * 25 / 360.0, 1e-3);          // 222.22
-    NEAR(axis_steps_per_deg(&a2), 1600 * 80 / 360.0, 1e-3);          // 355.56
-    NEAR(12.0 * axis_steps_per_deg(&a2), 4266.7, 0.1);               // step rate at vmax, well under the opto limit
+    NEAR(axis_steps_per_deg(&a2), 400 * 80 / 360.0, 1e-3);           // 88.89 (Mk5: 400 microsteps/rev, DM542 DIP switches)
+    NEAR(12.0 * axis_steps_per_deg(&a2), 1066.7, 0.1);               // step rate at vmax = Mk5 1066 steps/s, motor 160 rpm
     // LSR-2 ranges: AZ -360..+360 user = 0..720 internal, EL -30..150
     NEAR(lsr_az_to_internal(m2, -360), 0, 1e-4); NEAR(lsr_az_to_internal(m2, 360), 720, 1e-4);
     NEAR(lsr_az_to_user(m2, 360), 0, 1e-4);
@@ -80,6 +80,55 @@ int main() {
         CHECK(!sd_enable_ready(&e, 3000000 + 1000));                // re-enable waits again
     }
 
+    // index homing + backlash on a simulated axis: one 8 deg slot per turn, play of 0.4 deg, wrong initial angle estimate
+    {
+        const float BL = 0.4f, dt = 0.002f;
+        struct Case { float o0, off0; bool cal; } cases[] = {{200, 40, true}, {365, 40, true}, {700, -40, true}, {50, 40, false}, {10, -40, true}, {400, 25, false}};
+        for (const Case &cs : cases) {
+            float m = cs.o0, o = cs.o0, off = cs.off0, o_ref = -1;       // m motor, o output (true frame), off = estimate - m
+            auto in_slot = [](float ang) { float r = std::fmod(ang, 360.0f); return r >= 0 && r < 8.0f; };
+            idx_t x; idx_start(&x, cs.cal, 0, 720, 360, m + off, in_slot(o));
+            int guard = 0;
+            while (x.st != IDX_DONE && x.st != IDX_FAIL && guard++ < 3000000) {
+                idx_tick(&x, m + off, in_slot(o));
+                if (x.ref) { x.ref = false; off = x.home - m; o_ref = o; }
+                if (x.st == IDX_DONE || x.st == IDX_FAIL) break;
+                float d = clampf(x.target - (m + off), -x.vmax * dt, x.vmax * dt);
+                m += d; o = std::fmin(std::fmax(o, m), m + BL);                // backlash: the output stays inside [m, m + BL]
+            }
+            CHECK(x.st == IDX_DONE);
+            NEAR(x.home, o_ref, 0.01);                                       // referenced to the real edge (multiple of 360)
+            NEAR(std::fmod(o_ref, 360.0f), 0, 0.02);                         // approached from the + side: no backlash in the reference
+            if (cs.cal) NEAR(x.backlash, BL, 0.02);
+        }
+        idx_t f; idx_start(&f, false, 0, 720, 360, 100, false);              // no slot anywhere: both sweeps end in FAIL
+        for (int i = 0; i < 1000000 && f.st != IDX_FAIL; i++) idx_tick(&f, std::fmin(std::fmax(f.target, 0.0f), 720.0f), false);
+        CHECK(f.st == IDX_FAIL);
+        NEAR(idx_resolve(370, 360, 360, 0, 720), 360, 1e-4); NEAR(idx_resolve(20, 360, 360, 0, 720), 0, 1e-4);
+        NEAR(idx_resolve(500, 360, 360, 0, 720), 360, 1e-4); NEAR(idx_resolve(600, 360, 360, 0, 720), 720, 1e-4);
+        NEAR(idx_resolve(50, 0, 360, -30, 150), 0, 1e-4);                    // EL: only one slot inside the range
+        NEAR(backlash_out(10.0f, 1, 0.4f), 10.0, 1e-5); NEAR(backlash_out(10.0f, -1, 0.4f), 10.4, 1e-5);
+        NEAR(backlash_out(10.0f, -1, 0.0f), 10.0, 1e-5);
+    }
+
+    // 48 V power-loss detect: debounced, one event per loss, re-arms after the power is back
+    {
+        pwr_t g = {false, false, 0};                                         // 3 ms glitch is ignored
+        pwr_tick(&g, 1000, true); pwr_tick(&g, 4000, false);
+        CHECK(!pwr_tick(&g, 4000 + PWR_DEBOUNCE_US + 10, false) && !g.lost);
+        pwr_t q = {false, false, 0};
+        pwr_tick(&q, 1000, true);
+        CHECK(pwr_tick(&q, 1000 + PWR_DEBOUNCE_US, true) && q.lost);         // confirmed: save now
+        CHECK(!pwr_tick(&q, 1000 + 2 * PWR_DEBOUNCE_US, true));             // only once
+        pwr_tick(&q, 100000, false);
+        CHECK(!pwr_tick(&q, 100000 + PWR_DEBOUNCE_US, false) && !q.lost);   // power back: cleared, no event
+        pwr_tick(&q, 200000, true);
+        CHECK(pwr_tick(&q, 200000 + PWR_DEBOUNCE_US, true));                 // re-armed
+        pwr_t w = {false, false, 0xFFFFFFFFu - 2};                           // wrap-safe timestamps
+        pwr_tick(&w, 0xFFFFFFFFu - 2, true);
+        CHECK(pwr_tick(&w, 0xFFFFFFFFu - 2 + PWR_DEBOUNCE_US, true));
+    }
+
     // planner: reaches target, no overshoot, respects vmax
     plan_state_t p = {0}; double x = 0, tgt = 90, dt = 0.002, vmax = 20, a = 25, peak = 0, maxx = 0;
     for (int i = 0; i < 20000; i++) { double v = plan_step(&p, (float)(tgt - x), (float)vmax, (float)a, (float)dt, 0.05f); x += v * dt; peak = std::fmax(peak, std::fabs(v)); maxx = std::fmax(maxx, x); }
@@ -99,6 +148,7 @@ int main() {
     n = parse_line("XC vmax_az=12.5", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XCONF_SET && !std::strcmp(cm[0].key, "vmax_az")); NEAR(cm[0].value, 12.5, 1e-4);
     n = parse_line("XC?", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XCONF_GET);
     n = parse_line("XCAL AZ=181.5", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XCAL && !std::strcmp(cm[0].key, "AZ")); NEAR(cm[0].value, 181.5, 1e-4);
+    n = parse_line("XCAL BACKLASH", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XCAL && !std::strcmp(cm[0].key, "BACKLASH"));
     n = parse_line("XS", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XSTATUS);
     n = parse_line("XP 395.5 12.25", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XPOS && cm[0].nvals == 2); NEAR(cm[0].value, 395.5, 1e-4); NEAR(cm[0].value2, 12.25, 1e-4);
     n = parse_line("az-5", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_SET_AZ); NEAR(cm[0].value, -5, 1e-4);

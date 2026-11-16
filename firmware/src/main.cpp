@@ -90,10 +90,14 @@ static int32_t pos_get(int a) { return pos[a]; }
 static void pos_set(int a, int32_t p) { uint32_t s = save_and_disable_interrupts(); pos[a] = p; restore_interrupts(s); }
 
 // ----------------------------------------------------------- state
-typedef enum { M_IDLE, M_GOTO, M_JOG, M_HOME_FWD, M_HOME_REV } mode_t2;
+typedef enum { M_IDLE, M_GOTO, M_JOG, M_HOME_FWD, M_HOME_REV, M_IDX } mode_t2;
 static mode_t2 mode[2] = {M_IDLE, M_IDLE};
 static float   target[2];
 static plan_state_t plan[2];
+static int     bl_side[2] = {1, 1};        // last direction of motion (backlash side)
+static idx_t   idx[2];                     // LSR-2 index homing / backlash calibration
+static pwr_t   pwr;
+static bool    pwr_seen_ok = false;
 static bool    referenced[2];
 static bool    enc_ok[2], imu_ok[2], tmc_ok[2];
 static uint16_t enc_raw_last[2];
@@ -114,6 +118,7 @@ static bool    dirty = false;
 #define E_ENC      8
 #define E_LOWV    16
 #define E_HOME    32
+#define E_PWR     64                       // LSR-2: 48 V lost (motors stopped, position saved)
 
 static void apply_cfg(void) {
     for (int a = 0; a < 2; a++) {
@@ -127,10 +132,13 @@ static void apply_cfg(void) {
     }
 }
 
-static float cur_deg(int a) { return axis_pos_to_deg(&AX[a], pos_get(a)); }
+static float raw_deg(int a) { return axis_pos_to_deg(&AX[a], pos_get(a)); }
+// Controlled/reported angle: motor angle plus the backlash when the last move was in the - direction (0 = no calibration).
+static float cur_deg(int a) { return mode[a] == M_IDX ? raw_deg(a) : backlash_out(raw_deg(a), bl_side[a], S.backlash[a]); }
 
 static void set_current_deg(int a, float deg) {     // re-reference without moving
-    AX[a].offset_deg = S.offset[a] = deg - (float)AX[a].dir * (float)pos_get(a) / axis_steps_per_deg(&AX[a]);
+    float c = cur_deg(a) - raw_deg(a);
+    AX[a].offset_deg = S.offset[a] = deg - c - (float)AX[a].dir * (float)pos_get(a) / axis_steps_per_deg(&AX[a]);
     target[a] = deg; mode[a] = M_IDLE; plan[a].v = 0; vel_q16[a] = 0;
     referenced[a] = true; dirty = true;
 }
@@ -174,6 +182,22 @@ static void encoder_update(int a) {
 static void planner(float dt) {
     for (int a = 0; a < 2; a++) {
         float now = cur_deg(a);
+#if LSR_MODEL == 2
+        if (mode[a] == M_IDX) {                         // index homing / backlash calibration (state machine in core.cpp)
+            idx_tick(&idx[a], now, gpio_get(a == AZ ? PIN_HALL_AZ : PIN_HALL_EL) == IDX_SLOT_LEVEL);
+            if (idx[a].ref) {
+                idx[a].ref = false;
+                set_current_deg(a, idx[a].home); mode[a] = M_IDX; now = idx[a].home;
+                errors &= ~(a == AZ ? E_AZ_REF : E_EL_REF);
+            }
+            if (idx[a].st == IDX_DONE) {
+                if (idx[a].cal) { S.backlash[a] = idx[a].backlash; dirty = true; }
+                bl_side[a] = 1; mode[a] = M_GOTO; target[a] = idx[a].home; errors &= ~E_HOME;
+            } else if (idx[a].st == IDX_FAIL) {
+                mode[a] = M_GOTO; target[a] = now; errors |= E_HOME;
+            } else target[a] = idx[a].target;
+        }
+#else
         if (mode[a] == M_HOME_FWD || mode[a] == M_HOME_REV) {
             if (!gpio_get(PIN_HALL_AZ)) {              // magnet found
                 set_current_deg(AZ, S.home_az);
@@ -184,16 +208,18 @@ static void planner(float dt) {
                 else { mode[a] = M_GOTO; target[a] = now; errors |= E_HOME; }
             }
         }
+#endif
         float tgt = target[a];
-        if (referenced[a] || mode[a] == M_JOG || mode[a] == M_HOME_FWD || mode[a] == M_HOME_REV) {
-            if (mode[a] != M_HOME_FWD && mode[a] != M_HOME_REV) tgt = clampf(tgt, AX[a].min_deg, AX[a].max_deg);
+        bool homing = mode[a] == M_HOME_FWD || mode[a] == M_HOME_REV || mode[a] == M_IDX;
+        if (referenced[a] || mode[a] == M_JOG || homing) {
+            if (!homing) tgt = clampf(tgt, AX[a].min_deg, AX[a].max_deg);
         }
-        float vmax = (mode[a] == M_HOME_FWD || mode[a] == M_HOME_REV) ? 8.0f : AX[a].vmax;
+        float vmax = mode[a] == M_IDX ? idx[a].vmax : (homing ? 8.0f : AX[a].vmax);
         float v = (mode[a] == M_IDLE) ? 0.0f : plan_step(&plan[a], tgt - now, vmax, AX[a].acc, dt, AX[a].deadband);
         if (mode[a] == M_GOTO && v == 0.0f && fabsf(tgt - now) <= AX[a].deadband) mode[a] = M_IDLE;
         float spt = v * axis_steps_per_deg(&AX[a]) * (float)AX[a].dir / (float)STEP_ISR_HZ;   // steps per tick
         vel_q16[a] = drivers_on ? (int32_t)lroundf(spt * 65536.0f) : 0;
-        if (v != 0.0f) last_motion = get_absolute_time();
+        if (v != 0.0f) { last_motion = get_absolute_time(); bl_side[a] = v > 0.0f ? 1 : -1; }
     }
 }
 
@@ -218,11 +244,13 @@ static void save_position(void) {
     S.last_pos[AZ] = pos_get(AZ); S.last_pos[EL] = pos_get(EL);
     S.last_enc[AZ] = enc_raw_last[AZ]; S.last_enc[EL] = enc_raw_last[EL];
     S.last_valid = referenced[AZ] ? 1 : 0;
+    S.reserved[1] = (bl_side[AZ] < 0 ? 1 : 0) | (bl_side[EL] < 0 ? 2 : 0);    // backlash side at standstill
     settings_save(&S);
     dirty = false;
 }
 
 static void restore_position(void) {
+    for (int a = 0; a < 2; a++) bl_side[a] = (S.reserved[1] >> a & 1) ? -1 : 1;
     // AZ (and EL without IMU): accept the saved position if the encoder still reads the same angle
     for (int a = 0; a < 2; a++) {
         referenced[a] = false;
@@ -252,6 +280,26 @@ static void restore_position(void) {
     if (!referenced[EL]) errors |= E_EL_REF;
 }
 
+// ----------------------------------------------------------- LSR-2: index homing, calibration, power loss
+#if LSR_MODEL == 2
+static void start_index(bool cal) {
+    for (int a = 0; a < 2; a++) {
+        bool slot = gpio_get(a == AZ ? PIN_HALL_AZ : PIN_HALL_EL) == IDX_SLOT_LEVEL;
+        idx_start(&idx[a], cal, AX[a].min_deg, AX[a].max_deg, a == AZ ? S.home_az : S.home_el, raw_deg(a), slot);
+        plan[a].v = 0; vel_q16[a] = 0; mode[a] = M_IDX;
+    }
+}
+
+static void power_lost(void) {                        // 48 V gone: stop at once (less load on the dying rail), keep the position
+    for (int a = 0; a < 2; a++) { vel_q16[a] = 0; plan[a].v = 0; mode[a] = M_IDLE; target[a] = cur_deg(a); }
+    drivers_on = false; drivers_enable(false);
+    save_position();
+    errors |= E_PWR;
+}
+
+static void power_back(void) { drivers_on = true; drivers_enable(true); errors &= ~E_PWR; }
+#endif
+
 // ----------------------------------------------------------- output helpers
 typedef void (*out_fn)(const char *);
 static void out_usb(const char *s) { fputs(s, stdout); fflush(stdout); }
@@ -272,7 +320,8 @@ static conf_t CONF[] = {
     {"ihold", NULL, &S.ihold_pct, "% of run current"},
     {"deadband", &S.deadband, NULL, "deg"},
     {"park_az", &S.park_az, NULL, "deg"}, {"park_el", &S.park_el, NULL, "deg"},
-    {"home_az", &S.home_az, NULL, "azimuth of the index magnet"},
+    {"home_az", &S.home_az, NULL, "azimuth of the index (internal frame)"}, {"home_el", &S.home_el, NULL, "elevation of the index edge"},
+    {"backlash_az", &S.backlash[0], NULL, "deg, set by XCAL BACKLASH"}, {"backlash_el", &S.backlash[1], NULL, "deg, set by XCAL BACKLASH"},
     {"enc_az", NULL, &S.enc_dir[0], "encoder +1/-1/0=off"}, {"enc_el", NULL, &S.enc_dir[1], "encoder +1/-1/0=off"},
     {"imu_el", NULL, &S.use_imu_el, "1 = EL referenced by the boom IMU"},
     {"imu_el_dir", &S.imu_el_dir, NULL, "+1/-1"}, {"imu_el_zero", &S.imu_el_zero, NULL, "raw IMU angle at EL 0"},
@@ -328,7 +377,12 @@ static void handle(const char *line, out_fn out) {
             snprintf(b, sizeof(b), "GS%d\r\n", gs); out(b); break; }
         case CMD_ERROR: snprintf(b, sizeof(b), "GE%lu\r\n", (unsigned long)errors); out(b); break;
         case CMD_HOME:
-            mode[AZ] = M_HOME_FWD; target[AZ] = cur_deg(AZ) + 380.0f; break;
+#if LSR_MODEL == 2
+            start_index(false);                          // both axes: seek the photo-interrupter slot, reference on its lower edge
+#else
+            mode[AZ] = M_HOME_FWD; target[AZ] = cur_deg(AZ) + 380.0f;
+#endif
+            break;
         case CMD_PARK: goto_deg(AZ, S.park_az); goto_deg(EL, S.park_el); break;
         case CMD_XPOS:                                   // host-planned absolute azimuth (cable wrap chosen by the host)
             if (c[i].nvals >= 1) { target[AZ] = clampf(c[i].value, AX[AZ].min_deg, AX[AZ].max_deg); mode[AZ] = M_GOTO; }
@@ -397,12 +451,18 @@ static void handle(const char *line, out_fn out) {
                     S.tilt_zero[0] = atan2f(y, z) * 57.29578f; S.tilt_zero[1] = atan2f(-x, sqrtf(y * y + z * z)) * 57.29578f; dirty = true;
                 }
             } else if (!strcmp(c[i].key, "HOMEAZ")) { S.home_az = cur_deg(AZ); dirty = true; }
-            else { out("XCAL keys: AZ=<deg> EL=<deg> ELIMU LEVEL HOMEAZ\r\n"); break; }
+            else if (!strcmp(c[i].key, "HOMEEL")) { S.home_el = cur_deg(EL); dirty = true; }
+#if LSR_MODEL == 2
+            else if (!strcmp(c[i].key, "BACKLASH")) {       // one-off: reference on the index, measure the backlash, store it in flash
+                start_index(true); out("XCAL BACKLASH started (both axes, wait for mode=0,0 then XW)\r\n"); break;
+            }
+#endif
+            else { out("XCAL keys: AZ=<deg> EL=<deg> ELIMU LEVEL HOMEAZ HOMEEL BACKLASH\r\n"); break; }
             snprintf(b, sizeof(b), "XCAL ok az=%.2f el=%.2f\r\n", cur_deg(AZ), cur_deg(EL)); out(b);
             break;
         case CMD_XHELP:
             out("Easycomm: AZ EL | AZ<deg> EL<deg> | SA SE | ML MR MU MD | VE GS GE | HOME PARK\r\n"
-                "LSR: XP az el (absolute) | XS status | XC? | XC key=val | XW save | XCAL AZ=..|EL=..|ELIMU|LEVEL|HOMEAZ | XE 0/1 | XG | XT | XB\r\n");
+                "LSR: XP az el (absolute) | XS status | XC? | XC key=val | XW save | XCAL AZ=..|EL=..|ELIMU|LEVEL|HOMEAZ|HOMEEL|BACKLASH | XE 0/1 | XG | XT | XB\r\n");
             break;
         default: break;
         }
@@ -431,10 +491,12 @@ int main(void) {
 #if LSR_DRIVER == EXT_STEPDIR
     for (int a = 0; a < 2; a++) { gpio_init(PIN_EN[a]); gpio_set_dir(PIN_EN[a], GPIO_OUT); gpio_put(PIN_EN[a], !EXT_EN_ACTIVE); }
     sd_init(&sd[0]); sd_init(&sd[1]);
-#endif    gpio_init(PIN_LED); gpio_set_dir(PIN_LED, GPIO_OUT);
+#endif
+    gpio_init(PIN_LED); gpio_set_dir(PIN_LED, GPIO_OUT);
     gpio_init(PIN_BTN); gpio_set_dir(PIN_BTN, GPIO_IN); gpio_pull_up(PIN_BTN);
     gpio_init(PIN_HALL_AZ); gpio_set_dir(PIN_HALL_AZ, GPIO_IN); gpio_pull_up(PIN_HALL_AZ);
     gpio_init(PIN_HALL_EL); gpio_set_dir(PIN_HALL_EL, GPIO_IN); gpio_pull_up(PIN_HALL_EL);
+    gpio_init(PIN_PWRFAIL); gpio_set_dir(PIN_PWRFAIL, GPIO_IN); gpio_pull_up(PIN_PWRFAIL);
     adc_init(); adc_gpio_init(PIN_VSENSE); adc_select_input(ADC_VSENSE);
 
     if (!settings_load(&S)) settings_defaults(&S);
@@ -443,13 +505,15 @@ int main(void) {
     gps_init();
 #if LSR_DRIVER == TMC2209_UART
     tmc_init();
-#endif    sleep_ms(300);                       // let VM settle before talking to the drivers
+#endif
+    sleep_ms(300);                       // let VM settle before talking to the drivers
     configure_drivers();
     imu_ok[EL] = mpu_init(EL);
     imu_ok[AZ] = mpu_init(AZ);
     restore_position();
     for (int a = 0; a < 2; a++) encoder_update(a);
-    drivers_enable(true);_timer_us(-(1000000 / STEP_ISR_HZ), step_isr, NULL, &step_timer);
+    drivers_enable(true);
+    add_repeating_timer_us(-(1000000 / STEP_ISR_HZ), step_isr, NULL, &step_timer);
     watchdog_enable(2000, true);
 
     linebuf_t lb_usb = {{0}, 0}, lb_uart = {{0}, 0};
@@ -463,6 +527,17 @@ int main(void) {
         while ((ch = getchar_timeout_us(0)) != PICO_ERROR_TIMEOUT) feed(&lb_usb, ch, out_usb);
         while (uart_is_readable(uart0)) feed(&lb_uart, uart_getc(uart0), out_uart);
         gps_poll(&gps);
+#if LSR_MODEL == 2
+        {   // every loop pass (not the 10 Hz tick): the flash write must start within a few ms of the loss
+            bool loss = gpio_get(PIN_PWRFAIL) == PWR_LOSS_LEVEL;
+            if (!loss) pwr_seen_ok = true;
+            if (pwr_seen_ok) {
+                bool was_lost = pwr.lost;
+                if (pwr_tick(&pwr, time_us_32(), loss)) power_lost();
+                else if (was_lost && !pwr.lost) power_back();
+            }
+        }
+#endif
 
         absolute_time_t now = get_absolute_time();
         if (absolute_time_diff_us(t_plan, now) >= 1000000 / PLAN_HZ) {

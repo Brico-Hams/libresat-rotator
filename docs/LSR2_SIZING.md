@@ -52,7 +52,13 @@ EL head (phase 6b): one-sided boom along the EL axis, Yagi payload, survival win
 
 ## Motion
 
-12°/s at the output = 160 rpm at the motor, 4267 steps/s at 1/8 microstep (well inside RP2040 PIO and DM542 limits).
+12°/s at the output = 160 rpm at the motor, 1067 steps/s at 400 microsteps/rev (DM542 as on SARCTrac Mk5, SARCNET; well inside RP2040 PIO and DM542 limits).
+
+## Mk5 options decided by the checks
+
+- **M14 threaded rod as EL shaft** (Mk5): von Mises 1015 MPa at the outer bearing vs 450 MPa (M14 A2-70 threaded rod), SF 0.4 (needed 2) ❌ keep the turned Ø30 shaft.
+- **M14 rod as AZ gearbox section** (torque only, standstill torque): von Mises 166 MPa, SF 2.7; it passes as a stub but the AZ shaft must stay one Ø30 piece (bearing seats, Ø16 cable bore), so no saving.
+- **M30x56x3 shims under the 51206**: circlip + 2 washers = 7.5 mm of the 23.0 mm to the mast clamp ✅ (1 mm spare).
 
 ## Recommendation
 

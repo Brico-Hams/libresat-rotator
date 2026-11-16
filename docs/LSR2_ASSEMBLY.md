@@ -63,7 +63,7 @@ Material stainless 1.4404, bars Ø33 × 316 (AZ) and Ø33 × 216 (EL). Tool: lat
 ## 5. AZ unit
 
 1. Press the two 6206-2RS into `az_housing` (arbor press, push on the outer ring only; check the Ø62 H7 seats first).
-2. Fit the 51206 (bore ring on the shaft washer side: the tight ring is the shaft washer) and the V-ring on the shaft; fit the DIN 471 circlip and the 3 mm ring below the shaft washer.
+2. Fit the 51206 (bore ring on the shaft washer side: the tight ring is the shaft washer) and the V-ring on the shaft; fit the DIN 471 circlip and one M30 × 56 × 3 stainless washer (the Mk5 shim; a second one adjusts the preload) below the shaft washer. Tef-Gel on the shaft and the bearing seats.
 3. Slide the shaft through the housing; no free play along the axis (check by hand).
 4. Fit the mast clamp on the shaft bottom, drive the Ø6 cross pin (light hammer, pin punch), then mount the housing under `base` with 6 × M6 × 20 (torque 8 N·m, VERIFY, Tef-Gel).
 5. Pull the cable through the hollow shaft: bottom open end, up the Ø16 bore, out of the Ø6 hole at z = −4 above the upper bearing; leave a service loop (the head only twists ±360°, no wrap round the mast).
@@ -81,23 +81,37 @@ Material stainless 1.4404, bars Ø33 × 316 (AZ) and Ø33 × 216 (EL). Tool: lat
 Printed ASA cover: future (not in this phase).
 ## 7. Corrosion protection
 
-1. Tef-Gel or Duralac on every aluminium-steel joint: housing/shaft, screws in plate taps, U-bolts on the clamp, hub on shaft.
+1. Tef-Gel (Duralac as the alternative) on every aluminium-steel joint and on every stainless thread: housing/shaft, screws in plate taps, U-bolts on the clamp, hub on shaft, bearing seats, index-disc set screws, screw terminals.
 2. A4 fasteners only (A4-80 for the U-bolts); no zinc steel against aluminium outdoors.
 3. Keep the drain hole in `az_housing` clear and facing down; V-ring and 6206-2RS prevent dust and water ingress, check them once a year.
 4. Paint or anodise is optional; mask bearing seats and threads.
 
 ## 8. Electronics hook-up and first power-up
 
-1. Wiring: refer to [ELECTRONICS](ELECTRONICS.md), section "LSR-2 external drivers": LSR-CTL step/dir/enable to 2 × DM542, DM542 to NEMA23, AS5600 encoders to the board, 24-48 V supply with fuse, cable gland M20 in the e-box feed.
-2. Set DM542 current to the motor rating (NEMA23 2.8 N·m: about 3 A, VERIFY) and microstepping 1/8 (4267 steps/s at 12°/s).
-3. Firmware: see [FIRMWARE](FIRMWARE.md) (`LSR_DRIVER=EXT_STEPDIR`, `lsr2` profile, in progress).
-4. First power-up without the antenna: free motion through ±5° on each axis, check direction, then set the encoder zero (north for AZ, horizon for EL) and run the calibration from the web UI.
+1. Wiring: refer to [ELECTRONICS](ELECTRONICS.md), section "LSR-2 external drivers": LSR-CTL step/dir/enable through the 3.3 → 5 V level converter to 2 × DM542, DM542 to the 57BYG250H-8 motors, AS5600 encoders and photo-interrupters to the board, 48 V supply with fuse, 2200 µF bulk capacitor, XL7015 5 V buck and the opto power-loss detect on GP22, cable gland M20 in the e-box feed.
+2. Set DM542 current to the motor rating (57BYG250H-8, 2.8 N·m: about 3 A, VERIFY) and **400 microsteps/rev** (SW5–SW8 per the driver table, as the Mk5; 1066.7 steps/s at 12°/s).
+3. Firmware: see [FIRMWARE](FIRMWARE.md) (`LSR_DRIVER=EXT_STEPDIR`, `lsr2` profile, EasyComm II 9600 8N1).
+4. First power-up without the antenna: free motion through ±5° on each axis, check direction, then do the one-off calibration (section 8b).
+
+## 8b. One-off calibration (Mk5 style)
+
+Fit the printed ASA index discs and the photo-interrupter brackets first (see below), then calibrate once, with the antenna off:
+
+1. **Index hardware.** AZ disc: on the DIN 705 collar at the shaft top (bore 28.2, 2 × M3 set screws, Tef-Gel on the collar not on the sensor); AZ sensor bracket under the PCD 110 bolt at 210° (M6 × 25 instead of M6 × 20), the interrupter straddling the disc rim. EL disc: glued/set-screwed on the `boom_socket` hub (it is shaped to the hub and its pinch lug); EL sensor bracket zip-tied to the `el_bearing_housing`. Wire the sensors to J9 (AZ) and J10 (EL). VERIFY: gap 5 mm, disc 3 mm, mounting hole pitch 19 mm of the EE-SX1103 class sensor.
+2. **North / horizon reference.** Put the head so that the AZ notch edge is at true north (compass + declination; the notch edge is wire 360°), then `XCAL HOMEAZ` stores it. Put the boom level (spirit level on the tube): `XCAL EL=0`, then `XCAL HOMEEL` stores the horizon index.
+3. **Backlash to flash.** Send `XCAL BACKLASH`: both axes search their index from both sides and the measured backlash is stored as `backlash_az` / `backlash_el`; `XW` writes it. Check with a dial gauge at 1 m radius that the residual is < 0.1° (VERIFY). Repeat after the first week of use (the worm wears in).
+4. **Check.** `HOME`, then command north and the horizon and verify with the compass and the level. Normal start-up after that is `HOME` or just power on (position restored from flash).
+5. **Power loss test.** Switch off the 48 V with the head at a known angle: after power on `XS` must show the saved position and error 64 cleared after `XE 1` (VERIFY the capacitor hold-up with a scope on the 5 V rail).
+
+**Thrust bearing inspection.** Every 6 months for the first year, then every 2 years (VERIFY): open the V-ring side, check the 51206 and the 6206 seals for water and rust, re-grease with a water-resistant grease and replace the V-rings if cracked. The Mk5 protects the thrust bearing with a PVC pipe and silicone; here the housing recess and the V-ring do the job. Adjust the preload with the second M30 × 56 × 3 washer if the axial play appears (the stack circlip + 2 washers fits the 10 mm gap to the clamp).
+
+**Compatible trackers** (EasyComm II, 9600 8N1): PstRotator, Gpredict, SatPC32 and Orbitron, plus our `lsr` software and Hamlib `rotctld -m 202`.
 
 ## 9. Acceptance tests
 
 | Test | How | Pass (VERIFY) |
 |---|---|---|
-| Backlash | dial gauge at 1 m radius, push by hand both ways | record the value; compensate in the firmware |
+| Backlash | dial gauge at 1 m radius, push by hand both ways | record the value; compare with `backlash_az/el` from `XCAL BACKLASH` |
 | Speed | command 360° and time it | 12°/s without missed steps |
 | Holding | motor power off / on, push the boom | position held, no creep (worm self-locks) |
 | Encoder zero | go to 0° and 90°, compare with a compass and level | error ≤ 1° |

@@ -58,25 +58,26 @@ Dimension tables (axis coordinate from the head frame: z for az_shaft, y for el_
 | el_shaft | 70 | 162 | 14 |
 | el_shaft | 162 | 276 | 30 |
 
-az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 80 keyed top (key 5x5, slot 40 long) into the gearbox hollow output and up to the flanged retaining collar (DIN 705 Ø14, M6 set screw), Ø30 bearing seats, no integral collar (the 51206 shaft washer rests on a DIN 471 circlip + 3 mm ring, see bought parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 h7 through the EL gearbox hub (key 5, torque only) and 37 mm beyond it, Ø30 through the two 6206 of the el_bearing_housing (DIN 471 circlips) to the boom_socket hub (key 8x7). Cross-boom tube 6063 40.0x40.0x3.0 x 1100.0 mm = 1.32 kg (included in the bought-part total). Files: cnc/lsr2/az_shaft.step, cnc/lsr2/el_shaft.step.
+az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 80 keyed top (key 5x5, slot 40 long) into the gearbox hollow output and up to the flanged retaining collar (DIN 705 Ø14, M6 set screw), Ø30 bearing seats, no integral collar (the 51206 shaft washer rests on a DIN 471 circlip + M30x56x3 stainless washer shim(s), see bought parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 h7 through the EL gearbox hub (key 5, torque only) and 37 mm beyond it, Ø30 through the two 6206 of the el_bearing_housing (DIN 471 circlips) to the boom_socket hub (key 8x7). Cross-boom tube 6063 40.0x40.0x3.0 x 1100.0 mm = 1.32 kg (included in the bought-part total). Files: cnc/lsr2/az_shaft.step, cnc/lsr2/el_shaft.step.
 
 ## Bought parts (every price VERIFY)
 
 | Item | Qty | Unit (EUR) | Total (EUR) |
 |---|---|---|---|
 | NMRV030 worm gearbox 80:1, Ø14 hollow | 2 | 55.00 VERIFY | 110.00 |
-| NEMA23 stepper 2.8 N·m | 2 | 18.00 VERIFY | 36.00 |
+| NEMA23 stepper 57BYG250H-8 2.8 N·m | 2 | 18.00 VERIFY | 36.00 |
 | 6206-2RS bearing (AZ pair + EL pair) | 4 | 3.50 VERIFY | 14.00 |
 | 51206 thrust bearing | 1 | 6.00 VERIFY | 6.00 |
 | Keys DIN 6885 (2x 5x5, 1x 8x7) | 3 | 0.50 VERIFY | 1.50 |
 | M6 U-bolts for the Yagi boom | 4 | 1.50 VERIFY | 6.00 |
 | M8 U-bolts for the mast | 2 | 2.50 VERIFY | 5.00 |
 | V-ring seals (AZ + EL VA15/20) + Ø6 cross pin | 1 | 3.00 VERIFY | 3.00 |
-| DIN 471 Ø30 circlip + 3 mm ring under the 51206 (cheaper than a DIN 705 Ø30 set collar, ~4 EUR) | 1 | 0.80 VERIFY | 0.80 |
+| DIN 471 Ø30 circlip + M30x56x3 stainless washer shim(s) under the 51206 (Mk5 shim; cheaper than a DIN 705 Ø30 set collar, ~4 EUR) | 2 | 0.70 VERIFY | 1.40 |
 | AZ top retaining collar: DIN 705 Ø14 flanged set collar + M6 screw (cheaper than a turned disc) | 1 | 2.50 VERIFY | 2.50 |
 | M8 through-bolts + nuts + washers, boom in the socket (2 sets) | 1 | 1.00 VERIFY | 1.00 |
 | M6 screws, motors/gearboxes/bracket/hub/housing (about 40) | 1 | 4.00 VERIFY | 4.00 |
 | EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62 | 1 | 1.20 VERIFY | 1.20 |
+| 2x slotted photo-interrupter (EE-SX1103 class) + printed ASA index discs/brackets + M3 hardware | 1 | 5.00 VERIFY | 5.00 |
 
 Full 1:1 PLA prototype of all plates: 0.12 kg.
 
@@ -88,7 +89,7 @@ Full 1:1 PLA prototype of all plates: 0.12 kg.
 | Stainless bar (shafts) | 3.62 kg |
 | PLA (patterns + prototype) at 20 EUR/kg VERIFY | 0.94 kg |
 | Material + cutting + foundry + PLA cost (VERIFY) | 93 EUR |
-| Bought parts (VERIFY) | 202 EUR |
-| Total estimated cost (VERIFY) | 295 EUR |
+| Bought parts (VERIFY) | 207 EUR |
+| Total estimated cost (VERIFY) | 300 EUR |
 | Finished head mass (plates + cast parts, without shafts and bought parts) | 1.86 kg |
 | Finished / bought aluminium | 37 % |
