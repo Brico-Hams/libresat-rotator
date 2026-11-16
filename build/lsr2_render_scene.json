@@ -1,0 +1,228 @@
+{
+  "units": "mm",
+  "el_axis": {
+    "point": [
+      0,
+      0,
+      40.0
+    ],
+    "dir": [
+      0,
+      1,
+      0
+    ]
+  },
+  "az_axis": {
+    "point": [
+      0,
+      0,
+      0
+    ],
+    "dir": [
+      0,
+      0,
+      1
+    ]
+  },
+  "el_sign": -1,
+  "el_range": [
+    -30.0,
+    150.0
+  ],
+  "el_group": [
+    "boom_socket",
+    "cross_boom",
+    "el_index_disc",
+    "yagi_145",
+    "yagi_435",
+    "hardware_socket",
+    "hardware_ant"
+  ],
+  "explode": {
+    "az_index_disc": [
+      0,
+      0,
+      110
+    ],
+    "az_gearbox": [
+      0,
+      0,
+      45
+    ],
+    "spacer": [
+      0,
+      0,
+      20
+    ],
+    "el_bracket": [
+      0,
+      -45,
+      0
+    ],
+    "el_bearing_housing": [
+      0,
+      45,
+      0
+    ],
+    "hardware_housing": [
+      0,
+      45,
+      0
+    ],
+    "boom_socket": [
+      0,
+      90,
+      0
+    ],
+    "hardware_socket": [
+      0,
+      90,
+      0
+    ],
+    "el_index_disc": [
+      0,
+      90,
+      0
+    ],
+    "cross_boom": [
+      0,
+      150,
+      0
+    ],
+    "yagi_145": [
+      0,
+      150,
+      0
+    ],
+    "yagi_435": [
+      0,
+      150,
+      0
+    ],
+    "hardware_ant": [
+      0,
+      150,
+      0
+    ],
+    "el_shaft": [
+      0,
+      0,
+      130
+    ],
+    "az_housing": [
+      0,
+      0,
+      -50
+    ],
+    "az_shaft": [
+      0,
+      0,
+      -100
+    ],
+    "mast_clamp": [
+      0,
+      0,
+      -200
+    ],
+    "hardware_clamp": [
+      0,
+      0,
+      -200
+    ],
+    "mast": [
+      0,
+      0,
+      -200
+    ],
+    "az_motor_body": [
+      0,
+      0,
+      45
+    ],
+    "az_motor_caps": [
+      0,
+      0,
+      45
+    ],
+    "az_motor_shaft": [
+      0,
+      0,
+      45
+    ],
+    "az_motor_cable": [
+      0,
+      0,
+      45
+    ]
+  },
+  "parts": [
+    "az_gearbox",
+    "az_housing",
+    "az_housing_corebox",
+    "az_housing_cores",
+    "az_housing_pattern",
+    "az_index_disc",
+    "az_motor_body",
+    "az_motor_cable",
+    "az_motor_caps",
+    "az_motor_shaft",
+    "az_shaft",
+    "base",
+    "boom_socket",
+    "boom_socket_pattern",
+    "cross_boom",
+    "el_bearing_housing",
+    "el_bearing_housing_pattern",
+    "el_bracket",
+    "el_gearbox",
+    "el_index_disc",
+    "el_motor_body",
+    "el_motor_cable",
+    "el_motor_caps",
+    "el_motor_shaft",
+    "el_shaft",
+    "hardware_ant",
+    "hardware_base",
+    "hardware_clamp",
+    "hardware_housing",
+    "hardware_socket",
+    "mast",
+    "mast_clamp",
+    "mast_clamp_pattern",
+    "spacer",
+    "yagi_145",
+    "yagi_435"
+  ],
+  "floor_z": -1675.0,
+  "sock_y1": 363.0,
+  "ant_pos_y": [
+    0.45,
+    0.95
+  ],
+  "gearbox_top_z": 64.0,
+  "housing_end_y": 242.0,
+  "index": {
+    "t": 3.0,
+    "gap": 5.0,
+    "notch_depth": 5.0,
+    "az": {
+      "z": [
+        70.0,
+        73.0
+      ],
+      "r_out": 22.1,
+      "r_sensor": 19.6,
+      "notch_deg": 10.370276834947026
+    },
+    "el": {
+      "y": 248.0,
+      "r_out": 32.1,
+      "r_sensor": 29.6,
+      "notch_deg": 7.139660998514931
+    }
+  },
+  "sun_sight": {
+    "y": 563.0,
+    "z": 60.0
+  }
+}

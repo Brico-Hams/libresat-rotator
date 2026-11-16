@@ -214,6 +214,51 @@ for n, s in list(index.items()) + [('index_bracket', index_bracket)]:   # printe
     s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
 report['index'] = dict(notch_deg={'az': round(IX.AZ_DISC['notch_deg'], 2), 'el': round(IX.EL_DISC['notch_deg'], 2)},
                        disc_t_mm=IX.I['t'], material=IX.I['material'], parts=list(index) + ['index_bracket'])
+
+# --- phase 9: visual-only models of the bought parts + scene description for scripts/render_blender.py ---------
+# Not used by any check above. A failing visual builder only warns: the fabricated parts and the checks stay valid.
+VIS = os.path.join(OUT, 'stl', 'lsr2', 'visual')
+os.makedirs(VIS, exist_ok=True)
+
+
+def export_fine(s, path):
+    """Finer tessellation than exportStl so that smooth-shaded renders keep round silhouettes."""
+    try:
+        import MeshPart
+        MeshPart.meshFromShape(Shape=s, LinearDeflection=0.05, AngularDeflection=0.2, Relative=False).write(path)
+    except Exception:
+        s.exportStl(path)
+
+
+visual = {}
+try:
+    import visual_parts as VP
+    visual = VP.build_all()
+except Exception as ex:
+    print('WARNING: visual parts not built:', ex)
+visual['cross_boom'] = boom
+fine = {**shapes, **cast, **shafts, **index, **patterns, 'az_housing_corebox': corebox, 'az_housing_cores': cores}
+for n, s in list(fine.items()) + list(visual.items()):
+    export_fine(s, os.path.join(VIS, n + '.stl'))
+EL_GROUP = ['boom_socket', 'cross_boom', 'el_index_disc', 'yagi_145', 'yagi_435', 'hardware_socket', 'hardware_ant']
+EXPLODE = {'az_index_disc': (0, 0, 110), 'az_gearbox': (0, 0, 45), 'spacer': (0, 0, 20), 'el_bracket': (0, -45, 0),
+           'el_bearing_housing': (0, 45, 0), 'hardware_housing': (0, 45, 0), 'boom_socket': (0, 90, 0), 'hardware_socket': (0, 90, 0),
+           'el_index_disc': (0, 90, 0), 'cross_boom': (0, 150, 0), 'yagi_145': (0, 150, 0), 'yagi_435': (0, 150, 0), 'hardware_ant': (0, 150, 0),
+           'el_shaft': (0, 0, 130), 'az_housing': (0, 0, -50), 'az_shaft': (0, 0, -100), 'mast_clamp': (0, 0, -200),
+           'hardware_clamp': (0, 0, -200), 'mast': (0, 0, -200)}
+EXPLODE.update({f'az_motor_{k}': (0, 0, 45) for k in ('body', 'caps', 'shaft', 'cable')})   # same offsets as scripts/render_lsr2.py
+_g = P.NMRV030_GEO
+scene = dict(
+    units='mm', el_axis=dict(point=[0, 0, PL.EL_Z], dir=[0, 1, 0]), az_axis=dict(point=[0, 0, 0], dir=[0, 0, 1]),
+    el_sign=-1, el_range=list(P.EL_RANGE), el_group=EL_GROUP, explode={k: list(v) for k, v in EXPLODE.items()},
+    parts=sorted(set(fine) | set(visual) | {n + '_pattern' for n in pre}), floor_z=CP.Z_CL_TOP - 1500.0, sock_y1=CP.SOCK_Y1, ant_pos_y=list(P.ANT_POS_Y),
+    gearbox_top_z=PL.T_SPACER + _g['out_width'], housing_end_y=CP.BH['y0'] + CP.BH['L'],
+    index=dict(t=IX.I['t'], gap=IX.I['gap'], notch_depth=IX.I['notch_depth'],
+               az=dict(z=list(IX.AZ_DISC['z']), r_out=IX.AZ_DISC['r_out'], r_sensor=IX.AZ_DISC['r_sensor'], notch_deg=IX.AZ_DISC['notch_deg']),
+               el=dict(y=IX.EL_DISC['y'], r_out=IX.EL_DISC['r_out'], r_sensor=IX.EL_DISC['r_sensor'], notch_deg=IX.EL_DISC['notch_deg'])),
+    sun_sight=dict(y=CP.SOCK_Y1 + 200.0, z=PL.EL_Z + PL.BOOM_H / 2))
+with open(os.path.join(OUT, 'build', 'lsr2_render_scene.json'), 'w', encoding='utf-8') as fh:
+    json.dump(scene, fh, indent=2)
 report['checks'] = dict(max_interference_mm3=max(worst.values()), limit_mm3=MAX_INTERFERENCE_MM3,
                         interference_mm3=worst, failures=failures, passed=not failures, el_sweep=report['checks']['el_sweep'])
 Part.makeCompound(list(shapes.values()) + list(envs.values()) + list(mine.values())).exportStep(

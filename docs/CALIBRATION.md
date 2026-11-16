@@ -4,6 +4,10 @@ Applies to LSR-1 and LSR-2. Every step works alone, writes its result to the con
 
 ## Procedure
 
+![Index discs, photo-interrupters and sun sight highlighted on the LSR-2 head](img/lsr2_calibration.png)
+
+*Render, not a photo: AZ and EL index discs (orange) with their photo-interrupters (glowing), and the pinhole sun sight on the boom.*
+
 | # | Step | Command | Needs | Result |
 |---|---|---|---|---|
 | 1 | Level | `lsr calibrate level` | base IMU at rest (hands off, no wind) | mount tilt (pitch, roll) and `level ok` if the tilt is under 0.5° (`calibration.level_threshold_deg`). The tilt is kept as the two tilt terms of the pointing model, so a slightly unlevel tripod costs nothing. |

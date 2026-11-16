@@ -4,6 +4,16 @@ Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina.
 
 Parts and prices: [BOM_LSR2](BOM_LSR2.md). Design and checks: [ARCHITECTURE](ARCHITECTURE.md), [LSR2_SIZING](LSR2_SIZING.md), [LSR2_MATERIALS](LSR2_MATERIALS.md). Every torque, fit and catalogue value below is **VERIFY** against your real parts.
 
+![LSR-2 exploded view, rendered](img/lsr2_exploded_real.png)
+
+*Render, not a photo.*
+
+![The four A356 castings next to their PLA patterns, core box and cores](img/lsr2_castings_real.png)
+
+*Render, not a photo: castings (grey), PLA patterns (orange), core box and sand cores.*
+
+Technical views (matplotlib):
+
 ![LSR-2 assembly](img/lsr2_assembly.png)
 
 ![LSR-2 exploded view](img/lsr2_exploded.png)

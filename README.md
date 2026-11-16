@@ -12,7 +12,13 @@ LSR-1 starts from two open designs, the [SatNOGS Rotator v3](https://gitlab.com/
 
 ## LSR family / LSR-2 heavy station
 
+![LSR-2 rotator on its mast with a crossed 145 MHz and a 435 MHz Yagi, EL 30°](docs/img/lsr2_hero.png)
+
+*LSR-2 on its mast, antennas at EL 30°: render, not a photo (`make render`).*
+
 LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator (two NMRV030 worm gearboxes side by side on one plate, each with a NEMA23 bolted on, CNC aluminium plates and sand-cast A356 parts), driven by the same firmware, protocol and head software. Mechanical phases 1-3 are done: parameters and sizing, CNC plates, and the cast parts with their PLA patterns, a core box and the turned stainless shafts. **Phase 6** replaced the plate box by a compact two-block head: AZ and EL gearboxes with parallel motors pointing the same way, and a one-sided 40 × 40 × 3 square cross-boom tube along the EL axis (antennas on it) in a cast `boom_socket`. **Phase 6b** corrected the boom orientation (it leaves the head along the EL axis, not across it) and gave the EL shaft a two-bearing housing like AZ, so the antenna moment never reaches the gearbox output bearings. A flanged collar retains the AZ shaft top. A printed ASA weather cover is a future option. The AZ shaft is **hollow** (Ø16 bore) so the rotator cables run up the AZ axis, with no cable wrap round the mast. Phase 7 (planned) will replace the bought NMRV030 housings by our own two-half cast worm-gear housing with the same output-face pattern. Phase 4 (firmware `EXT_STEPDIR` + `lsr2` profile) is in progress, see [docs/FIRMWARE.md](docs/FIRMWARE.md). **Phase 6c** aligns LSR-2 with the facts SARCNET published for the SARCTrac Mk5 (400 microsteps/rev drive, XL7015 and level-converter electronics, 48 V power-loss save, photo-interrupter index with backlash calibration, EasyComm II 9600 8N1, shim washers); the adopted and rejected items with the reasons are in the [Mk5 table](docs/ARCHITECTURE.md). Compatible trackers: PstRotator, Gpredict, SatPC32 and Orbitron (EasyComm II), plus our rotctld path. Phase 5 (documentation) now has a [BOM](docs/BOM_LSR2.md) and an [assembly guide](docs/LSR2_ASSEMBLY.md); the rotctld backend for `antenaSatCommrotor` (branch `feat/lsr-rotctld-backend` of Brico-Hams/antenaSatCommrotor) is in progress. See the [family architecture](docs/ARCHITECTURE.md), the [design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md), the [LSR-2 sizing and structural checks](docs/LSR2_SIZING.md) and the [LSR-2 materials and cost](docs/LSR2_MATERIALS.md).
+
+**Technical views** (matplotlib line drawings from the same STL files):
 
 ![LSR-2 assembly](docs/img/lsr2_assembly.png)
 

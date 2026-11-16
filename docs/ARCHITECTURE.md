@@ -46,6 +46,20 @@ flowchart LR
 
 ## 3. LSR-2 mechanical architecture
 
+![LSR-2 head close-up: two NMRV030 blocks, NEMA23 motors, bearing housing and boom socket](img/lsr2_head_closeup.png)
+
+*Render, not a photo: the head as built from `cad/lsr2/` (bought parts are visual models).*
+
+![LSR-2 exploded view, rendered](img/lsr2_exploded_real.png)
+
+*Render, not a photo: exploded along the axes.*
+
+![LSR-2 EL sweep, rendered](img/lsr2_el_sweep_real.png)
+
+*Render, not a photo: moving group at EL -30°, 45° and 150°.*
+
+Technical views (matplotlib):
+
 ![LSR-2 assembly](img/lsr2_assembly.png)
 
 ![LSR-2 exploded view](img/lsr2_exploded.png)
@@ -117,6 +131,12 @@ make lsr2     # self-tests, then freecadcmd: plates, cast parts, patterns, core 
 ```
 
 `scripts/render_lsr2.py` draws `img/lsr2_assembly.png`, `img/lsr2_exploded.png`, `img/lsr2_patterns.png` and `img/lsr2_el_sweep.png` from the STL files. `build.py` does not delete files of removed parts: remove stale `side_a`, `side_b`, `top`, `spacer_el` and `el_hub*` files by hand.
+
+```bash
+make render   # Blender 5.x Cycles: img/lsr2_hero.png, lsr2_head_closeup.png, lsr2_exploded_real.png, lsr2_castings_real.png, lsr2_el_sweep_real.png, lsr2_calibration.png
+```
+
+`build.py` also writes `stl/lsr2/visual/` (finer copies of the fabricated parts and visual-only models of the NMRV030, NEMA23, mast, Yagis and fasteners; the checks keep the simple envelopes) and `build/lsr2_render_scene.json` (EL axis, groups, exploded offsets). `scripts/render_blender.py` reads both. Variables: `BLENDER`, `RENDER_OUT` (default `docs/img`; outside Documents on Windows with Controlled Folder Access), `RENDER_ARGS="--samples 64"`. The images are renders, not photos.
 
 **Windows note.** If Controlled Folder Access blocks `freecadcmd` writing in Documents, set `LSR2_OUT` to a writable folder and copy `cnc/`, `cast/`, `stl/` and `build/` back.
 
