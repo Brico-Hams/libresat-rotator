@@ -1,6 +1,6 @@
 # LSR-2 heavy rotator and the LSR rotor family: design spec
 
-Status: draft for review, 2026-11-16. Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams).
+Status: draft for review, 2026-11-16; phases 1-3 built (phase 3 as built: see §9). Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams).
 
 ## 1. Goal
 
@@ -99,6 +99,14 @@ Casting rules, held as parameters and checked in the self-test:
 5. The `antenaSatCommrotor` EasyComm backend, then the BOM, assembly docs and branding.
 
 Heavy, mechanical generation work (the FreeCAD part scripts) is delegated to Copilot `--write` with this spec. Claude verifies every output with the self-tests and by rendering it.
+
+### Phase 3 as built
+
+Cast parts (`az_housing`, `mast_clamp`, `el_hub`), their PLA patterns, the az_housing core box and the turned shafts are in `cad/lsr2/cast_parts.py`; structural checks are in `calc/lsr2_sizing.py` ([LSR2_SIZING](../../LSR2_SIZING.md)), masses and costs in [LSR2_MATERIALS](../../LSR2_MATERIALS.md). The AZ shaft is hollow (Ø16 bore, cables up the AZ axis) and has no integral collar. Deviations from the plan above:
+- `az_housing` has no mid shoulder: two bearing rings joined by 4 ribs and 6 bolt lugs, with the cored ring bores and the 51206 lip at the bottom;
+- draft is modelled only on the revolved housing; prismatic parts (ribs, clamp strip, hub blocks) get 2° from the pattern maker;
+- no fillets are modelled (minimum fillet 3 mm to be added by the pattern maker);
+- the rib and mast clamp arm thicknesses were increased after the structural checks failed at the first sizes.
 
 ## 10. Out of scope
 

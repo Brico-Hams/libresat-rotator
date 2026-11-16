@@ -25,14 +25,58 @@ Parameters (VERIFY): plate 9.0 EUR/kg (6061-T6 or 5083), cutting 1.5 EUR/m, A356
 
 Plate stock 18.90 kg for 4.55 kg finished: total waste 76 %. Cost: stock 170 EUR + cutting 12 EUR = **182 EUR** (full sheets bought; a cut-to-size supplier lowers it).
 
-## Sand casting, phase 3 parts: ESTIMATE until phase 3 CAD exists
+## Sand casting, phase 3 parts
 
-Pattern volume = (finished + machined area x 2.5 mm) x shrink^3 (1.013); casting mass at 2.68 g/cm³ (A356); poured metal = casting / 0.55. PLA at 1.24 g/cm³, 30 % infill, 1.2 mm walls.
+Casting metal = (finished + metal in bores cast solid + machined area x 2.5 mm) x shrink^3 (1.013) at 2.68 g/cm³ (A356); poured metal = casting / 0.55. Volumes and machined areas come from build/lsr2_build_report.json. el_hub is cast twice (one pattern). PLA at 1.24 g/cm³, 30 % infill, 1.2 mm walls.
 
-| Part (ESTIMATE) | Finished (cm³) | Machined (cm²) | Pattern (cm³) | Casting (g) | Poured (g) | PLA pattern (g) | Cost (EUR) |
-|---|---|---|---|---|---|---|---|
-| az_housing | 350 | 120 | 395 | 1059 | 1925 | 181 | 17.1 |
-| el_hub | 120 | 60 | 140 | 376 | 684 | 69 | 6.1 |
+| Part | Finished (cm³) | Machined (cm²) | Casting (g) | Poured (g) | Cost (EUR) |
+|---|---|---|---|---|---|
+| az_housing | 180 | 172 | 622 | 1131 | 10.1 |
+| mast_clamp | 98 | 63 | 435 | 790 | 7.0 |
+| el_hub_a | 55 | 63 | 218 | 396 | 3.5 |
+| el_hub_b | 57 | 63 | 218 | 396 | 3.5 |
+
+| PLA pattern / core box (printed once) | Volume (cm³) | Surface (cm²) | PLA (g) |
+|---|---|---|---|
+| az_housing_pattern | 405 | 716 | 225 |
+| mast_clamp_pattern | 153 | 241 | 82 |
+| el_hub_pattern | 81 | 140 | 45 |
+| az_housing_corebox | 409 | 331 | 187 |
+
+## Turned shafts (stainless 1.4404)
+
+Stock = finished length + 10 mm, diameter = largest step + 3 mm; 7.95 g/cm³; 6.0 EUR/kg (VERIFY).
+
+| Shaft | Stock Ø x L (mm) | Stock (g) | Finished (g) | Cost (EUR) |
+|---|---|---|---|---|
+| az_shaft | 33 x 299 | 2033 | 980 | 12.2 |
+| el_shaft | 17 x 262 | 473 | 276 | 2.8 |
+
+Dimension tables (axis coordinate from the head frame: z for az_shaft, y for el_shaft):
+
+| Shaft | From (mm) | To (mm) | Ø (mm) |
+|---|---|---|---|
+| az_shaft | -225 | 1 | 30 |
+| az_shaft | 1 | 64 | 14 |
+| el_shaft | -126 | -63 | 12 |
+| el_shaft | -63 | 126 | 14 |
+
+az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 63 keyed top (key 5x5, slot 40 long) into the gearbox hollow output, Ø30 bearing seats, no integral collar (the 51206 shaft washer rests on a DIN 471 circlip + 3 mm ring, see bought parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 through gearbox, side_a and hub A, shoulder at y=-63 against the 6201, Ø12 to hub B. Files: cnc/lsr2/az_shaft.step, cnc/lsr2/el_shaft.step.
+
+## Bought parts (every price VERIFY)
+
+| Item | Qty | Unit (EUR) | Total (EUR) |
+|---|---|---|---|
+| NMRV030 worm gearbox 80:1, Ø14 hollow | 2 | 55.00 VERIFY | 110.00 |
+| NEMA23 stepper 2.8 N·m | 2 | 18.00 VERIFY | 36.00 |
+| 6206-2RS bearing | 2 | 3.50 VERIFY | 7.00 |
+| 51206 thrust bearing | 1 | 6.00 VERIFY | 6.00 |
+| 6201-2RS bearing | 1 | 2.00 VERIFY | 2.00 |
+| Keys DIN 6885 (3x 5x5, 1x 4x4) | 4 | 0.50 VERIFY | 2.00 |
+| M6 U-bolts for the Yagi boom | 4 | 1.50 VERIFY | 6.00 |
+| M8 U-bolts for the mast | 2 | 2.50 VERIFY | 5.00 |
+| V-ring seal + Ø6 cross pin + circlips | 1 | 3.00 VERIFY | 3.00 |
+| DIN 471 Ø30 circlip + 3 mm ring under the 51206 (cheaper than a DIN 705 Ø30 set collar, ~4 EUR) | 1 | 0.80 VERIFY | 0.80 |
 
 Full 1:1 PLA prototype of all plates: 1.16 kg.
 
@@ -40,8 +84,11 @@ Full 1:1 PLA prototype of all plates: 1.16 kg.
 
 | Item | Value |
 |---|---|
-| Aluminium bought (plate + ingot) | 21.51 kg |
-| PLA (patterns + prototype) | 1.41 kg |
-| Estimated material + cutting + foundry cost | 205 EUR |
-| Finished head mass (plates + cast parts, without bought parts) | 5.81 kg |
-| Finished / bought aluminium | 27 % |
+| Aluminium bought (plate + poured ingot) | 21.61 kg |
+| Stainless bar (shafts) | 2.51 kg |
+| PLA (patterns + prototype) at 20 EUR/kg VERIFY | 1.70 kg |
+| Material + cutting + foundry + PLA cost (VERIFY) | 255 EUR |
+| Bought parts (VERIFY) | 178 EUR |
+| Total estimated cost (VERIFY) | 433 EUR |
+| Finished head mass (plates + cast parts, without shafts and bought parts) | 5.59 kg |
+| Finished / bought aluminium | 26 % |

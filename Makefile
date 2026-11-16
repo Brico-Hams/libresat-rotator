@@ -24,7 +24,9 @@ calc:
 	$(PY) calc/lsr2_materials.py
 lsr2:
 	$(PY) cad/lsr2/plates.py
+	$(PY) cad/lsr2/cast_parts.py
 	cd $(CURDIR) && REPO=$(CURDIR) $(FREECADCMD) -c "exec(open(r'$(CURDIR)/cad/lsr2/build.py').read())"
+	$(PY) scripts/render_lsr2.py $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 docs/img
 bom:
 	$(PY) scripts/bom.py
 test:

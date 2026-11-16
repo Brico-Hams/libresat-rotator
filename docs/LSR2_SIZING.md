@@ -28,6 +28,19 @@ EL axis 300 mm above the upper AZ bearing; external 6206 pair, 120 mm apart, plu
 
 **Finding:** the worm gearbox output bearings cannot carry the overturning moment of any payload above. LSR-2 therefore puts the AZ shaft in its own radial bearing pair plus the thrust bearing (cast housing), and the gearbox only transmits torque through the keyed shaft. This differs from the Mk5 load path.
 
+## Structural checks of the cast parts (survival wind)
+
+Payload Crossed Yagi pair 145/435, ~2 m booms, 100 km/h, parked. Geometry from cad/lsr2/cast_parts.py. A356-T6 sand allowable 80 MPa and E 72 GPa (**VERIFY** with the foundry). U-bolts: 8 kN preload per M8 U-bolt (2 legs), friction mu 0.2, class A4-80 or 8.8 (**VERIFY**). Rib model: the moment axis runs through two of the four ribs (couple over the rib radius), the lower-bearing shear bends the ribs fixed-guided in their strong plane. Arm model: cantilever from the mast tangent point to the U-bolt leg, worst case for the smallest mast. Clamp preload bending of the arms is not covered: proof-load the first casting (**VERIFY**).
+
+| Part | Check | Demand | Capacity / allowable | SF | Needed | Result |
+|---|---|---|---|---|---|---|
+| az_housing rib | axial force 703 N + bending from shear 175 N | 23.5 MPa | 80.0 MPa | 3.4 | 3 | ✅ |
+| az_housing rib | Euler buckling, K=0.5, L=102 mm, 8x18.9 mm | 703.4 N | 220073.4 N | 312.9 | 3 | ✅ |
+| mast_clamp U-bolt | wind tension 1049 N per leg vs preload per leg | 1048.7 N | 4000.0 N | 3.8 | 2 | ✅ |
+| mast_clamp U-bolt | preload + wind per leg vs M8 yield | 5048.7 N | 21960.0 N | 4.3 | 2 | ✅ |
+| mast_clamp arm | bending, arm 11 mm, lever 20.9 mm, width 30 mm | 36.2 MPa | 80.0 MPa | 2.2 | 2 | ✅ |
+| mast_clamp friction | gearbox standstill torque 33.4 N·m vs friction torque | 33.4 N·m | 90.5 N·m | 2.7 | 2 | ✅ |
+
 ## Motion
 
 12°/s at the output = 160 rpm at the motor, 4267 steps/s at 1/8 microstep (well inside RP2040 PIO and DM542 limits).
