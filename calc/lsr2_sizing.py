@@ -1,327 +1,566 @@
 #!/usr/bin/env python3
-"""LSR-2 engineering budget: wind torque, gearbox rating, worm holding, AZ bearing loads and the one-sided EL boom head.
+"""LSR-2 sizing for the Mk5-schematic architecture (phase 11a): loads, torques, bearings, stiffness, clamps, fixings, pointing error.
 
-Writes docs/LSR2_SIZING.md. Inputs live in cad/lsr2/params.py (hardware) and PAYLOADS below.
-`python calc/lsr2_sizing.py --check` runs the self-test only.
+No geometry import: every input comes from cad/lsr2/inputs.py (tagged DATASHEET / MEASURE / PARAMETRIC) and the surviving hardware
+constants of cad/lsr2/params.py. Run:  python calc/lsr2_sizing.py          -> writes docs/LSR2_SIZING.md and docs/LSR2_INPUTS.md
+              python calc/lsr2_sizing.py --check  -> self-test + every safety factor against its target; exit 1 on failure
+Frames: see cad/lsr2/inputs.py. Forces are (Fx, Fy, Fz, x, y, z) in the AZ frame (origin at the body bottom mounting face).
 """
-import math, os, sys
+import math, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
-import params as P  # noqa: E402
-import cast_parts as CP  # noqa: E402
-import plates as PL  # noqa: E402
+import params as PR  # noqa: E402
+import inputs as IN  # noqa: E402
 
-G, RHO = 9.81, 1.225
-WIND_OP_KMH, WIND_SURV_KMH = 60.0, 100.0   # operating (tracking) and survival (parked, worm holding)
-MOTOR_DYN_FRACTION = 0.70                  # NEMA23 at ~160 rpm on 48 V / DM542: ~70 % of holding torque
-S0_MIN = 2.0                               # static safety factor wanted on rolling bearings
-A356_ALLOW_MPA, A356_E_MPA = 80.0, 72000.0  # sand-cast A356-T6 design allowable and modulus: VERIFY with the foundry
-SF_CAST, SF_CLAMP = 3.0, 2.0               # wanted safety factors: cast housing ribs, mast clamp
-UBOLT_PRELOAD_N, MU_CLAMP = 8000.0, 0.2    # per M8 U-bolt (2 legs, 4 kN per leg), friction on the V faces: VERIFY
-M8_AS_MM2, UBOLT_RP_MPA = 36.6, 600.0      # M8 stress area, A4-80 / 8.8 U-bolts (4.6 grade is NOT enough): VERIFY
-M6_AS_MM2 = 20.1                           # M6 stress area (8.8 housing bolts, same proof stress)
-
-# kind 'yagi': moment = F * cp_offset.  kind 'dish': moment = q * A * D * cm * solidity
-# (cm ~ 0.12 worst-angle aerodynamic moment coefficient for a parabolic dish about its mount).
-PAYLOADS = [
-    dict(name='Crossed Yagi pair 145/435, ~2 m booms', kind='yagi', mass=6.0, area=0.35, cd=1.2, cp_offset=0.15, imbalance=0.02),
-    dict(name='Dish 1.2 m, mesh (solidity 0.5)', kind='dish', mass=8.0, D=1.2, solidity=0.5, cd=1.4, cm=0.12, imbalance=0.02),
-    dict(name='Dish 1.2 m, solid', kind='dish', mass=12.0, D=1.2, solidity=1.0, cd=1.4, cm=0.12, imbalance=0.02),
-    dict(name='Dish 1.8 m, mesh (solidity 0.5)', kind='dish', mass=15.0, D=1.8, solidity=0.5, cd=1.4, cm=0.12, imbalance=0.03),
-    dict(name='Dish 1.8 m, solid', kind='dish', mass=25.0, D=1.8, solidity=1.0, cd=1.4, cm=0.12, imbalance=0.03),
-]
-
-
-def q(kmh):
-    v = kmh / 3.6
-    return 0.5 * RHO * v * v
+I = IN.I
+G = 9.81
+GB = PR.GEARBOX[PR.GEARBOX_DEFAULT]
+RATIO, RATED = GB['ratio'], GB['m2_rated']
+PEAK = RATED * PR.GEAR_PEAK_FACTOR            # PARAMETRIC peak: catalogue fs, VERIFY
+ETA = PR.WORM_EFF_RUN
+R2D = 180.0 / math.pi
+ES = list(range(-30, 151, 5))
+PSIS = list(range(0, 360, 15))
+ALPHA = math.radians(I['acc_dps2'])
+OMEGA = math.radians(I['vmax_dps'])
+J_R = I['rotor_j'] * RATIO ** 2               # motor rotor inertia reflected to the output
+ELPT = (I['el_x_off'], 0.0, I['z_el'])
+AZPT = (0.0, 0.0, I['az_brg_z'])
+ZC = sum(I['clamp_z']) / 2
+CLAMP_SPAN = I['clamp_z'][0] - I['clamp_z'][1]
+BRG_EL = dict(name='6004', C=9.95e3, C0=5.0e3)  # DATASHEET catalogue values (SKF 6004), Ø20 seats
+AS_BOLT = {'M5': 14.2e-6, 'M6': 20.1e-6, 'M8': 36.6e-6, 'M10': 58.0e-6, 'M12': 84.3e-6}   # ISO 898-1 stress areas
+CHK = []
 
 
-def loads(p, kmh):
-    """Return (axis torque N·m, horizontal wind force N) for payload p at wind speed kmh."""
-    if p['kind'] == 'yagi':
-        f = q(kmh) * p['cd'] * p['area']
-        m = f * p['cp_offset']
-    else:
-        a = 3.14159265 * p['D'] ** 2 / 4
-        f = q(kmh) * p['cd'] * a * p['solidity']
-        m = q(kmh) * a * p['D'] * p['cm'] * p['solidity']
-    return m + p['mass'] * G * p['imbalance'], f
+def g(v, n=4):
+    return f'{v:.{n}g}'
 
 
-def motor_out(gb):
-    return P.NEMA23['t_hold'] * MOTOR_DYN_FRACTION * gb['ratio'] * P.WORM_EFF_RUN
+def tbl(head, rows):
+    return ['| ' + ' | '.join(head) + ' |', '|' + '---|' * len(head)] + ['| ' + ' | '.join(str(c) for c in r) + ' |' for r in rows] + ['']
 
 
-def evaluate(p, gb_name):
-    gb = P.GEARBOX[gb_name]
-    t_op, _ = loads(p, WIND_OP_KMH)
-    t_surv, f_surv = loads(p, WIND_SURV_KMH)
-    m_over = f_surv * P.EL_AXIS_HEIGHT
-    fr_upper = m_over / P.RADIAL_SPAN + f_surv          # conservative: whole shear on the upper bearing
-    return dict(
-        t_op=t_op, t_avail=min(gb['m2_rated'], motor_out(gb)),
-        t_surv=t_surv, t_hold=gb['m2_rated'] * P.GEAR_PEAK_FACTOR,
-        m_over=m_over, m_gear_allow=gb['fr2'] * P.GEAR_REF_ARM,
-        s0_radial=P.RADIAL['C0'] / fr_upper,
-        s0_thrust=P.THRUST['C0'] / ((p['mass'] + 8.0) * G),  # +8 kg for the EL head itself
-    )
+def chk(sec, name, dem, cap, tgt, note='', opt=False):
+    """Capacity / demand safety factor against its target; optional rows are reported but never fail --check."""
+    CHK.append(dict(sec=sec, name=name, dem=dem, cap=cap, tgt=tgt, sf=cap / dem if dem > 0 else float('inf'), note=note, opt=opt))
 
 
-def ok(r):
-    return r['t_op'] <= r['t_avail'] and r['t_surv'] <= r['t_hold'] and r['s0_radial'] >= S0_MIN
+# ---- Model: moving group about EL, head about AZ ------------------------------------------------------------------------------
+def boom_mass():
+    w, t = I['boom_w'], I['boom_t']
+    return I['boom_rho'] * (w * w - (w - 2 * t) ** 2) * I['boom_len']
 
 
-def step_rate(gb):
-    return P.VMAX_DPS / 360.0 * gb['ratio'] * P.NEMA23['steps_rev'] * P.MICROSTEP
+def build():
+    """Moving-group items (name, m, a, y, h) with the counterweight of each side sized to balance that side about EL."""
+    bm, ca, lv = boom_mass(), I['ant_cg_a'], I['cw_lever']
+    ants, mov, side = [], [], []
+    for k in ('145', '435'):
+        an = dict(n=k + ' MHz', m=I['ant' + k + '_mass'], y=I['ant' + k + '_y'], bl=I['ant' + k + '_boom'],
+                  el=I['ant' + k + '_elem'], As=I['ant' + k + '_as'], Af=I['ant' + k + '_af'])
+        sg = 1 if an['y'] > 0 else -1
+        A = (an['m'] + I['lift_mass'] / 2) * ca
+        H = (an['m'] + I['lift_mass'] / 2) * I['ant_h'] + bm / 2 * I['boom_h'] + I['saddle_mass'] / 2 * I['saddle_h'] + I['yoke_mass'] * I['yoke_h']
+        mm = math.hypot(A, H)
+        an['mcw'] = mm / lv
+        mov += [(an['n'] + ' antenna', an['m'], ca, an['y'], I['ant_h']),
+                (an['n'] + ' lift arm', I['lift_mass'], ca / 2, an['y'], I['ant_h'] / 2),
+                (an['n'] + ' counterweight', an['mcw'], -A / mm * lv, sg * (I['boom_len'] / 2 - 0.05), -H / mm * lv)]
+        ants.append(an)
+        side.append((A, H))
+    mov += [('cross boom', bm, 0.0, 0.0, I['boom_h']), ('saddle plate + clamps', I['saddle_mass'], 0.0, 0.0, I['saddle_h']),
+            ('yoke arm +y', I['yoke_mass'], 0.0, I['ly'] / 2, I['yoke_h']), ('yoke arm -y', I['yoke_mass'], 0.0, -I['ly'] / 2, I['yoke_h']),
+            ('EL shaft', I['el_shaft_mass'], 0.0, 0.0, 0.0)]
+    return ants, mov, side
 
 
-def euler_n(e_mpa, i_mm4, length_mm, k):
-    """Euler buckling load (N) of a column with effective length factor k."""
-    return math.pi ** 2 * e_mpa * i_mm4 / (k * length_mm) ** 2
+ANTS, MOV, SIDE = build()
+HEAD = [(n, m, x, y, z) for n, m, x, y, z, *_ in IN.HEAD]
+M_MOV = sum(m for _, m, *_ in MOV)
+M_HEAD = sum(m for _, m, *_ in HEAD)
+M_TOT = M_MOV + M_HEAD + I['stat_mass']
 
 
-def design_payload():
-    """Heaviest-loaded payload that the default gearbox accepts (survival overturning moment)."""
-    fit = [p for p in PAYLOADS if ok(evaluate(p, P.GEARBOX_DEFAULT))]
-    return max(fit, key=lambda p: evaluate(p, P.GEARBOX_DEFAULT)['m_over'])
+def P(a, y, h, e):
+    c, s = math.cos(math.radians(e)), math.sin(math.radians(e))
+    return (I['el_x_off'] + a * c - h * s, y, I['z_el'] + a * s + h * c)
 
 
-def structural():
-    """Cast-part checks in the survival wind, geometry from cad/lsr2/cast_parts.py. Returns (payload name, rows)."""
-    p = design_payload()
-    f = loads(p, WIND_SURV_KMH)[1]                                  # N, horizontal wind force at the EL axis
-    rows = []
-
-    def add(part, check, value, unit, limit, need):
-        rows.append(dict(part=part, check=check, value=value, unit=unit, limit=limit, sf=limit / value, need=need))
-
-    # az_housing ribs: 4 ribs at 45 deg between the bearing rings, moment axis through two of them (worst case)
-    m_h = f * P.EL_AXIS_HEIGHT                                      # N·m at the housing
-    z_a, z_b = CP.RING_A_BOT, CP.RING_B_TOP
-    l_free = z_a - z_b                                              # free rib length between the rings, mm
-    b = CP.r_rib(z_b) - CP.RIB_R_IN                                 # narrowest rib width (radial, drafted), mm
-    t = CP.RIB_T
-    r_c = (CP.RIB_R_IN + CP.r_rib((z_a + z_b) / 2)) / 2000.0        # rib centroid radius, m
-    n_ax = m_h / (2 * r_c)                                          # couple over the rib radius: 2 ribs carry the moment
-    v = m_h / P.RADIAL_SPAN / (4 * math.cos(math.radians(45)))      # lower-bearing shear shared by 4 ribs, in the rib plane
-    s_ax, s_b = n_ax / (t * b), (v * l_free / 2) / (t * b * b / 6)  # fixed-guided rib: M = V L / 2
-    add('az_housing rib', f'axial force {n_ax:.0f} N + bending from shear {v:.0f} N', s_ax + s_b, 'MPa', A356_ALLOW_MPA, SF_CAST)
-    add('az_housing rib', f'Euler buckling, K=0.5, L={l_free:.0f} mm, {t:g}x{b:.1f} mm', n_ax,
-        'N', euler_n(A356_E_MPA, b * t ** 3 / 12, l_free, 0.5), SF_CAST)
-
-    # mast_clamp: lever from the EL axis to the clamp mid-height
-    lever = (CP.EL_Z - (CP.Z_CL_TOP + CP.Z_CL_BOT) / 2) / 1000.0
-    m_c = f * lever
-    t_leg = m_c / ((CP.CL_UB_Z[0] - CP.CL_UB_Z[1]) / 1000.0) / 2   # wind tension per leg: couple over the two U-bolt levels
-    r_min = P.MAST_D[0] / 2                                         # smallest accepted mast: worst lever and friction radius
-    add('mast_clamp U-bolt', f'wind tension {t_leg:.0f} N per leg vs preload per leg', t_leg, 'N', UBOLT_PRELOAD_N / 2, SF_CLAMP)
-    add('mast_clamp U-bolt', 'preload + wind per leg vs M8 yield', UBOLT_PRELOAD_N / 2 + t_leg, 'N', M8_AS_MM2 * UBOLT_RP_MPA, SF_CLAMP)
-    d = CP.CL_UB_Y - r_min / math.sqrt(2)                           # leg to the mast tangent point on the arm, mm
-    w = (CP.Z_CL_TOP - CP.Z_CL_BOT) / 2                             # strip height carried by each leg, mm
-    add('mast_clamp arm', f'bending, arm {CP.CL_T:g} mm, lever {d:.1f} mm, width {w:g} mm',
-        t_leg * d / (w * CP.CL_T ** 2 / 6), 'MPa', A356_ALLOW_MPA, SF_CLAMP)
-    t_fr = MU_CLAMP * math.sqrt(2) * 2 * UBOLT_PRELOAD_N * r_min / 1000.0   # 90 deg V: friction on both faces
-    t_hold = P.GEARBOX[P.GEARBOX_DEFAULT]['m2_rated'] * P.GEAR_PEAK_FACTOR
-    add('mast_clamp friction', f'gearbox standstill torque {t_hold:.1f} N·m vs friction torque', t_hold, 'N·m', t_fr, SF_CLAMP)
-
-    # EL head (phase 6b): one-sided boom along the EL axis, two 6206 in the el_bearing_housing, Ø14 stub in the gearbox hub
-    h = el_head(p)
-    d_sh = P.BEARING_EL['d'] / 1000.0
-    s_b, s_t = 32 * h['m_b2'] / (math.pi * d_sh ** 3) / 1e6, 16 * h['t_el'] / (math.pi * d_sh ** 3) / 1e6
-    add('el_shaft Ø30', f'von Mises at the outer bearing, M {h["m_b2"]:.1f} N·m + T {h["t_el"]:.1f} N·m',
-        math.sqrt(s_b ** 2 + 3 * s_t ** 2), 'MPa', P.SS_YIELD_MPA, SF_CLAMP)
-    add('el bearing pair', f'static load {max(h["r1"], h["r2"]):.0f} N on the outer {P.BEARING_EL["name"]} vs C0', max(h['r1'], h['r2']),
-        'N', P.BEARING_EL['C0'], S0_MIN)
-    fr2 = P.GEARBOX[P.GEARBOX_DEFAULT]['fr2']
-    add('EL gearbox output', f'radial load {h["f_gb"]:.0f} N from coaxiality {P.EL_COAX_MM:g} mm + shaft flex vs 0.2 fr2', h['f_gb'],
-        'N', 0.2 * fr2, 1.0)
-    b_r = (CP.BH['rib_x'][1] - CP.BH['rib_x'][0])
-    t_r = CP.BH['rib_t']
-    yc = (CP.BH['rib_x'][0] + CP.BH['rib_x'][1]) / 2 * math.sin(math.radians(45))
-    i_tot = 4 * (b_r * t_r * yc ** 2 + (b_r ** 3 * t_r / 12 + t_r ** 3 * b_r / 12) / 2)    # 4 ribs at 45 deg, mm4
-    c = (CP.BH['rib_x'][1] + t_r / 2) * math.sin(math.radians(45))
-    add('el_bearing_housing ribs', f'bending {h["m_fl"]:.0f} N·m at the flange, 4 ribs {b_r:g}x{t_r:g} mm', h['m_fl'] * 1000 * c / i_tot,
-        'MPa', A356_ALLOW_MPA, SF_CAST)
-    r_pcd = P.NMRV030_GEO['face_pcd'] / 2000.0
-    t_bolt = h['m_fl'] / (2 * r_pcd)                                # couple over two bolts, conservative
-    add('el_bearing_housing bolts', f'M6 tension {t_bolt:.0f} N vs min(thread in the gearbox, proof)', t_bolt, 'N',
-        min(P.FACE_THREAD_N, M6_AS_MM2 * UBOLT_RP_MPA), SF_CLAMP)
-    z_t = (P.CROSS_BOOM[0] ** 4 - (P.CROSS_BOOM[0] - 2 * P.CROSS_BOOM[2]) ** 4) / (6 * P.CROSS_BOOM[0])   # mm3
-    add('cross-boom tube', f'bending {h["m_tube"]:.0f} N·m at the socket mouth', h['m_tube'] * 1000 / z_t, 'MPa', P.TUBE_YIELD_MPA, SF_CLAMP)
-    for r in rows:
-        r['ok'] = r['sf'] >= r['need']
-    return p['name'], rows
+def q_dyn(kmh):
+    return 0.5 * I['air_rho'] * (kmh / 3.6) ** 2
 
 
-def el_head(p):
-    """Survival loads of payload p on the one-sided boom, split over the two EL bearings (N, N·m, m).
+def wind(e, psi, kmh):
+    """Wind forces from azimuth psi at elevation e: (moving group, fixed head). Force along the wind at the centre of pressure."""
+    q = q_dyn(kmh)
+    cp, sp = math.cos(math.radians(psi)), math.sin(math.radians(psi))
 
-    The payload (weight + wind) is shared by the ANT_POS_Y stations; wind and weight act at 90 deg to each other (combined by hypot,
-    conservative: the wind can come from any side). Loads outboard of the outer bearing give M_b2; R1/R2 are the bearing reactions.
-    """
-    t_el, f_w = loads(p, WIND_SURV_KMH)
-    w = p['mass'] * G
-    span = P.EL_BEARING_SPAN
-    y_b2, y_b1 = CP.BRG_Y[1], CP.BRG_Y[0]
-    tube_kg = (P.CROSS_BOOM[0] ** 2 - (P.CROSS_BOOM[0] - 2 * P.CROSS_BOOM[2]) ** 2) * P.CROSS_BOOM_L * P.ALU_PLATE_G_CM3 * 1e-6
-    sock_y = CP.SOCK['y0'] + CP.SOCK['L'] / 2
-    tube_y = CP.SOCK_Y1 - CP.SOCK['depth'] + P.CROSS_BOOM_L / 2
-    n = len(P.ANT_POS_Y)
-    arms = [(CP.SOCK_Y1 - y_b2) / 1000.0 + pos for pos in P.ANT_POS_Y]
-    mx = sum(f_w / n * a for a in arms)
-    wz = w + tube_kg * G + P.SOCKET_MASS_KG * G
-    mz = sum(w / n * a for a in arms) + tube_kg * G * (tube_y - y_b2) / 1000.0 + P.SOCKET_MASS_KG * G * (sock_y - y_b2) / 1000.0
-    f_x, f_z = f_w, wz
-    m_b2 = math.hypot(mx, mz)
-    r2 = math.hypot(f_x + mx / span, f_z + mz / span)
-    r1 = m_b2 / span
-    lf = (y_b2 - CP.BH['y0']) / 1000.0                              # loads' moment arm about the housing flange (face B)
-    m_fl = math.hypot(mx + f_x * lf, mz + f_z * lf)
-    # gearbox radial load: coaxiality error + slope of the Ø30 shaft between the bearings, acting on the Ø14 stub as a cantilever
-    e_pa = P.SS_E_MPA * 1e6
-    i30, i14 = math.pi * 0.030 ** 4 / 64, math.pi * 0.014 ** 4 / 64
-    l_stub = (y_b1 - (PL.Y_EL_A + P.NMRV030_GEO['out_width'] / 2)) / 1000.0   # hub centre to the first bearing
-    theta = m_b2 * span / (6 * e_pa * i30)
-    f_gb = 3 * e_pa * i14 / l_stub ** 3 * (P.EL_COAX_MM * 1e-3 + theta * l_stub)
-    # boom tube bending at the socket mouth
-    mt_x = sum(f_w / n * pos for pos in P.ANT_POS_Y)
-    mt_z = sum(w / n * pos for pos in P.ANT_POS_Y) + tube_kg * G * (tube_y - CP.SOCK_Y1) / 1000.0
-    return dict(t_el=t_el, m_b2=m_b2, r1=r1, r2=r2, m_fl=m_fl, f_gb=f_gb, m_tube=math.hypot(mt_x, mt_z), tube_kg=tube_kg)
+    def F(area, cd):
+        f = q * cd * area
+        return (f * cp, f * sp, 0.0)
+
+    cth = abs(math.cos(math.radians(e)) * cp)          # |boresight . wind|
+    sth = math.sqrt(max(0.0, 1 - cth * cth))
+    mov = [F(an['Af'] * cth + an['As'] * sth, I['cd_ant']) + P(I['ant_cg_a'] + I['ant_cp_dx'], an['y'], I['ant_h'], e) for an in ANTS]
+    mov.append(F(I['boom_w'] * I['boom_len'] * abs(cp) + I['boom_w'] ** 2 * abs(sp), I['cd_boom']) + P(0.0, 0.0, I['boom_h'], e))
+    return mov, [F(I['body_area'], I['cd_body']) + (0.0, 0.0, I['body_cp_z'])]
 
 
-def structural_ok():
-    return all(r['ok'] for r in structural()[1])
+def grav(e):
+    return ([(0.0, 0.0, -m * G) + P(a, y, h, e) for _, m, a, y, h in MOV],
+            [(0.0, 0.0, -m * G, x, y, z) for _, m, x, y, z in HEAD])
 
 
-def mk5_options():
-    """Mk5 options that the checks decide on (SARCNET): M14 threaded rod as shaft, M30x56x3 shim stack under the 51206.
-
-    EL: the rod would carry the whole boom bending at the outer bearing (our Ø30 turned shaft carries it today).
-    AZ: the rod would replace the Ø14 gearbox section, torque only (standstill torque of the gearbox, as the clamp check).
-    """
-    h = el_head(design_payload())
-    d = P.M14_ROD['d_stress'] / 1000.0
-    s_b, s_t = 32 * h['m_b2'] / (math.pi * d ** 3) / 1e6, 16 * h['t_el'] / (math.pi * d ** 3) / 1e6
-    el_vm = math.sqrt(s_b ** 2 + 3 * s_t ** 2)
-    t_hold = P.GEARBOX[P.GEARBOX_DEFAULT]['m2_rated'] * P.GEAR_PEAK_FACTOR
-    az_vm = math.sqrt(3) * 16 * t_hold / (math.pi * d ** 3) / 1e6
-    gap = CP.Z_BOT - CP.Z_CL_TOP                                    # shaft washer to mast clamp, mm
-    sh = P.SHIM
-    return dict(el_vm=el_vm, el_sf=P.M14_ROD['yield_mpa'] / el_vm, az_vm=az_vm, az_sf=P.M14_ROD['yield_mpa'] / az_vm,
-                gap=gap, stack=sh['circlip_t'] + sh['n_max'] * sh['t'])
+def red(fs, pt):
+    """Resultant force and moment (Fx, Fy, Fz, Mx, My, Mz) of the forces about the point pt."""
+    out = [0.0] * 6
+    for fx, fy, fz, x, y, z in fs:
+        rx, ry, rz = x - pt[0], y - pt[1], z - pt[2]
+        for i, v in enumerate((fx, fy, fz, ry * fz - rz * fy, rz * fx - rx * fz, rx * fy - ry * fx)):
+            out[i] += v
+    return out
 
 
-def report():
-    pname, srows = structural()
-    out = ['# LSR-2 engineering budget (generated by calc/lsr2_sizing.py)\n',
-           f'Wind: tracking {WIND_OP_KMH:.0f} km/h ({q(WIND_OP_KMH):.0f} Pa), survival parked {WIND_SURV_KMH:.0f} km/h '
-           f'({q(WIND_SURV_KMH):.0f} Pa). Motor NEMA23 {P.NEMA23["t_hold"]} N·m holding, {MOTOR_DYN_FRACTION:.0%} usable at speed; '
-           f'worm efficiency {P.WORM_EFF_RUN:.0%}. Gearbox data are generic catalogue values: **verify with your supplier**.\n',
-           '## Torque per payload (worst axis) and gearbox choice\n',
-           '| Payload | Track torque (N·m) | Survival torque (N·m) | NMRV030 | NMRV040 | NMRV050 |',
-           '|---|---|---|---|---|---|']
-    for p in PAYLOADS:
-        cells = []
-        for gb in P.GEARBOX:
-            r = evaluate(p, gb)
-            cells.append(('✅' if ok(r) else '❌') + f' {r["t_avail"]:.0f}/{r["t_hold"]:.0f}')
-        r0 = evaluate(p, P.GEARBOX_DEFAULT)
-        out.append(f'| {p["name"]} | {r0["t_op"]:.1f} | {r0["t_surv"]:.1f} | ' + ' | '.join(cells) + ' |')
-    out.append('\nCell = ✅/❌ and "available tracking torque / standstill holding torque" (N·m). ✅ needs both, plus the AZ bearing check below.\n')
+def case(e, psi, kmh):
+    wm, wf = wind(e, psi, kmh)
+    gm, gh = grav(e)
+    allw, mov, everything = wm + wf, wm + gm, wm + wf + gm + gh
+    s, ly = I['el_span'], I['ly']
+    Fx, Fy, Fz, Mx, _, Mz = red(mov, ELPT)
+    R1 = (-Fx / 2 + Mz / s, -Fz / 2 - Mx / s)
+    R2 = (-Fx / 2 - Mz / s, -Fz / 2 + Mx / s)
+    Rl = (-Fx / 2 + Mz / ly, -Fz / 2 - Mx / ly)         # same formula with the yoke-arm span: arm loads on the shaft are -Rl
+    mb = math.hypot(*[ly / 2 * (-Rl[k]) + s / 2 * R1[k] for k in (0, 1)])
+    az = red(everything, AZPT)
+    cl, cw = red(everything, (0.0, 0.0, ZC)), red(allw, (0.0, 0.0, ZC))
+    return dict(tau_az=abs(red(allw, (0.0, 0.0, 0.0))[5]), tau_el=abs(red(wm, ELPT)[4]),
+                el_r=max(math.hypot(*R1), math.hypot(*R2)), el_ax=abs(Fy), mb=mb,
+                az_up=math.hypot(az[3], az[4]) / I['az_span'],
+                az_lo=math.hypot(-az[0] + az[4] / I['az_span'], -az[1] - az[3] / I['az_span']), az_fz=-az[2],
+                m_cl=math.hypot(cl[3], cl[4]), f_h=math.hypot(cl[0], cl[1]), mw=math.hypot(cw[3], cw[4]), fw=math.hypot(cw[0], cw[1]),
+                fy_w=abs(sum(f[1] for f in wm)))
 
-    out.append('## AZ overturning moment (survival wind)\n')
-    out.append(f'EL axis {P.EL_AXIS_HEIGHT * 1000:.0f} mm above the upper AZ bearing; external {P.RADIAL["name"]} pair, '
-               f'{P.RADIAL_SPAN * 1000:.0f} mm apart, plus {P.THRUST["name"]} thrust bearing.\n')
-    out.append('| Payload | Overturning (N·m) | Gearbox alone allows (NMRV030) | s0 radial pair | s0 thrust |')
-    out.append('|---|---|---|---|---|')
-    for p in PAYLOADS:
-        r = evaluate(p, P.GEARBOX_DEFAULT)
-        out.append(f'| {p["name"]} | {r["m_over"]:.0f} | {r["m_gear_allow"]:.0f} | {r["s0_radial"]:.1f} | {r["s0_thrust"]:.0f} |')
-    out.append('\n**Finding:** the worm gearbox output bearings cannot carry the overturning moment of any payload above. '
-               'LSR-2 therefore puts the AZ shaft in its own radial bearing pair plus the thrust bearing (cast housing), and the '
-               'gearbox only transmits torque through the keyed shaft. This differs from the Mk5 load path.\n')
 
-    out.append('## Structural checks of the cast parts (survival wind)\n')
-    out.append(f'Payload {pname}, {WIND_SURV_KMH:.0f} km/h, parked. Geometry from cad/lsr2/cast_parts.py. A356-T6 sand allowable '
-               f'{A356_ALLOW_MPA:.0f} MPa and E {A356_E_MPA / 1000:.0f} GPa (**VERIFY** with the foundry). U-bolts: {UBOLT_PRELOAD_N / 1000:g} kN preload '
-               f'per M8 U-bolt (2 legs), friction mu {MU_CLAMP}, class A4-80 or 8.8 (**VERIFY**). Rib model: the moment axis runs through '
-               'two of the four ribs (couple over the rib radius), the lower-bearing shear bends the ribs fixed-guided in their '
-               'strong plane. Arm model: cantilever from the mast tangent point to the U-bolt leg, worst case for the smallest mast. '
-               'Clamp preload bending of the arms is not covered: proof-load the first casting (**VERIFY**).\n'
-               f'EL head (phase 6b): one-sided boom along the EL axis, Yagi payload, survival wind. Weight and wind of the two Yagis (stations at '
-               f'{", ".join(f"{x:g}" for x in P.ANT_POS_Y)} m from the socket mouth), the tube and the socket give a bending moment at the outer '
-               f'of the two {P.BEARING_EL["name"]} bearings ({P.EL_BEARING_SPAN * 1000:.0f} mm apart, in the el_bearing_housing); wind and weight '
-               f'are combined at 90 deg (conservative). The Ø14 shaft section in the gearbox hub then only transmits torque; its radial load follows '
-               f'from {P.EL_COAX_MM:g} mm coaxiality plus the slope of the Ø30 section (cantilever stub model, **VERIFY**), limit 0.2 fr2. Shaft yield '
-               f'{P.SS_YIELD_MPA:.0f} MPa (1.4404, **VERIFY**), von Mises with bending and torsion on the {P.BEARING_EL["d"]:g} mm section; '
-               f'keyway stress concentration, the keyed Ø14 section torsion (SF about 2), fatigue and the el_bracket joint tilt are not covered: '
-               f'proof-load the first unit (**VERIFY**). Housing bolts: moment over a PCD65 couple, thread strength in the NMRV face '
-               f'{P.FACE_THREAD_N / 1000:g} kN per M6 (**VERIFY**). Tube: 6063-T6, {P.TUBE_YIELD_MPA:.0f} MPa (**VERIFY**).\n')
-    out.append('**Finding:** with the boom one-sided along the EL axis, the antenna moment is far beyond what the gearbox hub carries, so '
-               'the EL axis needs a bearing pair exactly like AZ (the Ø14 gearbox section stays torque-only).\n')
-    out.append('| Part | Check | Demand | Capacity / allowable | SF | Needed | Result |')
-    out.append('|---|---|---|---|---|---|---|')
-    for r in srows:
-        out.append(f"| {r['part']} | {r['check']} | {r['value']:.1f} {r['unit']} | {r['limit']:.1f} {r['unit']} | {r['sf']:.1f} | "
-                   f"{r['need']:g} | {'✅' if r['ok'] else '❌'} |")
-    out.append('')
+def peak(kmh, es=ES, psis=PSIS):
+    best = {}
+    for e in es:
+        for psi in psis:
+            for k, v in case(e, psi, kmh).items():
+                if v > best.get(k, -1.0):
+                    best[k] = v
+    return best
 
-    gb = P.GEARBOX[P.GEARBOX_DEFAULT]
-    out.append('## Motion\n')
-    out.append(f'{P.VMAX_DPS:.0f}°/s at the output = {P.VMAX_DPS / 6 * gb["ratio"]:.0f} rpm at the motor, '
-               f'{step_rate(gb):.0f} steps/s at {P.NEMA23["steps_rev"] * P.MICROSTEP} microsteps/rev (DM542 as on SARCTrac Mk5, SARCNET; well inside RP2040 PIO and DM542 limits).\n')
 
-    o = mk5_options()
-    out.append('## Mk5 options decided by the checks\n')
-    out.append(f'- **M14 threaded rod as EL shaft** (Mk5): von Mises {o["el_vm"]:.0f} MPa at the outer bearing vs {P.M14_ROD["yield_mpa"]:.0f} MPa '
-               f'({P.M14_ROD["name"]}), SF {o["el_sf"]:.1f} (needed {SF_CLAMP:g}) {"✅" if o["el_sf"] >= SF_CLAMP else "❌ keep the turned Ø30 shaft"}.')
-    out.append(f'- **M14 rod as AZ gearbox section** (torque only, standstill torque): von Mises {o["az_vm"]:.0f} MPa, SF {o["az_sf"]:.1f}; '
-               'it passes as a stub but the AZ shaft must stay one Ø30 piece (bearing seats, Ø16 cable bore), so no saving.')
-    out.append(f'- **M30x56x3 shims under the 51206**: circlip + {P.SHIM["n_max"]} washers = {o["stack"]:.1f} mm of the {o["gap"]:.1f} mm to the mast clamp '
-               f'{"✅" if o["stack"] <= o["gap"] - 1.0 else "❌"} (1 mm spare).\n')
+def inertia_el():
+    return sum(m * (a * a + h * h) for _, m, a, y, h in MOV) + sum(an['m'] * an['bl'] ** 2 / 12 for an in ANTS)
 
-    out.append('## Recommendation\n')
-    for p in PAYLOADS:
-        first = next((g for g in P.GEARBOX if ok(evaluate(p, g))), None)
-        out.append(f'- {p["name"]}: ' + (f'**{first}**' if first else '**none of the NMRV sizes**: use a slewing drive or reduce the payload'))
-    return '\n'.join(out) + '\n'
+
+def inertia_az(e):
+    tot = 0.0
+    for _, m, a, y, h in MOV:
+        x, yy, _z = P(a, y, h, e)
+        tot += m * (x * x + yy * yy)
+    tot += sum(m * (x * x + y * y) for _, m, x, y, z in HEAD)
+    tot += sum(an['m'] / 12 * (an['bl'] ** 2 * math.cos(math.radians(e)) ** 2 + an['el'] ** 2) for an in ANTS)
+    return tot + boom_mass() * I['boom_len'] ** 2 / 12
+
+
+def stop(i_ax, r):
+    """Bumper impact at vmax: energy, force, torque at the stop radius, bumper stroke."""
+    it, k = i_ax + J_R, I['bumper_k']
+    f = OMEGA * math.sqrt(k * it)
+    return 0.5 * it * OMEGA ** 2, f, f * r, f / k
+
+
+def life_years(C, p, deg_per_pass):
+    return (C / p) ** 3 * 1e6 / (I['passes_per_day'] * 365 * deg_per_pass / 360)
+
+
+def p_dyn(fr, fa):
+    return max(fr, 0.56 * fr + 1.6 * fa)
+
+
+def p_stat(fr, fa):
+    return max(fr, 0.6 * fr + 0.5 * fa)
+
+
+def motor_torque(rpm):
+    c = I['motor_curve']
+    if rpm <= c[0][0]:
+        return c[0][1]
+    for (r0, t0), (r1, t1) in zip(c, c[1:]):
+        if rpm <= r1:
+            return t0 + (t1 - t0) * (rpm - r0) / (r1 - r0)
+    return c[-1][1]
+
+
+def lock_factor(mu):
+    return mu / math.cos(math.radians(I['worm_alpha'])) / math.tan(math.radians(I['worm_lead_deg']))
+
+
+def mast():
+    D, t = I['mast_od'], I['mast_t']
+    d = D - 2 * t
+    ix, a = math.pi / 64 * (D ** 4 - d ** 4), math.pi / 4 * (D * D - d * d)
+    return dict(I=ix, Z=ix / (D / 2), EI=I['mast_e'] * ix, GJ=I['mast_g'] * 2 * ix, m=I['mast_rho'] * a * I['mast_free_h'])
+
+
+def keyed_sections(d=0.014, b=0.005, t1=0.003):
+    k = b * t1 * (d - t1) ** 2 / (2 * d)
+    return math.pi * d ** 3 / 32 - k, math.pi * d ** 3 / 16 - k
+
+
+def rod_sections():
+    dr, dh = I['rod_d'], I['pin_d']
+    return math.pi * dr ** 3 / 32 - dh * dr ** 2 / 6, math.pi * dr ** 3 / 16 - dh * dr ** 2 / 6
+
+
+def shaft_decision(mb_s, mb_op, t_op):
+    """Keyed turned shaft vs Mk5 M14 rod + roll pin: static von Mises at the gearbox peak/rated torque, fatigue at the operating load."""
+    zk, wk = keyed_sections()
+    zr, wr = rod_sections()
+    out = {}
+    for name, z, w, dd, rm, y, (kb, kt), ks in (('keyed Ø14 turned', zk, wk, 0.014, I['shaft_rm'], I['shaft_yield'], I['kf_keyway'], 0.8),
+                                                ('M14 rod + 5x8 pin', zr, wr, I['rod_d'], I['rod_rm'], I['rod_yield'], I['kf_thread'], 0.9)):
+        st = lambda T: y / math.hypot(mb_s / z, math.sqrt(3) * T / w)
+        sb, ta = 32 * mb_op / (math.pi * dd ** 3) * kb, 16 * t_op / (math.pi * dd ** 3) * kt
+        se = 0.45 * rm * ks * 0.9 * 0.9
+        out[name] = dict(Z=z, W=w, sf_peak=st(PEAK), sf_rated=st(RATED), sig=math.hypot(sb, math.sqrt(3) * ta), se=se)
+    return out
+
+
+# ---- Evaluation -----------------------------------------------------------------------------------------------------------------
+def evaluate():
+    CHK.clear()
+    R = {}
+    # mass and gravity balance
+    chk('Mass', 'total mass (head + payload + stationary)', M_TOT, I['max_mass'], 1.0, 'kg, LIGHT goal')
+    sum_a, sum_h = sum(s[0] for s in SIDE), sum(s[1] for s in SIDE)
+    lv = I['cw_lever']
+    R['g_nocw'] = G * math.hypot(sum_a, sum_h)
+    R['mcw_tot'] = sum(an['mcw'] for an in ANTS)
+    R['mcw_min'] = max(0.0, (math.hypot(sum_a, sum_h) - I['cw_res_max'] / G) / lv)
+    R['res'] = G * (sum(an['m'] for an in ANTS) * I['cg_err'] + R['mcw_tot'] * lv * I['cw_tol'])      # before the CG is measured
+    R['res_trim'] = G * R['mcw_tot'] * lv * I['cw_tol']                                                # after trimming on the real CG
+    chk('EL gravity balance', 'residual gravity torque (CG and counterweight tolerances)', R['res'], I['cw_res_max'], 1.0, 'N·m')
+    chk('EL gravity balance', 'counterweight mass incl. hardware >= hardware alone', I['cw_hw'], min(an['mcw'] for an in ANTS), 1.0, 'kg')
+    # wind sweeps
+    op, sv, ac = peak(I['wind_op']), peak(I['wind_surv']), peak(I['wind_acc'])
+    rows = [(e, peak(I['wind_surv'], [e])) for e in range(-30, 151, 5)]
+    R['e_park'] = min(rows, key=lambda r: max(r[1]['tau_az'], r[1]['tau_el']))[0]
+    ps = peak(I['wind_surv'], [R['e_park']])
+    p130 = peak(I['wind_surv_opt'], [R['e_park']])
+    R.update(op=op, sv=sv, ac=ac, ps=ps, p130=p130)
+    R['sweep'] = [(e, peak(I['wind_op'], [e]), peak(I['wind_surv'], [e])) for e in (-30, 0, 30, 60, 90, 120, 150)]
+    R['park'] = [(e, peak(I['wind_surv'], [e])) for e in (0, 90, R['e_park'])]
+    # acceleration, motor, gearbox
+    R['iel'], R['iaz'] = inertia_el(), max(inertia_az(e) for e in ES)
+    R['taz'] = op['tau_az'] + (R['iaz'] + J_R) * ALPHA
+    R['tel'] = op['tau_el'] + R['res'] + (R['iel'] + J_R) * ALPHA
+    allowed = RATED / I['service_factor']
+    chk('Gearbox (service factor)', 'AZ output torque at 60 km/h + acceleration', R['taz'], allowed, 1.0, f'N·m vs rating {RATED}/SF {I["service_factor"]}')
+    chk('Gearbox (service factor)', 'EL output torque at 60 km/h + residual + acceleration', R['tel'], allowed, 1.0, 'N·m')
+    R['rpm'] = I['vmax_dps'] / 360 * 60 * RATIO
+    R['tm'] = motor_torque(R['rpm'])
+    R['avail'] = R['tm'] * I['motor_usable'] * RATIO * ETA
+    chk('Motor', f'torque margin at {I["vmax_dps"]:g} deg/s ({R["rpm"]:.0f} rpm motor)', max(R['taz'], R['tel']), R['avail'], 1.5, 'N·m at the output')
+    R['stall_out'] = PR.NEMA23['t_hold'] * RATIO * ETA
+    # mechanical stops
+    R['stops'] = []
+    for nm, iax, r in (('AZ', R['iaz'], I['stop_r'][0]), ('EL', R['iel'], I['stop_r'][1])):
+        e_, f_, t_, s_ = stop(iax, r)
+        R['stops'].append((nm, e_, f_, t_, s_))
+        chk('Mechanical stops', f'{nm} bumper impact torque at vmax', t_, PEAK, 2.0, f'N·m vs gearbox peak {PEAK:g}')
+        chk('Mechanical stops', f'{nm} bumper stroke', s_, I['bumper_stroke'], 1.5, 'm')
+    R['soft_margin'] = math.degrees(OMEGA) ** 2 / (2 * I['acc_dps2']) + I['vmax_dps'] * I['latency_s']
+    # bearings
+    uplift = q_dyn(I['wind_surv']) * I['cl_ant'] * sum(an['As'] for an in ANTS)
+    R['uplift'] = uplift
+    chk('Bearings', 'AZ circlip retention vs wind uplift', uplift, I['circlip_n'], 2.0, 'N')
+    rad, thr = PR.RADIAL, PR.THRUST
+    az_s, az_o = max(ps['az_up'], ps['az_lo']), max(op['az_up'], op['az_lo'])
+    chk('Bearings', f'AZ radial {rad["name"]}: static P0 (survival, parked)', az_s, rad['C0'] / 2, 1.0, f'N vs C0/2 (s0 >= 2)')
+    yrs = life_years(rad['C'], az_o, I['az_travel_pass'])
+    chk('Bearings', f'AZ radial {rad["name"]}: L10 life at duty', I['life_years'], yrs, 1.0, f'years (P = {az_o:.0f} N, 60 km/h worst case)')
+    chk('Bearings', f'AZ thrust {thr["name"]}: static (weight + survival)', ps['az_fz'], thr['C0'] / 2, 1.0, 'N vs C0/2')
+    chk('Bearings', f'AZ thrust {thr["name"]}: L10 life', I['life_years'], life_years(thr['C'], op['az_fz'], I['az_travel_pass']), 1.0, 'years')
+    el_p0 = p_stat(ps['el_r'], ps['el_ax'])
+    el_p = p_dyn(op['el_r'], op['el_ax'])
+    chk('Bearings', f'EL {BRG_EL["name"]}: static (locating bearing, survival)', el_p0, BRG_EL['C0'] / 2, 1.0, 'N vs C0/2')
+    chk('Bearings', f'EL {BRG_EL["name"]}: L10 life', I['life_years'], life_years(BRG_EL['C'], el_p, I['el_travel_pass']), 1.0, f'years (P = {el_p:.0f} N)')
+    R['brg'] = dict(az_s=az_s, az_o=az_o, az_yrs=yrs, el_p0=el_p0, el_p=el_p)
+    chk('Gearbox', 'radial load from bearing/bore coaxiality', 48 * I['shaft_e'] * math.pi / 64 * 0.014 ** 4 * max(0.0, I['coax_err'] - I['fit_clear']) / I['el_span'] ** 3,
+        0.2 * GB['fr2'], 1.0, 'N vs 0.2 x fr2 (dedicated bearings carry the external loads)')
+    # mast
+    m = mast()
+    R['mast'] = m
+    h = I['mast_free_h']
+    m_base = ps['m_cl'] + ps['f_h'] * h + q_dyn(I['wind_surv']) * 1.2 * I['mast_od'] * h * h / 2
+    R['m_base'] = m_base
+    chk('Mast', 'bending stress at the base (survival)', m_base / m['Z'], I['mast_yield'], 1.5, 'Pa')
+    m_head = M_TOT
+    R['fn'] = math.sqrt(3 * m['EI'] / h ** 3 / (m_head + 0.2357 * m['m'])) / (2 * math.pi)
+    R['fn_t'] = math.sqrt(m['GJ'] / h / R['iaz']) / (2 * math.pi)
+    t_acc = I['vmax_dps'] / I['acc_dps2']
+    R['fn_req'] = I['mast_min_fn_factor'] / t_acc
+    chk('Mast', 'bending natural frequency vs tracking ramp', R['fn_req'], R['fn'], 1.0, f'Hz ({I["mast_min_fn_factor"]:g} x 1/t_acc)')
+    chk('Mast', 'torsional natural frequency vs tracking ramp', R['fn_req'], R['fn_t'], 1.0, 'Hz')
+    # clamps
+    pre, d_leg = I['ubolt_leg_pre'], ps['m_cl'] / CLAMP_SPAN / 2
+    R['d_leg'] = d_leg
+    chk('Clamps', 'mast U-bolt: preload kept under survival overturning', d_leg, pre, 1.5, 'N per leg')
+    chk('Clamps', 'mast U-bolt: leg stress (preload + overturning)', pre + d_leg, AS_BOLT['M8'] * I['bolt_rp'], 1.5, 'N, M8 8.8 yield load')
+    r_min = I['mast_range'][0] / 2
+    R['t_slip'] = I['mu_clamp'] * math.sqrt(2) * 2 * pre * r_min * 2
+    chk('Clamps', 'mast clamp slip torque (2 clamps, V faces) vs gearbox peak', PEAK, R['t_slip'], 2.0, 'N·m')
+    sig = (2 * pre / (I['mast_od'] * I['clamp_w'])) * (I['mast_od'] / 2 / I['mast_t']) * I['crush_kloc']
+    R['crush'] = sig
+    chk('Clamps', 'mast tube crush under the clamp', sig, I['mast_yield'], 1.5, 'Pa (design mast Ø60.3 x 3.6)')
+    t_boom = I['mu_clamp'] * 4 * I['boom_clamp_leg_pre'] * I['boom_w'] / 2
+    R['t_boom'] = t_boom
+    chk('Clamps', 'boom twist slip in the saddle vs EL torque (survival)', ps['tau_el'], t_boom, 2.0, 'N·m')
+    chk('Clamps', 'boom axial slip in the saddle vs wind', ps['fy_w'], I['mu_clamp'] * 4 * I['boom_clamp_leg_pre'], 2.0, 'N')
+    # keys (DIN 6885)
+    R['keys'] = []
+    for nm, d, b, t2, l, T, hub in (('EL/AZ gearbox hub, Ø14 5x5x40', 14, 5, 2.3, I['key_len_hub'], PEAK, I['shaft_yield']),
+                                    ('EL yoke arm, Ø20 6x6x25 (T/2 each)', 20, 6, 2.8, I['key_len_arm'], PEAK / 2, min(I['shaft_yield'], I['a356_yield']))):
+        d_, b_, t_ = d / 1000, b / 1000, t2 / 1000
+        tau = 2 * T / (d_ * b_ * l)
+        pr = 2 * T / (d_ * t_ * l * 0.75)
+        R['keys'].append((nm, T, tau, pr))
+        chk('Keys', nm + ': shear', tau, 0.58 * I['shaft_yield'], 2.0, 'Pa at the gearbox peak torque')
+        chk('Keys', nm + ': bearing pressure', pr, hub, 2.0, 'Pa at the gearbox peak torque')
+    # bolts (VDI 2230 simplified)
+    R['bolts'] = []
+    for nm, a in AS_BOLT.items():
+        d = float(nm[1:]) / 1000
+        fm = 0.7 * I['bolt_rp'] * a
+        R['bolts'].append((nm, a * 1e6, fm, I['nut_k'] * d * fm))
+    f_sh = PEAK / (4 * PR.NMRV030_GEO['face_pcd'] / 2000)
+    chk('Bolts', 'gearbox face M6 x4: friction grip vs torque', f_sh, 0.15 * 0.7 * I['bolt_rp'] * AS_BOLT['M6'], 2.0, 'N per bolt, mu 0.15')
+    # EL/AZ shaft decision
+    mb_s, mb_op = ps['mb'], op['mb']
+    R['shaft'] = shaft_decision(mb_s, mb_op, R['tel'])
+    kd = R['shaft']['keyed Ø14 turned']
+    chk('Shaft', 'keyed Ø14: static von Mises at gearbox peak', I['shaft_yield'] / kd['sf_peak'], I['shaft_yield'], 2.0, 'Pa')
+    chk('Shaft', 'keyed Ø14: fatigue at operating load', kd['sig'], kd['se'], 1.5, 'Pa')
+    # input adapter
+    chk('Input adapter', 'Ø8 -> Ø11 bushing set-screw holding torque vs 2 x motor holding torque', 2 * PR.NEMA23['t_hold'], I['adapter_hold'], 1.0, 'N·m')
+    # pointing error at the accuracy wind
+    h_ = I['mast_free_h']
+    tz = ac['tau_az']
+    te = ac['tau_el'] + R['res_trim']
+    phi = (ac['fw'] * h_ ** 2 / 2 + ac['mw'] * h_) / m['EI']
+    jp = lambda d: math.pi * d ** 4 / 32
+    gs = I['shaft_g']
+    am, per = (I['boom_w'] - I['boom_t']) ** 2, 4 * (I['boom_w'] - I['boom_t'])
+    jb = 4 * am ** 2 * I['boom_t'] / per
+    half = 360 / (PR.NEMA23['steps_rev'] * PR.MICROSTEP * RATIO) / 2
+    play_az, play_el = 2 * I['brg_play'] / I['az_span'] * R2D, 2 * I['brg_play'] / I['el_span'] * R2D
+    az_fix = [('resolution (half microstep)', half), ('backlash residual after compensation', I['bl_repeat']), ('bearing-play tilt', play_az)]
+    az_load = [('gearbox torsion', tz / I['gb_stiff'] * R2D),
+               ('AZ shaft torsion (Ø14 + Ø30)', tz * (I['az_sec14_len'] / (gs * jp(0.014)) + I['az_sec30_len'] / (gs * jp(0.030))) * R2D),
+               ('mast torsion', tz * h_ / m['GJ'] * R2D), ('mast tilt', phi * R2D)]
+    el_fix = [('resolution (half microstep)', half), ('backlash residual after compensation', I['bl_repeat']), ('bearing-play tilt', play_el),
+              ('trimmed gravity residual / gearbox', R['res_trim'] / I['gb_stiff'] * R2D)]
+    el_load = [('gearbox torsion', ac['tau_el'] / I['gb_stiff'] * R2D),
+               ('EL shaft torsion (Ø14 + Ø20 per arm)', ac['tau_el'] * (I['el_sec14_len'] / (gs * jp(0.014)) + I['el_sec20_len'] / (gs * jp(0.020)) / 2) * R2D),
+               ('boom torsion (half length)', ac['tau_el'] / 2 * (I['boom_len'] / 2) / (I['boom_g'] * jb) * R2D), ('mast tilt', phi * R2D)]
+    pt = {}
+    for nm, fix, load in (('AZ', az_fix, az_load), ('EL', el_fix, el_load)):
+        f, l = sum(v for _, v in fix), sum(v for _, v in load)
+        vlim = I['wind_acc'] * math.sqrt(max(0.0, 0.1 - f) / l) if l > 0 else float('inf')
+        pt[nm] = dict(fix=fix, load=load, f=f, l=l, tot=f + l, vlim=vlim)
+        chk('Pointing error', f'{nm} total at {I["wind_acc"]:g} km/h (target < 0.1 deg)', f + l, 0.1, 1.0, 'deg, linear sum of the terms')
+    R['pt'] = pt
+    R['half'] = half
+    # raw backlash (information) and chain
+    keyslack = lambda d: math.degrees(I['key_clear'] / (d / 2))
+    in_play = math.degrees(I['key_clear'] / (I['adapter_od'] / 2000)) / RATIO
+    R['bl_raw'] = dict(AZ=I['gb_backlash'] + keyslack(0.014) + in_play, EL=I['gb_backlash'] + keyslack(0.014) + keyslack(0.020) + in_play, gb=I['gb_backlash'], key14=keyslack(0.014), key20=keyslack(0.020), inp=in_play)
+    # power loss and parking
+    R['lock_s'], R['lock_d'] = lock_factor(I['worm_mu_static']), lock_factor(I['worm_mu_dyn'])
+    chk('Power loss', 'worm self-locking factor with dynamic friction', I['lock_min_dyn'], R['lock_d'], 1.0, 'factor mu/cos(alpha)/tan(lead)')
+    chk('Power loss', 'AZ holding torque, survival, parked at the best elevation', ps['tau_az'], PEAK, 1.5, 'N·m vs gearbox peak')
+    chk('Power loss', 'EL holding torque, survival, parked at the best elevation', ps['tau_el'], PEAK, 1.5, 'N·m vs gearbox peak')
+    chk('Survival 130 km/h (option)', 'AZ holding torque', p130['tau_az'], PEAK, 1.5, 'N·m, reported only', True)
+    chk('Survival 130 km/h (option)', 'EL holding torque', p130['tau_el'], PEAK, 1.5, 'N·m, reported only', True)
+    return R
+
+
+# ---- Reports --------------------------------------------------------------------------------------------------------------------
+def report(R):
+    L = ['# LSR-2 sizing (Mk5-schematic architecture)', '',
+         'Generated by `python calc/lsr2_sizing.py` from `cad/lsr2/inputs.py` and `cad/lsr2/params.py`. Do not edit by hand. '
+         'Inputs and open decisions: [LSR2_INPUTS.md](LSR2_INPUTS.md). Each number carries its tag in the inputs table '
+         '(DATASHEET / MEASURE / PARAMETRIC); results are only as good as the MEASURE rows.', '']
+    fails = [c for c in CHK if not c['opt'] and c['sf'] < c['tgt']]
+    L += [f'**Result: {"all safety factors meet their target" if not fails else str(len(fails)) + " check(s) below target"}.** '
+          f'Total mass {M_TOT:.1f} kg (limit {I["max_mass"]:g}); moving group {M_MOV:.1f} kg; head {M_HEAD:.1f} kg; '
+          f'worst case taken over elevation {ES[0]}..{ES[-1]} deg and wind azimuth 0..345 deg.', '']
+    L += ['## 1. Safety-factor summary', '']
+    secs = []
+    for c in CHK:
+        if c['sec'] not in secs:
+            secs.append(c['sec'])
+    for s in secs:
+        L += [f'### {s}', '']
+        L += tbl(['Check', 'Demand', 'Capacity', 'SF', 'Target', 'OK', 'Note'],
+                 [(c['name'], g(c['dem']), g(c['cap']), g(c['sf'], 3), g(c['tgt'], 2), ('✅' if c['sf'] >= c['tgt'] else ('➖' if c['opt'] else '❌')), c['note']) for c in CHK if c['sec'] == s])
+    L += ['## 2. Gravity balance on EL', '']
+    L += tbl(['Item', 'Value'], [('Moment without counterweights (both sides)', f'{R["g_nocw"]:.2f} N·m (max over elevation)'),
+                                ('Counterweights (balanced, incl. hardware)', ' + '.join(f'{an["mcw"]:.2f} kg' for an in ANTS) + f' = {R["mcw_tot"]:.2f} kg at {I["cw_lever"]*1000:.0f} mm'),
+                                ('Minimum total counterweight for a residual <= ' + f'{I["cw_res_max"]:g} N·m', f'{R["mcw_min"]:.2f} kg'),
+                                ('Residual before the CG is measured', f'{R["res"]:.2f} N·m'),
+                                ('Residual after trimming (cw tolerance only)', f'{R["res_trim"]:.3f} N·m')])
+    L += [f'Counterweights are adjustable (clamped on a threaded arm), so trimming on the real CG removes the antenna-CG term. '
+          f'Moving group about EL: {R["iel"]:.2f} kg·m² (+ rotor {J_R:.2f} reflected); head + antennas about AZ: {R["iaz"]:.2f} kg·m² worst case.', '']
+    L += ['## 3. Wind torque vs elevation (worst azimuth, N·m)', '']
+    L += tbl(['EL deg', f'AZ @ {I["wind_op"]:g} km/h', f'EL @ {I["wind_op"]:g} km/h', f'AZ @ {I["wind_surv"]:g} km/h', f'EL @ {I["wind_surv"]:g} km/h'],
+             [(e, g(o['tau_az'], 3), g(o['tau_el'], 3), g(s['tau_az'], 3), g(s['tau_el'], 3)) for e, o, s in R['sweep']])
+    L += [f'Dynamic pressure q({I["wind_op"]:g} km/h) = {q_dyn(I["wind_op"]):.1f} Pa, q({I["wind_surv"]:g}) = {q_dyn(I["wind_surv"]):.1f} Pa. '
+          f'Antenna area A = Af cos(t) + As sin(t), t = angle between boresight and wind, force at the centre of pressure.', '']
+    L += ['## 4. Parking in survival wind', '']
+    L += tbl(['Parked EL deg', 'AZ torque N·m', 'EL torque N·m'], [(e, g(p['tau_az'], 3), g(p['tau_el'], 3)) for e, p in R['park']])
+    L += [f'Best elevation on the sweep: {R["e_park"]} deg (minimises the larger of the two torques; compare the zenith and horizon rows above). '
+          f'130 km/h option at that elevation: AZ {R["p130"]["tau_az"]:.1f}, EL {R["p130"]["tau_el"]:.1f} N·m '
+          f'against the peak {PEAK:g} N·m (reported, not a gate).', '']
+    L += ['## 5. Motor and gearbox', '']
+    L += tbl(['Item', 'Value'], [(f'Motor speed at {I["vmax_dps"]:g} deg/s', f'{R["rpm"]:.0f} rpm; step rate {I["vmax_dps"]/360*PR.NEMA23["steps_rev"]*PR.MICROSTEP*RATIO:.1f} steps/s'),
+                                ('Torque from the curve (MEASURE, typical NEMA23)', f'{R["tm"]:.2f} N·m x {I["motor_usable"]} usable'),
+                                ('Available at the output', f'{R["avail"]:.1f} N·m (x {RATIO} x eta {ETA})'),
+                                ('Required AZ / EL (60 km/h + acceleration)', f'{R["taz"]:.1f} / {R["tel"]:.1f} N·m'),
+                                ('Gearbox allowed (rating / service factor)', f'{RATED / I["service_factor"]:.1f} N·m; peak {PEAK:g} N·m'),
+                                ('Motor stall torque at the output', f'{R["stall_out"]:.0f} N·m, above the gearbox peak: stops are soft first (see 6)')])
+    L += ['The motor can overload the gearbox: keep the firmware soft limits, a bumper per stop and, if the bench shows it, reduce the DM542 current.', '']
+    L += ['## 6. Mechanical stops', '']
+    L += tbl(['Axis', 'Energy J', 'Force N', 'Torque N·m', 'Stroke mm'], [(n, g(e, 3), g(f, 3), g(t, 3), g(s * 1000, 3)) for n, e, f, t, s in R['stops']])
+    L += [f'Bumper k = {I["bumper_k"]:g} N/m (PARAMETRIC). Software deceleration from vmax needs {R["soft_margin"]:.1f} deg between the soft limit and the '
+          f'mechanical stop (v²/2a + v·latency); inside that margin the bumper takes the rest.', '']
+    L += ['## 7. Bearing loads', '']
+    b = R['brg']
+    L += tbl(['Bearing', 'Survival, parked (N)', '60 km/h worst case (N)'],
+             [('AZ radial pair (max of upper / lower)', g(b['az_s'], 4), g(b['az_o'], 4)), ('AZ thrust (axial)', g(R['ps']['az_fz'], 4), g(R['op']['az_fz'], 4)),
+              ('EL 6004 (radial / axial on the locating one)', f'{R["ps"]["el_r"]:.0f} / {R["ps"]["el_ax"]:.0f}', f'{R["op"]["el_r"]:.0f} / {R["op"]["el_ax"]:.0f}'),
+              ('Overturning moment at the mast clamp (N·m)', g(R['ps']['m_cl'], 4), g(R['op']['m_cl'], 4))])
+    L += ['Gearboxes only transmit torque; the external loads go to these bearings. EL shaft bending at the hub: '
+          f'{R["ps"]["mb"]:.1f} N·m survival, {R["op"]["mb"]:.1f} N·m operating.', '']
+    L += ['## 8. Mast and clamps', '']
+    m = R['mast']
+    L += tbl(['Item', 'Value'], [('Mast', f'Ø{I["mast_od"]*1000:.1f} x {I["mast_t"]*1000:.1f} mm, I = {m["I"]:.4g} m⁴, EI = {m["EI"]/1000:.1f} kN·m², free height {I["mast_free_h"]:g} m'),
+                                ('Base moment, survival', f'{R["m_base"]:.0f} N·m ({R["m_base"]/m["Z"]/1e6:.0f} MPa)'),
+                                ('Natural frequency bending / torsion', f'{R["fn"]:.1f} / {R["fn_t"]:.1f} Hz, required >= {R["fn_req"]:.1f} Hz'),
+                                ('U-bolt leg load change', f'{R["d_leg"]:.0f} N on {I["ubolt_leg_pre"]:g} N preload'),
+                                ('Clamp slip torque / crush stress', f'{R["t_slip"]:.0f} N·m / {R["crush"]/1e6:.0f} MPa'),
+                                ('Boom twist slip torque', f'{R["t_boom"]:.0f} N·m')])
+    L += ['Installation: ' + I['install'] + '.', '']
+    L += ['## 9. Keys and bolts', '']
+    L += tbl(['Key (DIN 6885)', 'T N·m', 'Shear MPa', 'Pressure MPa'], [(n, g(T, 3), g(t / 1e6, 3), g(p / 1e6, 3)) for n, T, t, p in R['keys']])
+    L += tbl(['Bolt 8.8', 'As mm²', 'Preload 0.7 Rp·As (N)', 'Tightening torque K·d·F (N·m)'], [(n, g(a, 3), f'{fm:.0f}', g(t, 3)) for n, a, fm, t in R['bolts']])
+    L += [f'K = {I["nut_k"]} with anti-seize. Simplified VDI 2230: no embedding or load-introduction factors; verify critical joints with the full method.', '']
+    L += ['## 10. Pointing error and resolution chain', '']
+    for nm in ('AZ', 'EL'):
+        p = R['pt'][nm]
+        L += [f'### {nm}', '']
+        L += tbl(['Term', 'deg', 'Kind'], [(n, g(v, 3), 'fixed') for n, v in p['fix']] + [(n, g(v, 3), f'load, at {I["wind_acc"]:g} km/h') for n, v in p['load']] +
+                 [('**Total**', f'**{p["tot"]:.3f}**', 'target < 0.1')])
+        L += [f'Error vs wind: ' + ', '.join(f'{v:g} km/h: {p["f"] + p["l"] * (v / I["wind_acc"]) ** 2:.3f} deg' for v in (10, 25, 40, 60)) +
+              f'. The 0.1 deg target holds up to {p["vlim"]:.0f} km/h.', '']
+    bl = R['bl_raw']
+    L += [f'Resolution: {360 / (PR.NEMA23["steps_rev"] * PR.MICROSTEP * RATIO):.5f} deg per microstep ({PR.NEMA23["steps_rev"] * PR.MICROSTEP} microsteps/rev through {RATIO}:1). '
+          f'Raw backlash AZ {bl["AZ"]:.2f} deg, EL {bl["EL"]:.2f} deg (gearbox {bl["gb"]:.2f} + keys {bl["key14"]:.2f}/{bl["key20"]:.2f} + input {bl["inp"]:.3f}): '
+          f'above 0.1 deg, so the firmware reversal compensation is required; the budget uses the residual {I["bl_repeat"]:g} deg (MEASURE with XCAL BACKLASH).', '']
+    L += ['## 11. Power loss', '']
+    L += tbl(['Item', 'Value'], [('Self-locking factor, static / dynamic friction', f'{R["lock_s"]:.2f} / {R["lock_d"]:.2f} (need >= {I["lock_min_dyn"]})'),
+                                ('Survival torque at the best parking elevation AZ / EL', f'{R["ps"]["tau_az"]:.1f} / {R["ps"]["tau_el"]:.1f} N·m'),
+                                ('Verdict', 'no brake needed if the bench test confirms the worm holds under vibration; park at the best elevation before power-off')])
+    L += ['## 12. Gearbox input adapter (NMRV030 Ø11 bore vs 57BYG250H-8 Ø8 shaft)', '']
+    L += tbl(['Part', 'Dimension', 'Tag'], [('Keyed bushing OD (fits the gearbox bore)', f'Ø{I["adapter_od"]:g} mm, key {I["adapter_key"]}', 'DATASHEET (caliper the real bore)'),
+                                          ('Bushing ID (motor shaft with flat)', f'Ø{I["adapter_id"]:g} mm', 'DATASHEET (caliper the flat)'),
+                                          ('Length', f'{I["adapter_len"]:g} mm', 'MEASURE'), ('Retention', I['adapter_screws'], 'PARAMETRIC'),
+                                          ('Holding torque', f'{I["adapter_hold"]:g} N·m vs 2 x {PR.NEMA23["t_hold"]} N·m motor', 'MEASURE (pull test)')])
+    L += ['Alternative: a supplier NEMA23 input kit with an Ø8 bore (no bushing, no extra play); preferred if the price is similar. Decide after the caliper check.', '']
+    L += ['## 13. EL / AZ shaft decision: Mk5 M14 rod + 5x8 roll pins vs a turned keyed shaft', '']
+    kd, rd = R['shaft']['keyed Ø14 turned'], R['shaft']['M14 rod + 5x8 pin']
+    L += tbl(['Criterion', 'Keyed Ø14 turned 1.4404 +C700', 'M14 A2-70 rod + 5x8 pin'],
+             [('Net bending / torsion modulus (mm³)', f'{kd["Z"]*1e9:.1f} / {kd["W"]*1e9:.0f}', f'{rd["Z"]*1e9:.1f} / {rd["W"]*1e9:.0f}'),
+              (f'Static SF at gearbox peak {PEAK:g} N·m', g(kd['sf_peak'], 3), g(rd['sf_peak'], 3)), (f'Static SF at rated {RATED:g} N·m', g(kd['sf_rated'], 3), g(rd['sf_rated'], 3)),
+              ('Fatigue SF at the operating load (Kf keyway 1.8/1.6; thread 2.8)', g(kd['se'] / kd['sig'], 3), g(rd['se'] / rd['sig'], 3)),
+              ('Fit and play', 'H7/g6 seat, P9 key: slack ~0.16 deg at the output', 'thread and pin hole: larger slack, pin shear '
+               f'{PEAK / (I["rod_d"] / 2) / (2 * math.pi / 4 * I["pin_d"] ** 2) / 1e6:.0f} MPa at peak (MEASURE the pin steel)'),
+              ('Replacement', 'turn one shaft, press fit, keys are standard', 'cheapest and field-replaceable (Mk5 choice)')])
+    L += ['**Decision: turned keyed shaft** (higher margin at the gearbox peak and a defined fit). The M14 rod is acceptable only with a torque limit '
+          f'<= {RATED:g} N·m (rated, not peak) and an inspection of the roll-pin holes. Keep the M14 rod as the low-cost fallback.', '']
+    return '\n'.join(L)
+
+
+def inputs_md():
+    L = ['# LSR-2 input data and open decisions', '',
+         'Generated by `python calc/lsr2_sizing.py` from `cad/lsr2/inputs.py` (single source). Do not edit by hand. '
+         'DATASHEET = published by a maker or a standard; MEASURE = needs a caliper, scale or bench test; PARAMETRIC = our own choice, editable.', '']
+    groups = []
+    for r in IN.ROWS:
+        if r[0] not in groups:
+            groups.append(r[0])
+    for gname in groups:
+        L += [f'## {gname}', '']
+        L += tbl(['Key', 'Value', 'Unit', 'Tag', 'Note'], [(f'`{k}`', str(v).replace('|', '/'), u, t, n.replace('|', '/')) for gg, k, v, u, t, n in IN.ROWS if gg == gname])
+    L += ['## Head items that rotate with AZ (not EL)', '']
+    L += tbl(['Item', 'Mass kg', 'x, y, z m', 'Tag', 'Note'], [(n, g(m, 3), f'{x:g}, {y:g}, {z:g}', t, nt) for n, m, x, y, z, t, nt in IN.HEAD])
+    L += ['## Open decisions', ''] + [f'{i + 1}. {d}' for i, d in enumerate(IN.OPEN_DECISIONS)] + ['']
+    return '\n'.join(L)
+
+
+# ---- Self-test ------------------------------------------------------------------------------------------------------------------
+def firmware_profile():
+    p = os.path.join(ROOT, 'firmware', 'src', 'core.cpp')
+    if not os.path.exists(p):
+        return None
+    m = re.search(r'\{"LSR-2",(.*?)\}', open(p, encoding='utf-8').read())
+    return [float(x) for x in re.findall(r'[-\d.]+(?=f)', m.group(1))] if m else None
 
 
 def self_test():
-    assert abs(q(60) - 170.2) < 0.5, q(60)
-    assert abs(step_rate(P.GEARBOX['NMRV030']) - 1066.7) < 1       # 12/360*80*200*2, Mk5 400 microsteps/rev
-    o = mk5_options()
-    assert o['el_sf'] < SF_CLAMP, 'M14 rod must fail the EL bending check (turned Ø30 shaft stays)'
-    assert o['stack'] <= o['gap'] - 1.0, 'shim stack must fit between the 51206 shaft washer and the mast clamp'
-    yagi, dish18 = PAYLOADS[0], PAYLOADS[-1]
-    assert ok(evaluate(yagi, 'NMRV030')), 'Yagi pair should fit the NMRV030'
-    assert not ok(evaluate(dish18, 'NMRV030')), '1.8 m solid dish must not pass on NMRV030'
-    # hand check, Yagi at 60 km/h: 170.2 Pa * 1.2 * 0.35 * 0.15 + 6 * 9.81 * 0.02 = 10.72 + 1.18
-    assert abs(evaluate(yagi, 'NMRV030')['t_op'] - 11.90) < 0.05
-    assert evaluate(yagi, 'NMRV030')['m_over'] > evaluate(yagi, 'NMRV030')['m_gear_allow'], 'gearbox alone must fail overturning'
-    # hand checks: rib couple 60 N·m over r=0.04 m with 2 ribs = 750 N; Euler E=72000, I=100, L=100, K=0.5 = 28424.5 N
-    assert abs(60.0 / (2 * 0.04) - 750.0) < 1e-9 and abs(euler_n(72000.0, 100.0, 100.0, 0.5) - 28424.5) < 1.0
-    assert design_payload() is yagi
-    rows = structural()[1]
-    assert len(rows) == 12
-    h = el_head(yagi)
-    assert h['tube_kg'] > 1.3 and 100 < h['m_b2'] < 400 and h['r2'] > h['r1'] > 0 and h['f_gb'] < 0.2 * P.GEARBOX['NMRV030']['fr2']
-    # hand check: sigma_b = 32 M / (pi d3) = 32 * 100 / (pi * 0.03^3) = 37.73 MPa
-    assert abs(32 * 100 / (math.pi * 0.03 ** 3) / 1e6 - 37.73) < 0.05
-    # hand check: 40x40x3 tube Z = (40^4 - 34^4) / (6 * 40) = 5098.6 mm3
-    assert abs((40 ** 4 - 34 ** 4) / 240 - 5098.6) < 0.1
-    for r in rows:
-        assert r['ok'], f"structural check failed: {r['part']} {r['check']} SF {r['sf']:.2f} < {r['need']:g}"
+    # q(60 km/h) = 0.5 * 1.225 * (60/3.6)^2 = 0.6125 * 277.78 = 170.1 Pa
+    assert abs(q_dyn(60) - 170.1) < 0.1, q_dyn(60)
+    # step rate at 12 deg/s: 12/360 rev/s * 80 * 200 * 2 = 1066.7 steps/s
+    assert abs(12 / 360 * RATIO * PR.NEMA23['steps_rev'] * PR.MICROSTEP - 1066.67) < 0.01
+    # mast Ø60.3 x 3.6: I = pi/64 (0.0603^4 - 0.0531^4) = 0.049087 * 5.2709e-6 = 2.587e-7 m^4
+    assert abs(mast()['I'] - 2.587e-7) < 1e-10, mast()['I']
+    # keyed Ø14 5x5 (t1 3.0): Z_net = pi*14^3/32 - 5*3*11^2/(2*14) = 269.39 - 64.82 = 204.57 mm^3
+    assert abs(keyed_sections()[0] * 1e9 - 204.6) < 0.1
+    # lock factor, dynamic: 0.05 / cos20 / tan2.3 = 0.05321 / 0.040157 = 1.325
+    assert abs(lock_factor(0.05) - 1.325) < 0.005 and abs(lock_factor(0.10) - 2.650) < 0.01
+    # motor curve at 160 rpm: 2.4 - 0.6 * (2.4 - 2.0) = 2.16 N·m
+    assert abs(motor_torque(160) - 2.16) < 1e-9
+    # stop energy for I_total = 1 kg·m²: 0.5 * 1 * 0.20944^2 = 0.02193 J (vmax 12 deg/s)
+    assert abs(stop(1.0 - J_R, 1.0)[0] - 0.02193) < 1e-4
+    # life: (10)^3 * 1e6 revs / (12 passes * 365 * 300/360 rev) = 1e9 / 3650 = 273973 years
+    assert abs(life_years(10.0, 1.0, 300.0) - 273973.0) < 5.0
+    # each counterweight balances its side exactly: gravity torque about EL is zero at any elevation
+    for e in (0, 37, 90, 150):
+        assert abs(G * sum(m * (a * math.cos(math.radians(e)) - h * math.sin(math.radians(e))) for _, m, a, y, h in MOV)) < 1e-9
+    prof = firmware_profile()
+    if prof:
+        assert abs(prof[-4] - I['vmax_dps']) < 1e-6 and abs(prof[-2] - I['acc_dps2']) < 1e-6, prof
+
+
+def main():
+    self_test()
+    R = evaluate()
+    fails = [c for c in CHK if not c['opt'] and c['sf'] < c['tgt']]
+    if '--check' in sys.argv:
+        for c in fails:
+            print(f'FAIL {c["sec"]}: {c["name"]} SF {c["sf"]:.2f} < {c["tgt"]:g}')
+        print('lsr2_sizing: ' + ('self-test OK, all safety factors meet their target' if not fails else f'{len(fails)} check(s) below target'))
+        sys.exit(1 if fails else 0)
+    for name, text in (('LSR2_SIZING.md', report(R)), ('LSR2_INPUTS.md', inputs_md())):
+        with open(os.path.join(ROOT, 'docs', name), 'w', encoding='utf-8', newline='\n') as f:
+            f.write(text)
+    print(f'lsr2_sizing: wrote docs/LSR2_SIZING.md and docs/LSR2_INPUTS.md; {len(fails)} check(s) below target')
 
 
 if __name__ == '__main__':
-    self_test()
-    if '--check' in sys.argv:
-        print('lsr2_sizing self-test OK')
-        sys.exit(0)
-    text = report()
-    with open(os.path.join(ROOT, 'docs', 'LSR2_SIZING.md'), 'w', encoding='utf-8') as fh:
-        fh.write(text)
-    print('wrote docs/LSR2_SIZING.md')  # no echo: emoji break cp1252 consoles
+    main()

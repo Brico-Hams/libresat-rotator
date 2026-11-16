@@ -67,7 +67,7 @@ LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator 
 10. [Testing](docs/TESTING.md): unit, bench and acceptance tests with result sheets.
 11. [Family architecture](docs/ARCHITECTURE.md): LSR-1 and LSR-2, shared stack, LSR-2 mechanics and fabrication route.
 12. [LSR-2 design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md): goals, licence position, changes against the SARCTrac Mk5, phases.
-13. [LSR-2 engineering budget](docs/LSR2_SIZING.md): torque, overturning moment, gearbox choice per payload and structural checks of the cast parts.
+13. [LSR-2 engineering budget](docs/LSR2_SIZING.md) (Mk5-schematic architecture, phase 11a): wind and gravity torques, bearings, mast, clamps, fixings, pointing error; input data and open decisions in [LSR-2 inputs](docs/LSR2_INPUTS.md).
 14. [LSR-2 materials and cost](docs/LSR2_MATERIALS.md): plate, casting and shaft mass, stock, waste and cost.
 15. [LSR-2 bill of materials](docs/BOM_LSR2.md): every fabricated and bought part, fasteners, electronics, totals of mass and cost.
 16. [LSR-2 assembly guide](docs/LSR2_ASSEMBLY.md): measure, prototype, CNC, casting, shafts, assembly, corrosion, electronics and acceptance tests.

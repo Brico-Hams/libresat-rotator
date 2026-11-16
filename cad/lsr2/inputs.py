@@ -1,0 +1,183 @@
+"""LSR-2 (Mk5-schematic architecture) input table: single source for calc/lsr2_sizing.py and the phase 11 CAD scripts.
+
+Units: m, kg, N, N·m, deg unless the row says otherwise (CAD scripts convert to mm themselves).
+Every row is (group, key, value, unit, tag, note). Tags:
+  DATASHEET  published by a maker or a standard; the note names the source
+  MEASURE    needs a caliper / scale / test on the real part; the value is a placeholder until measured
+  PARAMETRIC our own choice, editable; the sizing re-runs with it
+Pure Python, no imports. docs/LSR2_INPUTS.md is generated from ROWS by calc/lsr2_sizing.py.
+Frames: body frame at EL = 0: x forward (boresight), y along the EL axis (the cross boom), z up. AZ origin = centre of the body
+bottom mounting face, z up along the AZ axis. a = distance along the boresight from the EL axis, h = height above the EL axis plane.
+"""
+D, M, P = 'DATASHEET', 'MEASURE', 'PARAMETRIC'
+
+ROWS = [
+    # ---- Antennas (current payload: crossed Yagis 145 and 435 MHz, one at each boom end)
+    ('Antennas', 'ant145_mass', 3.5, 'kg', M, '145 MHz crossed Yagi, ~2 m boom; weigh it. Payload total 6.0 kg as in the old budget'),
+    ('Antennas', 'ant145_y', -0.60, 'm', P, 'station along the cross boom (y from the EL-axis centre)'),
+    ('Antennas', 'ant145_boom', 2.0, 'm', M, 'antenna boom length along the boresight'),
+    ('Antennas', 'ant145_elem', 1.0, 'm', M, 'longest element (across the boresight)'),
+    ('Antennas', 'ant145_as', 0.20, 'm²', P, 'projected area seen side-on (boom + both polarisations); refine from the antenna drawing'),
+    ('Antennas', 'ant145_af', 0.03, 'm²', P, 'projected area seen end-on'),
+    ('Antennas', 'ant435_mass', 2.5, 'kg', M, '435 MHz crossed Yagi, ~2 m boom; weigh it'),
+    ('Antennas', 'ant435_y', 0.60, 'm', P, 'station along the cross boom'),
+    ('Antennas', 'ant435_boom', 2.0, 'm', M, 'antenna boom length'),
+    ('Antennas', 'ant435_elem', 0.35, 'm', M, 'longest element'),
+    ('Antennas', 'ant435_as', 0.15, 'm²', P, 'projected area side-on'),
+    ('Antennas', 'ant435_af', 0.02, 'm²', P, 'projected area end-on'),
+    ('Antennas', 'ant_cg_a', 0.05, 'm', M, 'antenna CG ahead of the EL axis (lift-arm offset); measure the CG on the real antenna'),
+    ('Antennas', 'ant_h', 0.0, 'm', P, 'antenna CG height above the EL axis: the lift arm drops the antenna onto the axis plane'),
+    ('Antennas', 'ant_cp_dx', 0.05, 'm', P, 'centre of pressure ahead of the CG (CP = CG + this along the boresight)'),
+    ('Antennas', 'cd_ant', 1.2, '-', P, 'drag coefficient of rods and tubes at Re ~1e5'),
+    # ---- Cross boom, lift arms, counterweights, saddle, yoke
+    ('Boom and moving group', 'boom_w', 0.040, 'm', P, 'square 6063-T6 tube 40 x 40 x 3 (as phases 6-9)'),
+    ('Boom and moving group', 'boom_t', 0.003, 'm', P, 'tube wall'),
+    ('Boom and moving group', 'boom_len', 1.6, 'm', P, 'cross boom length, parallel to the EL axis'),
+    ('Boom and moving group', 'boom_h', 0.065, 'm', P, 'boom axis above the EL axis (saddle plate + yoke arm height)'),
+    ('Boom and moving group', 'boom_rho', 2700.0, 'kg/m³', D, '6063 aluminium density'),
+    ('Boom and moving group', 'boom_g', 26.0e9, 'Pa', D, '6063 shear modulus'),
+    ('Boom and moving group', 'cd_boom', 1.5, '-', P, 'square tube drag coefficient'),
+    ('Boom and moving group', 'lift_mass', 0.35, 'kg', P, 'lift arm with its antenna bracket, per side'),
+    ('Boom and moving group', 'cw_lever', 0.20, 'm', P, 'counterweight lever arm from the EL axis (the weight sits opposite the moment of the rest)'),
+    ('Boom and moving group', 'cw_hw', 0.25, 'kg', P, 'counterweight arm and clamp hardware, per side, counted inside the counterweight mass'),
+    ('Boom and moving group', 'cw_res_max', 1.5, 'N·m', P, 'allowed residual gravity torque on EL after trimming (about 10 % of the NMRV030 rating)'),
+    ('Boom and moving group', 'cg_err', 0.02, 'm', M, 'uncertainty of the antenna CG along the boresight until measured'),
+    ('Boom and moving group', 'cw_tol', 0.03, '-', P, 'counterweight mass tolerance (fraction)'),
+    ('Boom and moving group', 'saddle_mass', 0.9, 'kg', P, 'saddle plate and two boom clamps'),
+    ('Boom and moving group', 'saddle_h', 0.035, 'm', P, 'saddle CG height above the EL axis'),
+    ('Boom and moving group', 'yoke_mass', 0.35, 'kg', P, 'each of the two U-yoke arms'),
+    ('Boom and moving group', 'yoke_h', 0.03, 'm', P, 'yoke arm CG height'),
+    ('Boom and moving group', 'ly', 0.20, 'm', P, 'distance between the two yoke arm planes (arms outside the body walls)'),
+    ('Boom and moving group', 'el_span', 0.14, 'm', P, 'distance between the two EL shaft bearings (in the body side walls)'),
+    ('Boom and moving group', 'el_shaft_mass', 0.45, 'kg', P, 'EL through shaft'),
+    # ---- Body, drives and axes geometry
+    ('Body and axes', 'z_el', 0.26, 'm', P, 'EL axis height above the bottom mounting face (AZ origin); tightened in phase 11b'),
+    ('Body and axes', 'el_x_off', 0.0, 'm', P, 'projected distance EL axis to AZ axis (0 = axes meet in projection)'),
+    ('Body and axes', 'az_brg_z', 0.035, 'm', P, 'lower AZ radial bearing centre above the bottom face'),
+    ('Body and axes', 'az_span', 0.14, 'm', P, 'distance between the two AZ radial bearings'),
+    ('Body and axes', 'body_area', 0.06, 'm²', P, 'body projected area to the wind (0.20 x 0.30 m)'),
+    ('Body and axes', 'body_cp_z', 0.17, 'm', P, 'height of the body centre of pressure above the bottom face'),
+    ('Body and axes', 'cd_body', 1.3, '-', P, 'bluff body drag coefficient'),
+    ('Body and axes', 'stat_mass', 1.2, 'kg', P, 'stationary part: AZ shaft and mast bracket (does not rotate)'),
+    ('Body and axes', 'max_mass', 28.0, 'kg', P, 'target maximum total mass of head + payload (LIGHT goal)'),
+    ('Body and axes', 'envelope', (0.30, 0.22, 0.36), 'm', P, 'desired body envelope x, y, z (open box with lid, excluding yoke, motors and boom)'),
+    ('Body and axes', 'clamp_z', (-0.045, -0.145), 'm', P, 'the two mast U-bolt levels (z below the bottom face)'),
+    ('Body and axes', 'stop_r', (0.10, 0.07), 'm', P, 'mechanical stop radius AZ, EL'),
+    ('Body and axes', 'bumper_k', 5.0e4, 'N/m', P, 'elastomer bumper stiffness (shore 70A class); tune to the stop torque limit'),
+    ('Body and axes', 'bumper_stroke', 0.005, 'm', P, 'available bumper stroke'),
+    # ---- Wind
+    ('Wind', 'air_rho', 1.225, 'kg/m³', D, 'ISA sea level'),
+    ('Wind', 'wind_op', 60.0, 'km/h', P, 'operating (tracking) wind, as the Mk5-class target'),
+    ('Wind', 'wind_surv', 100.0, 'km/h', P, 'survival wind, parked'),
+    ('Wind', 'wind_surv_opt', 130.0, 'km/h', P, 'optional survival-parked wind (reported, not a design gate)'),
+    ('Wind', 'wind_acc', 25.0, 'km/h', P, 'steady wind up to which the < 0.1 deg pointing target must hold'),
+    ('Wind', 'cl_ant', 0.5, '-', P, 'vertical (uplift) coefficient on the antenna side area, for axial retention'),
+    # ---- Mast and installation
+    ('Mast and installation', 'mast_od', 0.0603, 'm', P, 'design mast Ø60.3 x 3.6 steel tube; the clamp takes 40-63 mm'),
+    ('Mast and installation', 'mast_t', 0.0036, 'm', P, 'mast wall'),
+    ('Mast and installation', 'mast_e', 210e9, 'Pa', D, 'steel modulus'),
+    ('Mast and installation', 'mast_g', 79e9, 'Pa', D, 'steel shear modulus'),
+    ('Mast and installation', 'mast_rho', 7850.0, 'kg/m³', D, 'steel'),
+    ('Mast and installation', 'mast_yield', 235e6, 'Pa', M, 'S235 minimum; ask the tube supplier'),
+    ('Mast and installation', 'mast_free_h', 1.0, 'm', P, 'free height from the rigid support to the mast clamp'),
+    ('Mast and installation', 'mast_range', (0.040, 0.0635), 'm', P, 'mast diameters the clamp must accept'),
+    ('Mast and installation', 'install', 'fixed mast, unguyed, cantilever from a rigid base', '-', P, 'installation type; a guyed mast only improves every mast check'),
+    ('Mast and installation', 'mast_min_fn_factor', 5.0, '-', P, 'natural frequency must exceed this x the accel-ramp frequency 1/t_acc'),
+    # ---- Motion and travel
+    ('Motion', 'az_range', (-360.0, 360.0), 'deg', D, 'SARCTrac Mk5 published range (SARCTRAC_MK5_DATA.md)'),
+    ('Motion', 'el_range', (-30.0, 150.0), 'deg', D, 'SARCTrac Mk5 published range'),
+    ('Motion', 'vmax_dps', 12.0, 'deg/s', P, 'mirror of firmware/src/core.cpp MODELS[LSR-2]; checked by --check'),
+    ('Motion', 'acc_dps2', 10.0, 'deg/s²', P, 'mirror of firmware/src/core.cpp MODELS[LSR-2]; checked by --check'),
+    ('Motion', 'latency_s', 0.2, 's', P, 'reaction time of the limit logic (planner tick + command)'),
+    ('Motion', 'passes_per_day', 12.0, '-', P, 'satellite passes tracked per day'),
+    ('Motion', 'az_travel_pass', 300.0, 'deg', P, 'AZ travel per pass'),
+    ('Motion', 'el_travel_pass', 160.0, 'deg', P, 'EL travel per pass (up and back)'),
+    ('Motion', 'life_years', 20.0, 'years', P, 'bearing life wanted'),
+    # ---- Drive components (NEMA23 / NMRV030 base data stay in cad/lsr2/params.py)
+    ('Drive', 'motor_curve', ((0, 2.8), (100, 2.4), (200, 2.0), (300, 1.6), (500, 1.1), (800, 0.7), (1200, 0.45)), 'rpm, N·m', M,
+     '57BYG250H-8 on DM542 at 48 V: points from typical NEMA23 2.8 N·m curves, NOT the maker curve; measure on the bench'),
+    ('Drive', 'motor_usable', 0.8, '-', P, 'fraction of the pull-out torque used (margin against lost steps)'),
+    ('Drive', 'rotor_j', 8.0e-5, 'kg·m²', M, '57BYG250H-8 rotor inertia, typical 0.8 kg·cm²; maker sheet or measure'),
+    ('Drive', 'motor_mass', 1.4, 'kg', M, '57BYG250H-8, 112 mm body; weigh it'),
+    ('Drive', 'gb_mass', 1.4, 'kg', M, 'NMRV030 with NEMA23 flange; weigh it'),
+    ('Drive', 'service_factor', 1.25, '-', P, 'uniform load, frequent starts, <= 8 h/day: applied to the torque against the gearbox rating'),
+    ('Drive', 'gb_backlash', 0.33, 'deg', M, 'NMRV030 80:1 output backlash, typical <= 20 arcmin; measured by XCAL BACKLASH'),
+    ('Drive', 'gb_stiff', 3438.0, 'N·m/rad', M, 'gearbox torsional stiffness at the output, 1 N·m/arcmin assumed; not published'),
+    ('Drive', 'bl_repeat', 0.02, 'deg', M, 'residual reversal error after the firmware backlash compensation; measure repeated reversals'),
+    ('Drive', 'worm_lead_deg', 2.3, 'deg', M, 'worm lead angle (single start, 80 teeth); count and measure'),
+    ('Drive', 'worm_mu_static', 0.10, '-', P, 'worm mesh friction, static, greased bronze'),
+    ('Drive', 'worm_mu_dyn', 0.05, '-', P, 'worm mesh friction while the wind makes the load vibrate'),
+    ('Drive', 'worm_alpha', 20.0, 'deg', P, 'worm normal pressure angle'),
+    ('Drive', 'lock_min_dyn', 1.25, '-', P, 'self-locking factor wanted even with the dynamic friction'),
+    ('Drive', 'coax_err', 2.0e-5, 'm', P, 'bearing seat to gearbox bore coaxiality, bored in one setup'),
+    ('Drive', 'fit_clear', 5.0e-6, 'm', P, 'half the radial clearance of the Ø14 H7/g6 fit in the gearbox hub'),
+    ('Drive', 'key_clear', 2.0e-5, 'm', P, 'circumferential slack per keyed joint (P9 key in a N9 slot)'),
+    ('Drive', 'brg_play', 5.0e-6, 'm', P, 'radial play of a preloaded bearing'),
+    # ---- Shafts and joints (concept lengths; fixed in phase 11b)
+    ('Shafts and joints', 'el_sec14_len', 0.035, 'm', P, 'EL shaft: Ø14 torque length from the hub key centre to the Ø20 section'),
+    ('Shafts and joints', 'el_sec20_len', 0.05, 'm', P, 'EL shaft: Ø20 length from the Ø14 step to the yoke arm key'),
+    ('Shafts and joints', 'az_sec14_len', 0.04, 'm', P, 'AZ shaft: Ø14 length in the gearbox hub'),
+    ('Shafts and joints', 'az_sec30_len', 0.13, 'm', P, 'AZ shaft: Ø30 length from the lower radial bearing to the mast bracket'),
+    ('Shafts and joints', 'key_len_hub', 0.040, 'm', P, 'key length in the gearbox hub (hub bore 63 mm long)'),
+    ('Shafts and joints', 'key_len_arm', 0.025, 'm', P, 'key length in each yoke arm hub, Ø20 shaft'),
+    ('Shafts and joints', 'clamp_w', 0.04, 'm', P, 'width of the mast bracket clamp seat'),
+    ('Shafts and joints', 'circlip_n', 6000.0, 'N', M, 'axial capacity of the DIN 471 Ø30 circlip groove (supplier tables)'),
+    # ---- Gearbox input adapter (the 8 / 11 mm discrepancy)
+    ('Input adapter', 'adapter_od', 11.0, 'mm', D, 'NMRV030 input bore, keyed, as published (SARCNET); MEASURE with a caliper before ordering'),
+    ('Input adapter', 'adapter_id', 8.0, 'mm', D, '57BYG250H-8 shaft, Ø8 with one flat (SARCNET); MEASURE the flat depth'),
+    ('Input adapter', 'adapter_len', 20.0, 'mm', M, 'bushing length: limited by the gearbox input bore depth and the 21 mm motor shaft; measure both'),
+    ('Input adapter', 'adapter_key', '4x4 DIN 6885 (Ø11: t1 2.5, t2 1.8)', '-', D, 'key in the Ø11 gearbox bore'),
+    ('Input adapter', 'adapter_screws', 'M4 DIN 916 cup point x2: one on the flat, one at 90 deg', '-', P, 'set screws locked with threadlocker'),
+    ('Input adapter', 'adapter_hold', 6.0, 'N·m', M, 'holding torque of the two set screws; pull-test it, must stay above 2 x the 2.8 N·m motor torque'),
+    # ---- Materials and fixings
+    ('Materials', 'shaft_yield', 450e6, 'Pa', M, 'shaft steel 1.4404 +C700 cold drawn, Rp0.2; mill certificate'),
+    ('Materials', 'shaft_rm', 700e6, 'Pa', M, 'same bar, Rm'),
+    ('Materials', 'shaft_e', 193e9, 'Pa', D, 'stainless modulus'),
+    ('Materials', 'shaft_g', 77e9, 'Pa', D, 'stainless shear modulus'),
+    ('Materials', 'rod_yield', 450e6, 'Pa', D, 'M14 A2-70 threaded rod, Rp0.2 (ISO 3506)'),
+    ('Materials', 'rod_rm', 700e6, 'Pa', D, 'M14 A2-70, Rm (ISO 3506)'),
+    ('Materials', 'rod_d', 0.0121, 'm', D, 'M14x2 stress diameter'),
+    ('Materials', 'pin_d', 0.005, 'm', D, '5 x 8 roll pin hole across the rod (Mk5)'),
+    ('Materials', 'kf_keyway', (1.8, 1.6), 'bending, torsion', P, 'fatigue notch factors of an end-milled keyway (Peterson, typical)'),
+    ('Materials', 'kf_pin', (2.2, 1.9), 'bending, torsion', P, 'transverse hole d/D = 0.4 (Peterson, typical)'),
+    ('Materials', 'kf_thread', (2.8, 2.8), 'bending, torsion', P, 'rolled M14 thread root, typical'),
+    ('Materials', 'bolt_rp', 640e6, 'Pa', D, 'class 8.8 Rp0.2 (ISO 898-1)'),
+    ('Materials', 'nut_k', 0.15, '-', P, 'torque coefficient with anti-seize (Tef-Gel on every joint, as Mk5)'),
+    ('Materials', 'ubolt_leg_pre', 5000.0, 'N', P, 'preload per leg of the M8 mast U-bolts'),
+    ('Materials', 'mu_clamp', 0.2, '-', P, 'friction on the V faces, steel on aluminium with anti-seize'),
+    ('Materials', 'crush_kloc', 3.0, '-', P, 'local peak factor of the saddle contact on the tube wall'),
+    ('Materials', 'boom_clamp_leg_pre', 3000.0, 'N', P, 'preload per leg of the four M6 boom clamp legs'),
+    ('Materials', 'a356_yield', 180e6, 'Pa', M, 'sand-cast A356-T6 minimum yield; foundry certificate'),
+    # ---- Fabrication
+    ('Fabrication', 'casting', 'sand, recoverable PLA pattern (A356-T6)', '-', P, 'foundry process; the consumable-pattern variant is a separate decision'),
+    ('Fabrication', 'print_volume', (0.256, 0.256, 0.256), 'm', P, 'printer bed assumed'),
+    ('Fabrication', 'cnc_travel', (0.600, 0.400, 0.100), 'm', P, 'assumed 3-axis router/mill travel x, y, z'),
+]
+
+I = {k: v for _, k, v, *_ in ROWS}
+
+# Static head items that rotate with AZ but do not move in EL: (name, mass kg, x, y, z m from the AZ origin, tag, note)
+HEAD = [
+    ('body casting + ribs', 3.8, -0.01, 0.0, 0.17, P, 'A356 open box; refine from the CAD volume in phase 11b'),
+    ('lid + gasket + electronics', 1.3, 0.0, 0.0, 0.30, P, 'cover, microcontroller, 5 V converter, seals'),
+    ('AZ gearbox NMRV030', I['gb_mass'], 0.0, 0.0, 0.105, M, 'low in the body, output axis = AZ axis'),
+    ('EL gearbox NMRV030', I['gb_mass'], 0.0, 0.0, I['z_el'], M, 'high, output axis = EL axis'),
+    ('AZ motor 57BYG250H-8', I['motor_mass'], -0.20, 0.0, 0.105, M, 'both motors on the same side (back, -x)'),
+    ('EL motor 57BYG250H-8', I['motor_mass'], -0.20, 0.0, I['z_el'], M, 'parallel to the AZ motor, stacked'),
+    ('2 x DM542 drivers', 0.5, 0.0, 0.07, 0.20, M, 'inner side wall, thermal path to the aluminium'),
+]
+
+OPEN_DECISIONS = [
+    'Real antenna masses, CGs and projected areas (weigh and measure; the table uses the old 6 kg / 0.35 m² payload).',
+    'Mast: diameter, wall, material and free height of the real installation; whether it can be guyed (guying removes the tilt term).',
+    'Maker torsional stiffness and backlash of the purchased NMRV030, and the motor torque-speed curve on the DM542 at 48 V (bench test).',
+    'NMRV030 input bore: caliper the real part; bushing adapter versus a supplier NEMA23 input kit with an Ø8 bore.',
+    'EL shaft stepping (one turned piece with a removable bearing sleeve on one side, or two half shafts keyed into the hub).',
+    'Foundry: alloy and treatment, shrinkage and process (recoverable-pattern sand vs consumable PLA); the consumable variant is not sized here.',
+    'CNC and printer: the assumed machine and bed sizes; the real ones may split the pattern or change the cavity access.',
+    'Brake: not needed if the bench test confirms the worm stays locked under vibrating wind; otherwise add a spring-applied brake.',
+    'Parking elevation and azimuth rule in survival wind (the sizing shows which elevation is better).',
+    'Survival wind 130 km/h parked: reported only; passing it may need a stronger gearbox or a lower antenna area.',
+    'Motor stall torque at the output exceeds the gearbox peak: soft limits + bumpers, or a lower DM542 current / slip element (decide from the bench test).',
+    'Mast clamp crush is checked on the Ø60.3 x 3.6 design mast; thin-wall masts down to Ø40 need a sleeve or a saddle with a larger contact.',
+]
