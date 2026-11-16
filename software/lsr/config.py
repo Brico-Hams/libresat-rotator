@@ -29,6 +29,16 @@ DEFAULTS = {
     'web': {'host': '0.0.0.0', 'port': 8080},
     'rotctld': {'host': '0.0.0.0', 'port': 4533, 'enabled': True},
     'satdb': {'file': ''},
+    # Phase 8: automatic calibration results (lsr calibrate ...), pointing correction and closed-loop control.
+    'calibration': {'declination': None, 'level_threshold_deg': 0.5, 'magnetometer': {'enabled': False},
+                    'sun_sensor': {'command': '', 'span': 6.0, 'step': 1.5},
+                    'points_file': '~/.local/share/lsr/pointing_points.csv'},
+    'pointing': {'enabled': False, 'refraction': False, 'backlash_az': 0.0, 'backlash_el': 0.0, 'rms': None, 'n': 0,
+                 'params': {'az_off': 0.0, 'el_off': 0.0, 'tilt_n': 0.0, 'tilt_e': 0.0, 'nonperp': 0.0, 'collim': 0.0,
+                            'ecc_sin': 0.0, 'ecc_cos': 0.0}},
+    'control': {'enabled': False, 'deadband': 0.1, 'step_loss_deg': 0.5, 'step_loss_s': 1.0, 'stall_s': 0.8,
+                'stall_min_dps': 0.5, 'feedforward': False, 'on_fault': 'stop', 'require_encoders': False,
+                'require_gps': False, 'require_imu': False, 'trim': True, 'max_trim_deg': 1.0, 'soft_margin': 0.0},
 }
 
 # Rotator model profiles: merged over DEFAULTS, then the user's YAML on top. lsr1 = the defaults above.
@@ -40,7 +50,8 @@ PROFILES = {
     'lsr2': {'station': {'name': 'LSR-2'},
              'limits': {'az_min': -360.0, 'az_max': 360.0, 'el_min': -30.0, 'el_max': 150.0,
                         'vmax_az': 12.0, 'vmax_el': 12.0, 'allow_flip': False, 'anti_windup': False},
-             'rotator': {'baud': 9600}},   # EasyComm II 9600 8N1 as SARCTrac Mk5 trackers expect
+             'rotator': {'baud': 9600},    # EasyComm II 9600 8N1 as SARCTrac Mk5 trackers expect
+             'control': {'deadband': 0.05}},
 }
 
 

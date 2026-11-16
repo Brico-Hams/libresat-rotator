@@ -87,8 +87,14 @@ class RotctldServer:
                 return f'LibreSat Rotator {self.model_name} {self.rot.version()}\n'
             if cmd == '\\dump_state':
                 a0, a1, e0, e1 = self.lim
+                extra = ''
+                cs = getattr(self.rot, 'control_status', None)
+                if cs:                                   # LSR safe-state report (only with pointing/control enabled)
+                    c = cs()
+                    extra = (f'lsr_state={c["state"]}\nlsr_faults={",".join(c["faults"]) or "none"}\n'
+                             f'lsr_pointing={"on" if c["pointing"]["enabled"] else "off"}\n')
                 return (f'1\n2\nmin_az={a0:.6f}\nmax_az={a1:.6f}\nmin_el={e0:.6f}\nmax_el={e1:.6f}\n'
-                        'south_zero=0\nrot_type=AzEl\ndone\n')
+                        f'south_zero=0\nrot_type=AzEl\n{extra}done\n')
             if cmd in ('q', 'Q', '\\quit'):
                 return None
             if cmd in ('\\chk_vfo', '\\dump_caps'):

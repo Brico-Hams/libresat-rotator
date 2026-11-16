@@ -170,6 +170,18 @@ LSR-2 adopts the facts published by SARCNET for the SARCTrac Mk5 ([reference dat
 | Thrust-bearing seal (PVC pipe + silicone) | our V-ring + housing recess; inspection interval in [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) | no extra part; same inspection routine |
 | Tef-Gel on dissimilar-metal joints | adopted everywhere (BOM, assembly) | corrosion rule |
 
+## 7c. Calibration, correction and control (Phase 8)
+
+Head-side software ([CALIBRATION](CALIBRATION.md)); the RP2040 only exposes raw data (`XR`) and keeps its own index, backlash and slip logic from Phase 6c.
+
+- **Why Sun calibration beats the compass.** The Sun's position is known to ~0.01° from GPS time and position, it needs no extra hardware and no declination model, and it is not disturbed by the motors, steel tripod or coax. A magnetometer next to NEMA motors and a ferrous mast has several degrees of error, and the declination is only good to ~0.5°. The MPU-6050 has no magnetometer, so the compass step is optional and the Sun is the reference. The compass remains useful for a first guess in the dark.
+- **Why a pointing model.** A mount has a handful of small, stable errors: north offset, horizon offset, tilt, axis non-perpendicularity, boresight, encoder eccentricity, backlash. Measuring a few dozen points once and fitting those few terms by least squares removes them for the whole sky, which is cheaper and more accurate than building the mechanics to 0.1°. The residual RMS is the acceptance number. Commanded positions go sky → mount, reported positions mount → sky, so Gpredict, rotctld and the tracker never see the correction.
+- **Why closed loop on the output encoders.** The step count only says where the motor was told to be. The AS5600 on the output sees lost steps, a stall (no motion while commanded) and backlash. Comparing the two gives step-loss re-sync and a stall stop with a clear fault, and a small encoder trim after each move. The deadband avoids hunting.
+- **Safe by default.** `pointing.enabled` and `control.enabled` are false; the rotator then runs unmodified. Invalid calibration values are ignored. A latched fault (stall, missing GPS/IMU/encoder when required) stops the motion and is reported in the web UI and in rotctld `\dump_state`.
+- **Software architecture.** `CorrectedRotator` wraps `Rotator`/`SimRotator`: tracker and rotctld are unchanged. Least squares is plain Python (`lsq.py`), no numpy.
+
+Credit: the structure of this chain (level → north → Sun → index/backlash → pointing terms → closed loop) follows ideas from the SARCNET MK1 derivatives and Rotator7. No external code is used.
+
 ## 8. Credits
 
 The architecture is inspired by the SARCNET SARCTrac Mk5. No SARCNET file or geometry was used: their files carry no licence. See [DESIGN_ANALYSIS](DESIGN_ANALYSIS.md) §5 and the [spec](superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md).

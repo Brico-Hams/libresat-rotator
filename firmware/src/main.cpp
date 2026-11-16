@@ -389,6 +389,16 @@ static void handle(const char *line, out_fn out) {
             if (c[i].nvals >= 2) { target[EL] = clampf(c[i].value2, AX[EL].min_deg, AX[EL].max_deg); mode[EL] = M_GOTO; }
             break;
         case CMD_XSTATUS: status_line(out); break;
+        case CMD_XRAW: {                                 // raw sensor readings for the head-side calibration (Phase 8)
+            float v[2][3];
+            for (int a = 0; a < 2; a++) if (!(imu_ok[a] && mpu_read((uint8_t)a, &v[a][0], &v[a][1], &v[a][2]))) v[a][0] = v[a][1] = v[a][2] = NAN;
+            float eo[2];
+            for (int a = 0; a < 2; a++) eo[a] = enc_ok[a] ? axis_enc_to_deg(&AX[a], enc_base[a], enc_count[a], ENC_CPR) : NAN;
+            int s0 = gpio_get(PIN_HALL_AZ) == IDX_SLOT_LEVEL, s1 = gpio_get(PIN_HALL_EL) == IDX_SLOT_LEVEL;
+            snprintf(b, sizeof(b), "XR accb=%.4f,%.4f,%.4f accl=%.4f,%.4f,%.4f mag=na enc=%.3f,%.3f step=%.3f,%.3f idx=%d,%d bl=%.3f,%.3f\r\n",
+                     v[AZ][0], v[AZ][1], v[AZ][2], v[EL][0], v[EL][1], v[EL][2], eo[AZ], eo[EL], raw_deg(AZ), raw_deg(EL),
+                     s0, s1, S.backlash[AZ], S.backlash[EL]);
+            out(b); break; }
         case CMD_XSAVE: save_position(); out("XW ok\r\n"); break;
         case CMD_XENABLE:
             drivers_on = c[i].value != 0.0f; drivers_enable(drivers_on);
@@ -462,7 +472,7 @@ static void handle(const char *line, out_fn out) {
             break;
         case CMD_XHELP:
             out("Easycomm: AZ EL | AZ<deg> EL<deg> | SA SE | ML MR MU MD | VE GS GE | HOME PARK\r\n"
-                "LSR: XP az el (absolute) | XS status | XC? | XC key=val | XW save | XCAL AZ=..|EL=..|ELIMU|LEVEL|HOMEAZ|HOMEEL|BACKLASH | XE 0/1 | XG | XT | XB\r\n");
+                "LSR: XP az el (absolute) | XS status | XR raw sensors | XC? | XC key=val | XW save | XCAL AZ=..|EL=..|ELIMU|LEVEL|HOMEAZ|HOMEEL|BACKLASH | XE 0/1 | XG | XT | XB\r\n");
             break;
         default: break;
         }

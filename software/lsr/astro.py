@@ -138,6 +138,13 @@ def load_tle_text(text: str) -> dict[str, Satellite]:
     return sats
 
 
+def refraction_deg(el_true: float) -> float:
+    """Atmospheric refraction (deg, to add to the geometric elevation), Bennett formula; 0 below -1 deg."""
+    if el_true <= -1.0:
+        return 0.0
+    return 1.02 / math.tan(math.radians(el_true + 10.3 / (el_true + 5.11))) / 60.0
+
+
 # ---------------------------------------------------------------- the Sun
 def sun_position(obs: Observer, t: datetime, refraction: bool = True):
     """Apparent (az, el) of the Sun in degrees."""
@@ -164,7 +171,7 @@ def sun_position(obs: Observer, t: datetime, refraction: bool = True):
     az = math.atan2(-math.cos(dec) * math.sin(ha), math.sin(dec) * math.cos(lat) - math.cos(dec) * math.sin(lat) * math.cos(ha))
     el_d = math.degrees(el)
     if refraction and el_d > -1.0:
-        el_d += 1.02 / math.tan(math.radians(el_d + 10.3 / (el_d + 5.11))) / 60.0   # Bennett (arcmin)
+        el_d += refraction_deg(el_d)
     _ = e
     return math.degrees(az) % 360.0, el_d
 

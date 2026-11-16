@@ -110,6 +110,7 @@ Hamlib's Easycomm extras (`UP000 XXX DN000 XXX`) are accepted and ignored.
 |---|---|
 | `XP <az> <el>` | Absolute position on the cable-wrap scale (e.g. `XP 395.5 120`). The Pi's pass planner uses it. |
 | `XS` | Full status line: `az el taz tel vaz vel mode ref err vin enc slips tmc imu_el tilt gps utc up` |
+| `XR` | Raw sensors for the head calibration: `accb=` base and `accl=` boom accelerometer (g), `mag=na` (no magnetometer on the MPU-6050), `enc=` output-encoder angles, `step=` step-count angles, `idx=` index slot levels, `bl=` backlash per axis (the `backlash_az/el` keys of `XC` set it). Unreadable values print `nan`. LSR-1 behaviour is unchanged. |
 | `XC?` / `XC <key>` | List or read settings |
 | `XC <key>=<value>` | Set a setting (saved automatically when idle; `XW` saves now) |
 | `XCAL AZ=<deg>` / `XCAL EL=<deg>` | Declare the current position (sun alignment, level boom) |

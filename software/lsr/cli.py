@@ -90,11 +90,26 @@ def main(argv=None):
     sub.add_parser('sun')
     p = sub.add_parser('status'); p.add_argument('--sim', action='store_true')
     p = sub.add_parser('gd77'); p.add_argument('action', choices=['info', 'clock', 'keps', 'nmea']); p.add_argument('sats', nargs='*')
+    p = sub.add_parser('calibrate', help='automatic calibration: level|compass|sun|sun-manual|index|all')
+    p.add_argument('step', choices=['level', 'compass', 'sun', 'sun-manual', 'index', 'all'])
+    p.add_argument('--sim', action='store_true'); p.add_argument('--ellipsoid', action='store_true', help='compass: soft-iron fit')
+    p.add_argument('--mark', nargs=2, type=float, metavar=('AZ', 'EL'), help='sun-manual: mount AZ EL of the centred Sun')
+    p = sub.add_parser('pointing'); p.add_argument('action', choices=['fit']); p.add_argument('csv')
+    p.add_argument('--terms', help='comma list, e.g. az_off,el_off,tilt_n,tilt_e'); p.add_argument('--save', action='store_true')
+    p.add_argument('--enable', action='store_true', help='with --save: enable the model when RMS < 0.1 deg')
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if a.verbose else logging.INFO, format='%(asctime)s %(name)s %(message)s')
     cfg = cfgmod.load(a.config)
     st = cfg['station']
     obs = Observer(st['lat'], st['lon'], st['alt'])
+
+    if a.cmd == 'calibrate':
+        from . import calcli
+        return calcli.calibrate(cfg, a.step, a.sim, tuple(a.mark) if a.mark else None, a.ellipsoid)
+
+    if a.cmd == 'pointing':
+        from . import calcli
+        return calcli.pointing_fit(cfg, a.csv, a.terms, a.save, a.enable)
 
     if a.cmd == 'run':
         ctx = Ctx(cfg, a.sim)

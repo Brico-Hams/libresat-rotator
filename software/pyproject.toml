@@ -22,7 +22,7 @@ packages = ["lsr", "lsr.rigs", "lsr.web"]
 
 [tool.setuptools.package-data]
 "lsr.web" = ["static/*"]
-"lsr" = ["data/*.yaml"]
+"lsr" = ["data/*.yaml", "data/*.COF", "data/*.PLACEHOLDER"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

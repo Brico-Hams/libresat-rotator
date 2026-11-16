@@ -1,0 +1,12 @@
+WMM2025.COF is NOT included in this checkout.
+
+Download the official NOAA/NCEI World Magnetic Model 2025 coefficient file (public domain)
+  https://www.ncei.noaa.gov/products/world-magnetic-model
+(inside WMM2025COF.zip: WMM.COF) and save it here as
+
+  software/lsr/data/WMM2025.COF
+
+The first line must read like "2025.0 WMM-2025 11/13/2024"; then 90 lines "n m g h gdot hdot"; then the 99999 terminator lines.
+Until then lsr.geomag.declination() returns None, the compass calibration uses the manual
+calibration.declination value from the config, and tests/test_geomag.py::test_noaa_reference_values is skipped.
+The WMM is valid 2025.0-2030.0.

@@ -79,6 +79,8 @@ section{display:none}section.on{display:block}
   <div class="card"><b>Station</b><div class="row" style="margin-top:6px"><input id="lat" placeholder="lat" style="width:110px"><input id="lon" placeholder="lon" style="width:110px"><input id="alt" placeholder="alt m" style="width:90px"><button id="savest">Save</button></div><p class="mute" id="stinfo"></p></div>
   <div class="card"><b>Orbital elements</b><p class="mute" id="tleinfo"></p><button class="alt" id="tleupd">Update from CelesTrak</button><textarea id="tletext" rows="4" style="width:100%;margin-top:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px" placeholder="...or paste TLE text here"></textarea><button class="alt" id="tleadd">Add pasted TLEs</button></div>
   <div class="card"><b>Controller</b><pre id="ctl" class="mute" style="white-space:pre-wrap"></pre></div>
+  <div class="card"><b>Calibration</b><table id="caltable" class="mute"><tbody></tbody></table><p class="mute" id="calinfo"></p>
+    <div class="row"><button class="alt" data-cal="level">Level</button><button class="alt" data-cal="compass">Compass</button><button class="alt" data-cal="sun">Sun scan</button><button class="alt" data-cal="index">Index/backlash</button></div></div>
 </section>
 </main>
 <script>
@@ -132,6 +134,11 @@ $('#gdkeps').onclick=async()=>{if(confirm('Write satellites into the radio? A ba
 $('#savest').onclick=async()=>show(await api('station',{lat:+$('#lat').value,lon:+$('#lon').value,alt:+$('#alt').value}));
 $('#tleupd').onclick=async()=>{$('#tleinfo').textContent='downloading…';show(await api('tle/update',{}));loadSats()};
 $('#tleadd').onclick=async()=>{show(await api('tle/add',{text:$('#tletext').value}));loadSats()};
+async function loadCal(){const c=await api('calibration'),tb=$('#caltable tbody');tb.innerHTML='';
+ c.steps.forEach(s=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${s.step}</td><td>${s.valid?'OK':'--'}</td><td>${JSON.stringify(s.values)}</td><td>${s.status}</td>`;tb.appendChild(tr)});
+ const p=c.pointing||{},k=c.control;$('#calinfo').textContent=`pointing ${p.enabled?'on':'off'}, RMS ${p.rms==null?'--':p.rms} deg, ${p.n||0} points`+(k?` · control ${k.state}: ${Object.values(k.faults).join('; ')||'no faults'}`:'')}
+document.querySelectorAll('[data-cal]').forEach(b=>b.onclick=async()=>{show(await api('calibrate/'+b.dataset.cal,{}));loadCal()});
+loadCal();
 </script>
 </body>
 </html>

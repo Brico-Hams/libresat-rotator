@@ -150,6 +150,11 @@ int main() {
     n = parse_line("XCAL AZ=181.5", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XCAL && !std::strcmp(cm[0].key, "AZ")); NEAR(cm[0].value, 181.5, 1e-4);
     n = parse_line("XCAL BACKLASH", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XCAL && !std::strcmp(cm[0].key, "BACKLASH"));
     n = parse_line("XS", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XSTATUS);
+    n = parse_line("XR", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XRAW);
+    { axis_cfg_t e = {25.0f, 3200, 1, 10.0f, 0, 450, 20, 25, 0.05f};
+      NEAR(axis_enc_to_deg(&e, 0, 0, 4096), 10.0, 1e-4);
+      NEAR(axis_enc_to_deg(&e, 0, 1024, 4096), axis_pos_to_deg(&e, 800), 1e-4);
+      NEAR(axis_enc_to_deg(&e, 100, -1024, 4096), axis_pos_to_deg(&e, -700), 1e-4); }
     n = parse_line("XP 395.5 12.25", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_XPOS && cm[0].nvals == 2); NEAR(cm[0].value, 395.5, 1e-4); NEAR(cm[0].value2, 12.25, 1e-4);
     n = parse_line("az-5", cm, 8); CHECK(n == 1 && cm[0].kind == CMD_SET_AZ); NEAR(cm[0].value, -5, 1e-4);
 

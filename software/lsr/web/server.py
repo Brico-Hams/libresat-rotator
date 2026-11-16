@@ -131,6 +131,33 @@ def make_app(ctx) -> web.Application:
             return jr({'error': str(e)}, 400)
         return jr({'error': 'unknown calibration'}, 404)
 
+    @r.get('/api/calibration')
+    async def calibration_status(_):
+        from .. import calibration as calmod
+        cs = getattr(ctx.rot, 'control_status', None)
+        return jr({'steps': calmod.summary(ctx.cfg), 'pointing': ctx.cfg.get('pointing', {}),
+                   'control': cs() if cs else None})
+
+    @r.post('/api/calibrate/{step}')
+    async def calibrate_step(req):
+        from .. import calcli
+        step = req.match_info['step']
+        b = await body(req)
+        if step not in ('level', 'compass', 'sun', 'sun-manual', 'index'):
+            return jr({'error': 'unknown calibration step'}, 404)
+        mark = (float(b['az']), float(b['el'])) if step == 'sun-manual' and 'az' in b and 'el' in b else None
+        try:
+            return jr(await asyncio.to_thread(calcli.run_step, step, ctx.cfg, ctx.rot, False, mark))
+        except Exception as e:
+            return jr({'error': str(e)}, 400)
+
+    @r.post('/api/control/clear')
+    async def control_clear(_):
+        fn = getattr(ctx.rot, 'clear_faults', None)
+        if fn:
+            fn()
+        return jr({'ok': bool(fn)})
+
     @r.post('/api/tle/update')
     async def tle_update(_):
         return jr(await asyncio.to_thread(ctx.tles.update))

@@ -21,6 +21,10 @@
    - optionally `lsr satdb update`;
    - for OpenGD77 radios: *Upload keps*, then *Sync clock*.
 
+## Phase 8: automatic calibration (optional)
+
+Steps 2, 4 and 5 above can be done by the software: `lsr calibrate level|compass|sun|sun-manual|index|all`, then `lsr pointing fit <points.csv> --save --enable`. Procedure, sensors and acceptance (residual RMS < 0.1°) in [CALIBRATION](CALIBRATION.md).
+
 ## In the field: about 10 minutes
 
 | Step | Action | Check |

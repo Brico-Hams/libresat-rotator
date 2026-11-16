@@ -17,6 +17,7 @@ typedef struct {
 
 float   axis_steps_per_deg(const axis_cfg_t *c);
 float   axis_pos_to_deg(const axis_cfg_t *c, int32_t pos);
+float   axis_enc_to_deg(const axis_cfg_t *c, int32_t enc_base, int32_t enc_count, int32_t cpr);
 int32_t axis_deg_to_pos(const axis_cfg_t *c, float deg);
 
 // Choose the physical azimuth for a requested one. 0..360 requests are mapped to the
@@ -114,7 +115,7 @@ typedef enum {
     CMD_NONE = 0, CMD_GET_AZ, CMD_GET_EL, CMD_SET_AZ, CMD_SET_EL, CMD_STOP_AZ, CMD_STOP_EL,
     CMD_MOVE_L, CMD_MOVE_R, CMD_MOVE_U, CMD_MOVE_D, CMD_VERSION, CMD_STATUS, CMD_ERROR,
     CMD_HOME, CMD_PARK, CMD_XSTATUS, CMD_XCONF_SET, CMD_XCONF_GET, CMD_XSAVE, CMD_XCAL,
-    CMD_XGPS, CMD_XTMC, CMD_XBOOT, CMD_XHELP, CMD_XENABLE, CMD_XPOS, CMD_UNKNOWN
+    CMD_XGPS, CMD_XTMC, CMD_XBOOT, CMD_XHELP, CMD_XENABLE, CMD_XPOS, CMD_XRAW, CMD_UNKNOWN
 } cmd_kind_t;
 
 typedef struct {

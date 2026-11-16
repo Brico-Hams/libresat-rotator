@@ -57,7 +57,7 @@ LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator 
 6. [Firmware](docs/FIRMWARE.md): build and flash, the command protocol, settings and referencing.
 7. [Head software](docs/SOFTWARE.md): Pi install, web UI, Gpredict/Look4Sat/SatNOGS, FTX-1, Hamlib and OpenGD77.
 8. [Power](docs/POWER.md): batteries, USB-C PD, protection and the energy budget.
-9. [Calibration and field use](docs/FIELD_GUIDE.md): from the bag to the first QSO in 10 minutes.
+9. [Calibration and field use](docs/FIELD_GUIDE.md): from the bag to the first QSO in 10 minutes. [Automatic calibration and pointing correction](docs/CALIBRATION.md): level, GPS, compass, Sun, index/backlash, pointing fit.
 10. [Testing](docs/TESTING.md): unit, bench and acceptance tests with result sheets.
 11. [Family architecture](docs/ARCHITECTURE.md): LSR-1 and LSR-2, shared stack, LSR-2 mechanics and fabrication route.
 12. [LSR-2 design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md): goals, licence position, changes against the SARCTrac Mk5, phases.
@@ -74,6 +74,7 @@ LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator 
   - Azimuth comes back from the position saved in flash, checked against the motor encoder, or from a hall index magnet (`HOME`).
   - True north is found by **pointing at the Sun** with the printed sun sight: one button press.
 - **Closed loop.** An AS5600 on each motor's rear shaft detects lost steps and re-synchronises the step counter.
+- **Automatic calibration and pointing model (Phase 8).** `lsr calibrate level|compass|sun|sun-manual|index|all` uses GPS time and position, the Sun and the IMUs; `lsr pointing fit` fits north, horizon, tilt, non-perpendicularity, collimation, eccentricity and backlash terms and reports the residual RMS (goal < 0.1°). Optional closed loop with step-loss and stall detection, soft limits and safe states. See [Calibration](docs/CALIBRATION.md); the ideas follow SARCNET MK1 and Rotator7.
 - **Flip and cable-wrap planner.** Overhead passes need more than 50°/s of azimuth with a plain az/el rotator. The planner instead chooses between normal, over-the-top (elevation 0–180°) and wrap-shifted trajectories. In a one-week simulation of 156 passes, every pass stayed under 16°/s with less than 0.7° pointing error ([SIZING](docs/SIZING.md)).
 - **The Pi is the rotator head.** It runs its own Wi-Fi hotspot, a mobile web UI, offline TLEs, and a GPS position and clock. Its `rotctld` on port 4533 accepts Gpredict, Look4Sat, SatNOGS or any Hamlib client.
 - **Doppler done right.** FM satellites are corrected on both uplink and downlink. Linear transponders follow the RX knob: tune the downlink and the uplink follows, inverting or not. The FTX-1 runs MAIN as RX and SUB as TX, with no hardware split.

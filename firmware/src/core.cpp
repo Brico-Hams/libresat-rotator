@@ -12,6 +12,11 @@ float axis_pos_to_deg(const axis_cfg_t *c, int32_t pos) {
     return c->offset_deg + (float)c->dir * (float)pos / axis_steps_per_deg(c);
 }
 
+// Output angle seen by the encoder alone: same frame as axis_pos_to_deg (encoder counts -> microsteps -> degrees).
+float axis_enc_to_deg(const axis_cfg_t *c, int32_t enc_base, int32_t enc_count, int32_t cpr) {
+    return axis_pos_to_deg(c, enc_base + (int32_t)((int64_t)enc_count * c->usteps_rev / cpr));
+}
+
 int32_t axis_deg_to_pos(const axis_cfg_t *c, float deg) {
     return (int32_t)lroundf((deg - c->offset_deg) * axis_steps_per_deg(c) * (float)c->dir);
 }
@@ -183,6 +188,7 @@ int parse_line(const char *line, cmd_t *out, int max) {
         cmd_t *c = &out[n]; memset(c, 0, sizeof(*c));
         char *arg = p + 2; while (*arg == ' ') arg++;
         if (istarts(p, "XS")) c->kind = CMD_XSTATUS;
+        else if (istarts(p, "XR")) c->kind = CMD_XRAW;
         else if (istarts(p, "XW")) c->kind = CMD_XSAVE;
         else if (istarts(p, "XG")) c->kind = CMD_XGPS;
         else if (istarts(p, "XT")) c->kind = CMD_XTMC;

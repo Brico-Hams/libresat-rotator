@@ -57,7 +57,11 @@ lsr satdb update              # import alive amateur transmitters from SatNOGS D
 lsr sun                       # Sun azimuth/elevation now (alignment)
 lsr status                    # controller status and decoded errors
 lsr gd77 info|clock|keps|nmea
+lsr calibrate level|compass|sun|sun-manual|index|all [--sim]   # automatic calibration, see CALIBRATION.md
+lsr pointing fit points.csv [--terms ...] [--save] [--enable]   # least-squares pointing model, prints the residual RMS
 ```
+
+Phase 8 modules: `geomag.py` (WMM declination), `calibration.py` (level, compass, Sun, index/backlash), `pointing.py` (correction model and fit), `control.py` + `CorrectedRotator` in `rotator.py` (deadband, step-loss and stall supervision, soft limits, feed-forward, safe states), `lsq.py` (plain-Python least squares, no numpy). With `pointing.enabled` and `control.enabled` both false the rotator behaves exactly as before. Extra API: `GET /api/calibration`, `POST /api/calibrate/{level|compass|sun|sun-manual|index}`, `POST /api/control/clear`. Procedure: [CALIBRATION](CALIBRATION.md).
 
 ## Using Gpredict, Look4Sat or the SatNOGS client
 
