@@ -19,6 +19,7 @@ firmware:
 calc:
 	$(PY) calc/cycloid_check.py
 	$(PY) calc/sizing.py > /dev/null
+	$(PY) calc/lsr2_sizing.py
 bom:
 	$(PY) scripts/bom.py
 test:
@@ -26,6 +27,7 @@ test:
 	cd software && $(PY) -m pytest -q
 verify: test
 	$(PY) calc/cycloid_check.py
+	$(PY) calc/lsr2_sizing.py --check
 	$(PY) scripts/verify_stl.py
 	@grep -E "^\*\* Found" hardware/pcb/lsr_ctl_drc.rpt
 sim:
