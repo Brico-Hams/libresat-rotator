@@ -110,7 +110,8 @@ Cast parts, shafts, bought parts (including the circlip + ring), the finished he
    - `mast_clamp`: parting plane z = −175 (boss top), drag only, bore cast solid;
    - `el_hub`: parting plane through the EL axis, two pattern halves with 2 dowels, bore cast solid, one pattern for both hubs.
 5. **Turned stainless shafts** from Ø33 bar (`az_shaft`: hollow, bore Ø16 gun-drilled from the bottom end, VERIFY with the machinist); STEP in `cnc/lsr2/`.
-6. **Bought small parts**: DIN 471 Ø30 circlip + 3 mm ring under the 51206, 2 M8 U-bolts (A4-80 or 8.8), keys, seals (list and prices in [LSR2_MATERIALS](LSR2_MATERIALS.md)).
+6. **Bought small parts**: DIN 471 Ø30 circlip + 3 mm ring under the 51206, 2 M8 U-bolts (A4-80 or 8.8), keys, seals (list and prices in [LSR2_MATERIALS](LSR2_MATERIALS.md); full BOM in [BOM_LSR2](BOM_LSR2.md)).
+7. **Assembly**: step by step in [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md).
 
 ## 6. Build
 
@@ -129,8 +130,8 @@ make lsr2     # self-tests, then freecadcmd: plates, cast parts, patterns, core 
 | 1 | Spec, sizing calc, parameter file | done |
 | 2 | CNC plates: scripts, DXF, STEP, interference check | done for plates (printed/MDF fit test pending) |
 | 3 | Cast parts, patterns, core box, shafts, structural checks | done (foundry quote and first casting pending) |
-| 4 | Firmware `EXT_STEPDIR`, LSR-CTL header, `lsr2` profile | pending |
-| 5 | `antenaSatCommrotor` EasyComm backend, BOM, assembly docs, branding | pending |
+| 4 | Firmware `EXT_STEPDIR`, LSR-CTL header, `lsr2` profile | in progress, see [FIRMWARE](FIRMWARE.md) |
+| 5 | BOM ([BOM_LSR2](BOM_LSR2.md)), assembly guide ([LSR2_ASSEMBLY](LSR2_ASSEMBLY.md)), `antenaSatCommrotor` rotctld backend (branch `feat/lsr-rotctld-backend` of Brico-Hams/antenaSatCommrotor), branding | documentation done; backend in progress |
 
 **VERIFY before cutting metal or pouring:**
 - NMRV030 dimensions: measure the real gearbox with a caliper and update `params.py`, then fit-test the 1:1 print;

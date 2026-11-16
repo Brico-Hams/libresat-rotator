@@ -1,10 +1,12 @@
-"""Client for the LSR-1 controller firmware (Easycomm II + LSR 'X' extensions) and a simulator."""
+"""Client for the LSR controller firmware (LSR-1 and LSR-2; Easycomm II + LSR 'X' extensions) and a simulator."""
 from __future__ import annotations
 
 import math
 import re
 import threading
 import time
+
+from .config import AZ_WIRE_OFFSET
 
 
 def _num(p: str):
@@ -37,8 +39,10 @@ def error_text(code: int) -> list[str]:
 class Rotator:
     """Serial link to the controller. All methods are thread-safe and blocking (short)."""
 
-    def __init__(self, port='/dev/serial0', baud=115200, timeout=0.5, serial_factory=None, **_):
+    def __init__(self, port='/dev/serial0', baud=115200, timeout=0.5, serial_factory=None, model='lsr1', **_):
         self.port, self.baud, self.timeout = port, baud, timeout
+        self.model = model
+        self.az_off = AZ_WIRE_OFFSET.get(model, 0.0)       # wire azimuth = user azimuth + az_off
         self._factory = serial_factory
         self.ser = None
         self.lock = threading.Lock()
@@ -78,14 +82,16 @@ class Rotator:
         if not r:
             raise IOError('no answer from the rotator controller')
         m = re.match(r'AZ\s*(-?[\d.]+)\s+EL\s*(-?[\d.]+)', r[0])
-        return float(m.group(1)), float(m.group(2))
+        return float(m.group(1)) - self.az_off, float(m.group(2))
 
     def set_pos(self, az: float, el: float):
+        if self.az_off:
+            az %= 360.0          # the firmware picks the wrap closest to the current azimuth
         self._tx(f'AZ{az:.1f} EL{el:.1f}')
 
     def set_abs(self, az: float, el: float):
-        """Absolute azimuth on the cable-wrap scale (e.g. 0..450): used by the pass planner."""
-        self._tx(f'XP {az:.2f} {el:.2f}')
+        """Absolute azimuth on the cable-wrap scale (LSR-1 0..450, LSR-2 -360..360): used by the pass planner."""
+        self._tx(f'XP {az + self.az_off:.2f} {el:.2f}')
 
     def stop(self):
         self._tx('SA SE')
@@ -105,7 +111,12 @@ class Rotator:
 
     def status(self) -> dict:
         r = self._tx('XS', 'XS')
-        return parse_xs(r[0]) if r else {}
+        st = parse_xs(r[0]) if r else {}
+        if self.az_off:
+            for k in ('az', 'taz'):
+                if isinstance(st.get(k), (int, float)):
+                    st[k] = round(st[k] - self.az_off, 2)
+        return st
 
     def cal(self, what: str, value: float | None = None) -> str:
         cmd = f'XCAL {what}' + (f'={value:.3f}' if value is not None else '')
@@ -124,7 +135,9 @@ class Rotator:
 class SimRotator:
     """Kinematic simulator with the firmware's planner (sqrt profile, limits, wrap): no hardware needed."""
 
-    def __init__(self, vmax_az=20.0, vmax_el=15.0, acc=25.0, az_min=0.0, az_max=450.0, el_min=0.0, el_max=180.0, **_):
+    def __init__(self, vmax_az=20.0, vmax_el=15.0, acc=25.0, az_min=0.0, az_max=450.0, el_min=0.0, el_max=180.0,
+                 model='lsr1', **_):
+        self.model = model
         self.pos = [0.0, 90.0]
         self.tgt = [0.0, 90.0]
         self.v = [0.0, 0.0]
@@ -204,8 +217,10 @@ class SimRotator:
 
 
 def make_rotator(cfg: dict):
+    model = cfg.get('model', 'lsr1')
     if cfg['rotator'].get('simulate'):
         l = cfg['limits']
-        return SimRotator(l['vmax_az'], l['vmax_el'], 25.0, l['az_min'], l['az_max'], l['el_min'], l['el_max'])
+        return SimRotator(l['vmax_az'], l['vmax_el'], 10.0 if model == 'lsr2' else 25.0,
+                          l['az_min'], l['az_max'], l['el_min'], l['el_max'], model=model)
     r = cfg['rotator']
-    return Rotator(r['port'], r['baud'], r.get('timeout', 0.5))
+    return Rotator(r['port'], r['baud'], r.get('timeout', 0.5), model=model)

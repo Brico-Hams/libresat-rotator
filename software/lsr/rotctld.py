@@ -9,6 +9,8 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from .config import MODEL_NAMES
+
 log = logging.getLogger('lsr.rotctld')
 
 
@@ -18,6 +20,9 @@ class RotctldServer:
         self.lim = (min_az, max_az, min_el, max_el)
         self.clients = 0
 
+    @property
+    def model_name(self) -> str:
+        return MODEL_NAMES.get(getattr(self.rot, 'model', 'lsr1'), 'LSR-1')
     async def handle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         self.clients += 1
         peer = writer.get_extra_info('peername')
@@ -79,7 +84,7 @@ class RotctldServer:
                 self.rot.jog({2: 'up', 4: 'down', 8: 'left', 16: 'right'}.get(d, 'left'))
                 return 'RPRT 0\n'
             if cmd in ('_', '\\get_info'):
-                return f'LibreSat Rotator LSR-1 {self.rot.version()}\n'
+                return f'LibreSat Rotator {self.model_name} {self.rot.version()}\n'
             if cmd == '\\dump_state':
                 a0, a1, e0, e1 = self.lim
                 return (f'1\n2\nmin_az={a0:.6f}\nmax_az={a1:.6f}\nmin_el={e0:.6f}\nmax_el={e1:.6f}\n'
@@ -87,7 +92,7 @@ class RotctldServer:
             if cmd in ('q', 'Q', '\\quit'):
                 return None
             if cmd in ('\\chk_vfo', '\\dump_caps'):
-                return '0\n' if cmd == '\\chk_vfo' else 'Model name: LSR-1\nRPRT 0\n'
+                return '0\n' if cmd == '\\chk_vfo' else f'Model name: {self.model_name}\nRPRT 0\n'
             return 'RPRT -11\n'                       # not implemented
         except (IndexError, ValueError):
             return 'RPRT -1\n'                        # invalid parameter

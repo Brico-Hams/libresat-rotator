@@ -1,7 +1,25 @@
-// LibreSat Rotator LSR-1 firmware — board pin map and compile-time defaults (LSR-CTL v1.0)
+// LibreSat Rotator firmware — board pin map and compile-time defaults (LSR-CTL v1.0)
 #pragma once
 
+// ---------------- build selection (CMake: -DLSR_MODEL=1|2, -DLSR_DRIVER=TMC2209_UART|EXT_STEPDIR)
+#define TMC2209_UART 1             // LSR-1: internal TMC2209 on UART, STEP/DIR on the board
+#define EXT_STEPDIR  2             // LSR-2: external DM542 / TMC5160 in STEP/DIR mode, no UART calls
+#ifndef LSR_MODEL
+#define LSR_MODEL 1
+#endif
+#ifndef LSR_DRIVER
+#if LSR_MODEL == 2
+#define LSR_DRIVER EXT_STEPDIR
+#else
+#define LSR_DRIVER TMC2209_UART
+#endif
+#endif
+
+#if LSR_MODEL == 2
+#define FW_NAME     "LSR-2"
+#else
 #define FW_NAME     "LSR-1"
+#endif
 #define FW_VERSION  "1.0.0"
 
 // ---------------- pins (Raspberry Pi Pico GPIO numbers)
@@ -29,23 +47,22 @@
 #define ADC_VSENSE       0
 #define PIN_ONBOARD_LED 25    // plain Pico; Pico W uses the CYW43 LED (not driven)
 
+// EXT_STEPDIR: STEP/DIR stay on GPIO10..13; one enable per axis on the free pins GPIO2/GPIO3.
+// PIN_NEN (GPIO14) is not driven by the drivers in this mode.
+#define PIN_EN_AZ        2
+#define PIN_EN_EL        3
+#define EXT_STEP_ACTIVE  1    // pin level while the STEP pulse is high (after the buffer/opto stage)
+#define EXT_DIR_POS_LEVEL 1   // DIR pin level for +1
+#define EXT_EN_ACTIVE    0    // DM542 ENA is often active-low: enabled = low, disabled = high (VERIFY)
+
 // ---------------- serial
 #define PI_BAUD     115200
 #define GPS_BAUD      9600
 #define TMC_BAUD    115200
 
 // ---------------- motion defaults (all overridable with XC key=value, stored in flash)
-#define DEF_RATIO        25.0f     // printed cycloid 25:1
-#define DEF_MICROSTEPS   16
+// ratio, microsteps, ranges, vmax and acc per axis come from the model profile (core.cpp: lsr_model()).
 #define DEF_FULLSTEPS   200
-#define DEF_VMAX_AZ      20.0f     // deg/s at the output
-#define DEF_VMAX_EL      15.0f
-#define DEF_ACC_AZ       25.0f     // deg/s^2
-#define DEF_ACC_EL       20.0f
-#define DEF_AZ_MIN        0.0f     // mechanical range (cable wrap): 0..450 deg
-#define DEF_AZ_MAX      450.0f
-#define DEF_EL_MIN        0.0f
-#define DEF_EL_MAX      180.0f     // 0..180 allows "flip" passes
 #define DEF_IRUN_MA     900        // TMC2209 RMS run current
 #define DEF_IHOLD_PCT    35        // hold current (% of run)
 #define DEF_DEADBAND     0.05f     // deg

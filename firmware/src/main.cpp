@@ -37,6 +37,33 @@ static const uint        PIN_STEP[2] = {PIN_STEP_AZ, PIN_STEP_EL};
 static const uint        PIN_DIR[2] = {PIN_DIR_AZ, PIN_DIR_EL};
 static repeating_timer_t step_timer;
 
+#if LSR_DRIVER == EXT_STEPDIR
+static const uint PIN_EN[2] = {PIN_EN_AZ, PIN_EN_EL};
+static sd_axis_t   sd[2];
+static sd_enable_t sd_en;
+
+static void drivers_enable(bool on) {
+    sd_enable_set(&sd_en, on, time_us_32());
+    for (int a = 0; a < 2; a++) gpio_put(PIN_EN[a], on ? EXT_EN_ACTIVE : !EXT_EN_ACTIVE);
+}
+
+static bool step_isr(repeating_timer_t *) {
+    uint32_t now = time_us_32();
+    bool ready = sd_enable_ready(&sd_en, now);
+    for (int a = 0; a < 2; a++) {
+        int32_t v = vel_q16[a];
+        int sgn = v >= 0 ? 1 : -1;
+        bool want = false;
+        if (v != 0 && ready) { acc_q16[a] += (uint32_t)(v > 0 ? v : -v); want = acc_q16[a] >= 65536u; }
+        if (sd_tick(&sd[a], now, ready, sgn, want)) { acc_q16[a] -= 65536u; pos[a] += sgn; }
+        gpio_put(PIN_STEP[a], sd[a].step_hi ? EXT_STEP_ACTIVE : !EXT_STEP_ACTIVE);
+        if (sd[a].dir) gpio_put(PIN_DIR[a], (sd[a].dir > 0) == (EXT_DIR_POS_LEVEL != 0));
+    }
+    return true;
+}
+#else
+static void drivers_enable(bool on) { gpio_put(PIN_NEN, !on); }
+
 static bool step_isr(repeating_timer_t *) {
     gpio_put(PIN_STEP_AZ, 0); gpio_put(PIN_STEP_EL, 0);
     for (int a = 0; a < 2; a++) {
@@ -57,6 +84,7 @@ static bool step_isr(repeating_timer_t *) {
     }
     return true;
 }
+#endif
 
 static int32_t pos_get(int a) { return pos[a]; }
 static void pos_set(int a, int32_t p) { uint32_t s = save_and_disable_interrupts(); pos[a] = p; restore_interrupts(s); }
@@ -251,10 +279,14 @@ static conf_t CONF[] = {
 };
 
 static void configure_drivers(void) {
+#if LSR_DRIVER == TMC2209_UART
     for (int a = 0; a < 2; a++) {
         tmc_ok[a] = tmc_configure((uint8_t)a, S.irun_ma[a], S.ihold_pct, S.microsteps, false);
     }
     if (!tmc_ok[0] || !tmc_ok[1]) errors |= E_TMC; else errors &= ~E_TMC;
+#else
+    errors &= ~E_TMC;                       // no UART driver: tmc=0,0 in XS means "not applicable"
+#endif
 }
 
 static void status_line(out_fn out) {
@@ -305,7 +337,7 @@ static void handle(const char *line, out_fn out) {
         case CMD_XSTATUS: status_line(out); break;
         case CMD_XSAVE: save_position(); out("XW ok\r\n"); break;
         case CMD_XENABLE:
-            drivers_on = c[i].value != 0.0f; gpio_put(PIN_NEN, !drivers_on);
+            drivers_on = c[i].value != 0.0f; drivers_enable(drivers_on);
             if (!drivers_on && S.enc_dir[AZ] == 0) { referenced[AZ] = false; errors |= E_AZ_REF; }   // with an encoder the position keeps being tracked
             snprintf(b, sizeof(b), "XE %d\r\n", drivers_on); out(b); break;
         case CMD_XBOOT: out("XB rebooting to USB bootloader\r\n"); sleep_ms(50); reset_usb_boot(0, 0); break;
@@ -315,6 +347,10 @@ static void handle(const char *line, out_fn out) {
                      gps.hour, gps.min, gps.sec, (unsigned long)gps.updates);
             out(b); break;
         case CMD_XTMC:
+#if LSR_DRIVER == EXT_STEPDIR
+            out("XT n/a ext driver\r\n");
+            break;
+#endif
             for (int a = 0; a < 2; a++) {
                 uint32_t ds = 0, cnt = 0; bool ok = tmc_read((uint8_t)a, 0x6F, &ds) && tmc_read((uint8_t)a, 0x02, &cnt);
                 snprintf(b, sizeof(b), "XT %s ok=%d drv_status=0x%08lx ifcnt=%lu ot=%d otpw=%d s2g=%d ola=%d olb=%d\r\n", AXN[a], ok,
@@ -392,7 +428,10 @@ int main(void) {
 
     for (int a = 0; a < 2; a++) { gpio_init(PIN_STEP[a]); gpio_set_dir(PIN_STEP[a], GPIO_OUT); gpio_init(PIN_DIR[a]); gpio_set_dir(PIN_DIR[a], GPIO_OUT); }
     gpio_init(PIN_NEN); gpio_set_dir(PIN_NEN, GPIO_OUT); gpio_put(PIN_NEN, 1);
-    gpio_init(PIN_LED); gpio_set_dir(PIN_LED, GPIO_OUT);
+#if LSR_DRIVER == EXT_STEPDIR
+    for (int a = 0; a < 2; a++) { gpio_init(PIN_EN[a]); gpio_set_dir(PIN_EN[a], GPIO_OUT); gpio_put(PIN_EN[a], !EXT_EN_ACTIVE); }
+    sd_init(&sd[0]); sd_init(&sd[1]);
+#endif    gpio_init(PIN_LED); gpio_set_dir(PIN_LED, GPIO_OUT);
     gpio_init(PIN_BTN); gpio_set_dir(PIN_BTN, GPIO_IN); gpio_pull_up(PIN_BTN);
     gpio_init(PIN_HALL_AZ); gpio_set_dir(PIN_HALL_AZ, GPIO_IN); gpio_pull_up(PIN_HALL_AZ);
     gpio_init(PIN_HALL_EL); gpio_set_dir(PIN_HALL_EL, GPIO_IN); gpio_pull_up(PIN_HALL_EL);
@@ -402,15 +441,15 @@ int main(void) {
     apply_cfg();
     sensors_init();
     gps_init();
+#if LSR_DRIVER == TMC2209_UART
     tmc_init();
-    sleep_ms(300);                       // let VM settle before talking to the drivers
+#endif    sleep_ms(300);                       // let VM settle before talking to the drivers
     configure_drivers();
     imu_ok[EL] = mpu_init(EL);
     imu_ok[AZ] = mpu_init(AZ);
     restore_position();
     for (int a = 0; a < 2; a++) encoder_update(a);
-    gpio_put(PIN_NEN, 0);
-    add_repeating_timer_us(-(1000000 / STEP_ISR_HZ), step_isr, NULL, &step_timer);
+    drivers_enable(true);_timer_us(-(1000000 / STEP_ISR_HZ), step_isr, NULL, &step_timer);
     watchdog_enable(2000, true);
 
     linebuf_t lb_usb = {{0}, 0}, lb_uart = {{0}, 0};

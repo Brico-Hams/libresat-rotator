@@ -11,6 +11,7 @@ from pathlib import Path
 import yaml
 
 DEFAULTS = {
+    'model': 'lsr1',
     'station': {'name': 'LSR-1', 'lat': 40.4168, 'lon': -3.7038, 'alt': 650.0, 'use_gps': True},
     'rotator': {'port': '/dev/serial0', 'baud': 115200, 'simulate': False, 'timeout': 0.5},
     'limits': {'az_min': 0.0, 'az_max': 450.0, 'el_min': 0.0, 'el_max': 180.0,
@@ -30,6 +31,17 @@ DEFAULTS = {
     'satdb': {'file': ''},
 }
 
+# Rotator model profiles: merged over DEFAULTS, then the user's YAML on top. lsr1 = the defaults above.
+# lsr2 azimuth is -360..+360; the firmware works on 0..720 (user + AZ_WIRE_OFFSET), see rotator.Rotator.
+MODEL_NAMES = {'lsr1': 'LSR-1', 'lsr2': 'LSR-2'}
+AZ_WIRE_OFFSET = {'lsr1': 0.0, 'lsr2': 360.0}
+PROFILES = {
+    'lsr1': {},
+    'lsr2': {'station': {'name': 'LSR-2'},
+             'limits': {'az_min': -360.0, 'az_max': 360.0, 'el_min': -30.0, 'el_max': 150.0,
+                        'vmax_az': 12.0, 'vmax_el': 12.0, 'allow_flip': False}},
+}
+
 
 def _merge(a: dict, b: dict) -> dict:
     out = copy.deepcopy(a)
@@ -39,6 +51,15 @@ def _merge(a: dict, b: dict) -> dict:
         else:
             out[k] = v
     return out
+
+
+def with_model(user: dict) -> dict:
+    model = str((user or {}).get('model', 'lsr1')).lower()
+    if model not in PROFILES:
+        raise ValueError(f"unknown rotator model {model!r} (use one of {', '.join(PROFILES)})")
+    cfg = _merge(_merge(DEFAULTS, PROFILES[model]), user or {})
+    cfg['model'] = model
+    return cfg
 
 
 def config_paths():
@@ -51,7 +72,7 @@ def load(path: str | None = None) -> dict:
     for p in paths:
         if p.exists():
             with open(p) as f:
-                cfg = _merge(DEFAULTS, yaml.safe_load(f) or {})
+                cfg = with_model(yaml.safe_load(f) or {})
             cfg['_path'] = str(p)
             return cfg
     cfg = copy.deepcopy(DEFAULTS)

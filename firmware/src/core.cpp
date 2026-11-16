@@ -32,6 +32,40 @@ float az_resolve(float req, float cur, float min_deg, float max_deg) {
     return best;
 }
 
+// ------------------------------------------------------------------ model profiles
+static const lsr_model_t MODELS[2] = {
+    {"LSR-1", 25.0f, 16,   0.0f, 450.0f,   0.0f,   0.0f, 180.0f, 20.0f, 15.0f, 25.0f, 20.0f, true},
+    {"LSR-2", 80.0f,  8,   0.0f, 720.0f, 360.0f, -30.0f, 150.0f, 12.0f, 12.0f, 10.0f, 10.0f, false},
+};
+
+const lsr_model_t *lsr_model(int model) { return &MODELS[model == 2 ? 1 : 0]; }
+float lsr_az_to_internal(const lsr_model_t *m, float u) { return u + m->az_user_offset; }
+float lsr_az_to_user(const lsr_model_t *m, float i) { return i - m->az_user_offset; }
+float lsr_clamp_az_user(const lsr_model_t *m, float u) {
+    return lsr_az_to_user(m, clampf(lsr_az_to_internal(m, u), m->az_min, m->az_max));
+}
+float lsr_clamp_el(const lsr_model_t *m, float deg) { return clampf(deg, m->el_min, m->el_max); }
+
+// ------------------------------------------------------------------ external STEP/DIR sequencing
+void sd_init(sd_axis_t *s) { memset(s, 0, sizeof(*s)); }
+
+bool sd_tick(sd_axis_t *s, uint32_t now, bool ready, int want_dir, bool want_step) {
+    if (s->step_hi && (uint32_t)(now - s->t_rise) >= SD_PULSE_MIN_US) s->step_hi = false;
+    if (!ready || !want_step || s->step_hi) return false;
+    if (want_dir != s->dir) { s->dir = want_dir; s->t_dir = now; return false; }
+    if ((uint32_t)(now - s->t_dir) < SD_DIR_SETUP_US) return false;
+    s->step_hi = true; s->t_rise = now;
+    return true;
+}
+
+void sd_enable_set(sd_enable_t *e, bool on, uint32_t now) {
+    if (on && !e->on) e->t_on = now;
+    e->on = on;
+}
+bool sd_enable_ready(const sd_enable_t *e, uint32_t now) {
+    return e->on && (uint32_t)(now - e->t_on) >= SD_ENABLE_SETTLE_US;
+}
+
 // ------------------------------------------------------------------ planner
 float plan_step(plan_state_t *s, float err, float vmax, float acc, float dt, float deadband) {
     float v_des = 0.0f;

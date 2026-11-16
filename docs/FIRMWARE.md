@@ -14,14 +14,46 @@ The source is in `firmware/src/`:
 ```bash
 export PICO_SDK_PATH=/path/to/pico-sdk          # 2.x, with lib/tinyusb
 cd firmware && make                              # -> build/lsr1.uf2  (PICO_BOARD=pico2 for a Pico 2)
-make test                                        # 46 host unit checks (no hardware)
+make lsr2                                        # -> build-lsr2/lsr2.uf2  (LSR-2, external drivers)
+make test                                        # host unit checks (no hardware, plain g++ -std=c++17)
 ```
+
+CMake options: `-DLSR_MODEL=1|2` (default 1) picks the axis profile, `-DLSR_DRIVER=TMC2209_UART|EXT_STEPDIR` picks the driver (default `EXT_STEPDIR` when `LSR_MODEL=2`, else `TMC2209_UART`). Settings saved in flash carry the model, so an LSR-1 build ignores LSR-2 settings and vice versa.
 
 There are three ways to flash:
 
-- **USB:** hold BOOTSEL while plugging in the Pico, then copy `lsr1.uf2` to the `RPI-RP2` drive. A running board can enter the bootloader with the `XB` command.
+- **USB:** hold BOOTSEL while plugging in the Pico, then copy `lsr1.uf2` (or `lsr2.uf2`) to the `RPI-RP2` drive. A running board can enter the bootloader with the `XB` command.
 - **From the Pi Zero, in the field:** `software/scripts/flash_pico_from_pi.sh build/lsr1.elf`, through J14 SWD and openocd.
 - **Debug probe:** any CMSIS-DAP probe on the SWD pads.
+
+## LSR-2 external drivers
+
+One firmware drives both rotators. The profile comes from `lsr_model()` in `core.cpp`:
+
+| | LSR-1 (`LSR_MODEL=1`) | LSR-2 (`LSR_MODEL=2`) |
+|---|---|---|
+| Gearbox / microsteps | cycloid 25:1 / 16 | NMRV030 80:1 / 8 (355.6 steps/°) |
+| AZ range (wire frame) | 0..450° | 0..720°, i.e. user −360..+360° (wire = user + 360); same wrap logic |
+| EL range | 0..180° (flip) | −30..150°, no flip |
+| vmax / acc | 20 / 15 °/s, 25 / 20 °/s² | 12 °/s, 10 °/s² |
+
+With `LSR_DRIVER=EXT_STEPDIR` (DM542, or a TMC5160 in step/dir mode, behind opto-isolated inputs) the firmware makes no TMC UART call: `XT` answers `XT n/a ext driver`, and `tmc=0,0` / error bit 4 are not used. STEP and DIR stay on the LSR-1 pins; the enables are per axis:
+
+| Signal | GPIO | Notes |
+|---|---|---|
+| STEP AZ / DIR AZ | GP10 / GP11 | as LSR-1 |
+| STEP EL / DIR EL | GP12 / GP13 | as LSR-1 |
+| ENABLE AZ / EL | GP2 / GP3 | free pins; not routed on LSR-CTL v1.0, take them from the header with a wire |
+
+Levels are set in `config.h`: `EXT_STEP_ACTIVE`, `EXT_DIR_POS_LEVEL`, `EXT_EN_ACTIVE` (default 0: enabled = low, disabled = high, as the DM542 ENA is usually active-low; check your driver). Timing is set by constants in `core.h` and enforced by `sd_tick()` (host-tested):
+
+| Limit | Constant | Value | DM542 datasheet |
+|---|---|---|---|
+| STEP pulse width | `SD_PULSE_MIN_US` | 3 µs (the 40 µs tick gives 40 µs) | ≥ 2.5 µs, VERIFY |
+| DIR set-up before the first STEP edge | `SD_DIR_SETUP_US` | 5 µs | ≥ 5 µs, VERIFY |
+| ENABLE settled before the first STEP | `SD_ENABLE_SETTLE_US` | 200 ms (also after `XE 1`) | ≥ 200 ms, VERIFY |
+
+At 12 °/s the step rate is 4.3 kHz, far below the optocoupler limit. The wiring is in [ELECTRONICS](ELECTRONICS.md#lsr-2-external-drivers).
 
 ## How it works
 

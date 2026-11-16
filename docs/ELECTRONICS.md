@@ -81,6 +81,16 @@ At the head, split it with a 4-way JST-XH Y. I²C1 runs at 100 kHz for this leng
 3. **Inductor:** 6.8 µH with Isat ≥ 3 A, 6 × 6 mm (Bourns SRN6045TA-6R8M or similar).
 4. **Input voltage:** the TVS starts conducting at about 26.7 V. The TMC2209 limit is 29 V and the AP63205 limit 32 V. Do not exceed 24 V nominal, and do not use 28 V USB-PD profiles.
 
+## LSR-2 external drivers
+
+LSR-2 uses the same LSR-CTL board with the TMC2209 modules left out, and two external step/dir drivers (one DM542 per axis, or a TMC5160 in step/dir mode). Build with `make lsr2` and pin table: see [FIRMWARE](FIRMWARE.md#lsr-2-external-drivers).
+
+- **DM542 inputs:** PUL+, DIR+ and ENA+ go to the 5 V rail; PUL−, DIR− and ENA− go to the Pico (GP10/GP11/GP2 for AZ, GP12/GP13/GP3 for EL) through a 74HCT245 or ULN2003-style buffer that pulls the − pin to GND (the logic is then inverted: set `EXT_STEP_ACTIVE`, `EXT_DIR_POS_LEVEL` and `EXT_EN_ACTIVE` to match). Wiring the Pico pin directly to the − pin is acceptable only if the 3.3 V drive gives enough opto current: I = (3.3 V − Vf) / R_in, at least the minimum LED current in the driver datasheet (about 7 mA at 5 V typical; the Pico pin is good for 12 mA at most). VERIFY with the datasheet of your DM542 and measure; if it is marginal, use the buffer.
+- **Isolation:** keep the opto ground separate. The motor supply never connects to the logic ground.
+- **Motor supply:** a separate 24–48 V DC supply per rotator (the Mk5 uses 48 V), fused, to the DM542 VCC/GND, with a 470–1000 µF cap close to each driver. LSR-CTL keeps its own 12–24 V input for the 5 V and 3.3 V rails (the TVS limit in the VERIFY list above still applies to that input).
+- **DM542 DIP switches, NEMA23 2.8 N·m at 3 A, 8 microsteps** (VERIFY against the table printed on your driver): peak current 3.0 A (SW1–SW3 per the table; the DM542 peak is about 1.4 × RMS, so check you are not at 3 A RMS), SW4 standstill current at half (on), SW5–SW8 = 1600 pulses/rev (8 microsteps × 200 steps).
+- **Cable:** shielded motor cable, shield to the driver ground at one end only.
+
 ## Sensors
 
 - **AS5600:** diametric 6 × 2.5 mm magnet on the motor rear shaft, 1–2 mm air gap. `XS enc=1` confirms the magnet is detected (status bit MD).

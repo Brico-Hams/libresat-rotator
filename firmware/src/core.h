@@ -25,6 +25,49 @@ int32_t axis_deg_to_pos(const axis_cfg_t *c, float deg);
 float   az_resolve(float req, float cur, float min_deg, float max_deg);
 float   clampf(float v, float lo, float hi);
 
+// ------------------------------------------------------------------ model profiles (LSR_MODEL 1 | 2)
+// Wire/internal azimuth frame: LSR-1 0..450; LSR-2 0..720 = user -360..+360 (internal = user + az_user_offset).
+typedef struct {
+    const char *name;
+    float ratio;
+    int   microsteps;
+    float az_min, az_max;       // internal frame
+    float az_user_offset;
+    float el_min, el_max;
+    float vmax_az, vmax_el;     // deg/s
+    float acc_az, acc_el;       // deg/s^2
+    bool  flip;                 // EL beyond 90 used for "flip" passes
+} lsr_model_t;
+
+const lsr_model_t *lsr_model(int model);               // 1 or 2 (anything else = 1)
+float lsr_az_to_internal(const lsr_model_t *m, float user_deg);
+float lsr_az_to_user(const lsr_model_t *m, float internal_deg);
+float lsr_clamp_az_user(const lsr_model_t *m, float user_deg);   // result in the user frame
+float lsr_clamp_el(const lsr_model_t *m, float deg);
+
+// ------------------------------------------------------------------ external STEP/DIR drivers (DM542, TMC5160)
+// Limits (DM542 datasheet, VERIFY): STEP pulse >= 2.5 us, DIR set-up >= 5 us before the first STEP edge,
+// ENA must be settled >= 200 ms before the first STEP. Values below are rounded up to whole microseconds.
+#define SD_PULSE_MIN_US     3u
+#define SD_DIR_SETUP_US     5u
+#define SD_ENABLE_SETTLE_US 200000u
+
+typedef struct {
+    int      dir;               // last DIR level driven: -1, 0 = never, +1
+    bool     step_hi;
+    uint32_t t_dir, t_rise;     // timestamps in us (wrap-safe)
+} sd_axis_t;
+
+void sd_init(sd_axis_t *s);
+// Call every tick. `want_step` requests one pulse in direction `want_dir` (+1/-1). `ready` = enable settled.
+// Lowers a pulse after >= SD_PULSE_MIN_US. Returns true only on the tick the STEP rising edge is issued;
+// a direction change first moves DIR and defers the step until SD_DIR_SETUP_US has elapsed.
+bool sd_tick(sd_axis_t *s, uint32_t now_us, bool ready, int want_dir, bool want_step);
+
+typedef struct { bool on; uint32_t t_on; } sd_enable_t;
+void sd_enable_set(sd_enable_t *e, bool on, uint32_t now_us);
+bool sd_enable_ready(const sd_enable_t *e, uint32_t now_us);   // on and settled
+
 // ------------------------------------------------------------------ velocity planner
 // Square-root (trapezoidal) profile: v_des = sign(e) * min(vmax, sqrt(2 a |e|)), slewed by a.
 typedef struct { float v; } plan_state_t;

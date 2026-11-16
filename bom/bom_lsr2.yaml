@@ -1,0 +1,49 @@
+# LibreSat Rotator LSR-2 (heavy) - bill of materials for ONE rotator, rendered by scripts/bom.py -> docs/BOM_LSR2.md
+# Every price and every bought-part mass is VERIFY (generic catalogue values). EUR, 2026.
+# fabricated: mass_g = FINISHED mass from build/lsr2_build_report.json (scripts/bom.py asserts it within 1 %, part by part and in total).
+#   eur = metal + cutting/foundry (+ turning) from docs/LSR2_MATERIALS.md; plate cost is the 182 EUR total shared by finished mass.
+# alt: a cheaper alternative where one exists.
+patterns_pla: {eur: 34.0, kg: 1.70, note: "PLA 1.70 kg at 20 EUR/kg: 3 casting patterns, core box, 1:1 prototype (LSR2_MATERIALS, VERIFY). Not part of the rotator mass."}
+fabricated:
+  - {part: base,        report: plates.base,       route: CNC plate 8 mm,  material: "6061-T6 / 5083", source: "cnc/lsr2/base.dxf, cnc/lsr2/base.step, stl/lsr2/base.stl",           qty: 1, mass_g: 906.9,  eur: 36.3, alt: "cut-to-size blank instead of a full sheet (76 % plate waste)"}
+  - {part: spacer,      report: plates.spacer,     route: CNC plate 8 mm,  material: "6061-T6 / 5083", source: "cnc/lsr2/spacer.dxf, cnc/lsr2/spacer.step, stl/lsr2/spacer.stl",     qty: 1, mass_g: 83.6,   eur: 3.3}
+  - {part: spacer_el,   report: plates.spacer_el,  route: CNC plate 8 mm,  material: "6061-T6 / 5083", source: "cnc/lsr2/spacer_el.dxf, cnc/lsr2/spacer_el.step, stl/lsr2/spacer_el.stl", qty: 1, mass_g: 83.6, eur: 3.3, alt: "offcut of base/side plate stock"}
+  - {part: side_a,      report: plates.side_a,     route: CNC plate 8 mm,  material: "6061-T6 / 5083", source: "cnc/lsr2/side_a.dxf, cnc/lsr2/side_a.step, stl/lsr2/side_a.stl",     qty: 1, mass_g: 1257.6, eur: 50.3}
+  - {part: side_b,      report: plates.side_b,     route: CNC plate 8 mm,  material: "6061-T6 / 5083", source: "cnc/lsr2/side_b.dxf, cnc/lsr2/side_b.step, stl/lsr2/side_b.stl",     qty: 1, mass_g: 1287.8, eur: 51.5}
+  - {part: top,         report: plates.top,        route: CNC plate 6 mm,  material: "6061-T6 / 5083", source: "cnc/lsr2/top.dxf, cnc/lsr2/top.step, stl/lsr2/top.stl",              qty: 1, mass_g: 930.6,  eur: 37.2}
+  - {part: az_housing,  report: cast.az_housing,   route: Sand cast + machining, material: "A356-T6", source: "cast/lsr2/az_housing.step, cast/lsr2/az_housing_pattern.step, cast/lsr2/az_housing_corebox.step, stl/lsr2/az_housing*.stl", qty: 1, mass_g: 483.2, eur: 10.1}
+  - {part: mast_clamp,  report: cast.mast_clamp,   route: Sand cast + machining, material: "A356-T6", source: "cast/lsr2/mast_clamp.step, cast/lsr2/mast_clamp_pattern.step, stl/lsr2/mast_clamp*.stl", qty: 1, mass_g: 262.0, eur: 7.0}
+  - {part: el_hub_a,    report: cast.el_hub_a,     route: Sand cast + machining, material: "A356-T6", source: "cast/lsr2/el_hub_a.step, cast/lsr2/el_hub_pattern.step, stl/lsr2/el_hub_a.stl", qty: 1, mass_g: 146.5, eur: 3.5, alt: "one pattern for both hubs"}
+  - {part: el_hub_b,    report: cast.el_hub_b,     route: Sand cast + machining, material: "A356-T6", source: "cast/lsr2/el_hub_b.step, cast/lsr2/el_hub_pattern.step, stl/lsr2/el_hub_b.stl", qty: 1, mass_g: 152.3, eur: 3.5}
+  - {part: az_shaft,    report: shafts.az_shaft,   route: Turned + gun-drilled, material: "stainless 1.4404, bar 33 x 299", source: "cnc/lsr2/az_shaft.step, stl/lsr2/az_shaft.stl", qty: 1, mass_g: 979.8, eur: 12.2, alt: "1.4301 (A2) bar is cheaper; keep 1.4404 for the coast"}
+  - {part: el_shaft,    report: shafts.el_shaft,   route: Turned,              material: "stainless 1.4404, bar 17 x 262", source: "cnc/lsr2/el_shaft.step, stl/lsr2/el_shaft.stl", qty: 1, mass_g: 275.8, eur: 2.8}
+items:
+  - {group: Motion, item: "NMRV030 worm gearbox 80:1, Ø14 hollow output (AZ and EL)", qty: 2, eur: 55.0, mass_g: 1100, alt: "second-hand or Mk5-style imports; check ratio and bore"}
+  - {group: Motion, item: "NEMA23 stepper 2.8 N·m (57BYG250H class)", qty: 2, eur: 18.0, mass_g: 900}
+  - {group: Bearings, item: "6206-2RS bearing (AZ radial pair)", qty: 2, eur: 3.5, mass_g: 200}
+  - {group: Bearings, item: "51206 thrust bearing (AZ axial)", qty: 1, eur: 6.0, mass_g: 170}
+  - {group: Bearings, item: "6201-2RS bearing (EL shaft in side_b)", qty: 1, eur: 2.0, mass_g: 35}
+  - {group: Hardware, item: "Keys DIN 6885 (3x 5x5, 1x 4x4)", qty: 4, eur: 0.5, mass_g: 3}
+  - {group: Hardware, item: "M6 U-bolts for the Yagi boom", qty: 4, eur: 1.5, mass_g: 40, alt: "match the boom diameter; zinc 8.8 is cheaper than A4"}
+  - {group: Hardware, item: "M8 U-bolts for the mast (A4-80 or 8.8)", qty: 2, eur: 2.5, mass_g: 90, alt: "8.8 zinc-flake instead of A4-80"}
+  - {group: Hardware, item: "V-ring seal + Ø6 cross pin + circlips", qty: 1, eur: 3.0, mass_g: 15}
+  - {group: Hardware, item: "DIN 471 Ø30 circlip + 3 mm ring under the 51206", qty: 1, eur: 0.8, mass_g: 10, alt: "cheaper than a DIN 705 Ø30 set collar (~4 EUR)"}
+  - {group: Fasteners, item: "A4 M6x20 socket screw (side plates to base 8, housing to base 6, EL gearbox to side_a 4)", qty: 18, eur: 0.15, mass_g: 12, alt: "8.8 zinc-flake screws; use Tef-Gel either way"}
+  - {group: Fasteners, item: "A4 M6x25 socket screw (AZ gearbox through spacer)", qty: 4, eur: 0.18, mass_g: 14}
+  - {group: Fasteners, item: "A4 M6x16 socket screw (top plate to side plate edges)", qty: 8, eur: 0.14, mass_g: 10}
+  - {group: Fasteners, item: "A4 M6x30 pinch screw (EL hubs, slit)", qty: 2, eur: 0.2, mass_g: 17}
+  - {group: Fasteners, item: "A4 M5x12 screw (NEMA23 to NMRV030 B14 flange; check the real flange)", qty: 8, eur: 0.1, mass_g: 4}
+  - {group: Corrosion, item: "Tef-Gel or Duralac 25 g tube (Al-steel joints)", qty: 1, eur: 6.0, mass_g: 40}
+  - {group: Electronics, item: "LSR-CTL PCB 100 x 80 mm (JLCPCB/PCBWay, 5 pcs ~ 10 EUR)", qty: 1, eur: 2.0, mass_g: 25}
+  - {group: Electronics, item: "LSR-CTL components (hardware/fab/lsr_ctl_bom.md)", qty: 1, eur: 8.0, mass_g: 20}
+  - {group: Electronics, item: "Raspberry Pi Pico (or Pico W / Pico 2) with headers", qty: 1, eur: 5.0, mass_g: 4}
+  - {group: Electronics, item: "Raspberry Pi Zero 2 WH", qty: 1, eur: 20.0, mass_g: 11}
+  - {group: Electronics, item: "microSD 16 GB (A1)", qty: 1, eur: 4.0, mass_g: 1}
+  - {group: Electronics, item: "DM542 stepper driver (external, step/dir)", qty: 2, eur: 12.0, mass_g: 150, alt: "clones from ~9 EUR; TB6600 is cheaper but rougher"}
+  - {group: Electronics, item: "Power supply 48 V 6 A (24-48 V accepted)", qty: 1, eur: 25.0, mass_g: 600, alt: "24 V 8 A at ~18 EUR if the torque at 12 deg/s is still enough (VERIFY)"}
+  - {group: Sensors, item: "AS5600 magnetic encoder board + magnet (one per output shaft)", qty: 2, eur: 2.0, mass_g: 2}
+  - {group: Wiring, item: "M20 cable gland (side_b)", qty: 1, eur: 1.0, mass_g: 25}
+  - {group: Wiring, item: "Shielded cable 4 x 0.75 mm², motors, 2 x 3 m", qty: 1, eur: 8.0, mass_g: 250}
+  - {group: Wiring, item: "CAT5e 3 m (encoder / sensor I2C)", qty: 1, eur: 2.0, mass_g: 60}
+  - {group: Wiring, item: "Connectors: screw terminals, ferrules, JST-XH kit", qty: 1, eur: 4.0, mass_g: 30}
+  - {group: Wiring, item: "Fuse holder 5 A + 48 V DC switch", qty: 1, eur: 2.0, mass_g: 40}

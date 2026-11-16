@@ -24,6 +24,62 @@ int main() {
     NEAR(az_resolve(400, 0, 0, 450), 400, 1e-4);      // explicit absolute
     NEAR(az_resolve(-20, 0, 0, 450), 0, 1e-4);        // clamped
 
+    // model profiles: LSR-1 unchanged, LSR-2 per cad/lsr2/params.py
+    const lsr_model_t *m1 = lsr_model(1), *m2 = lsr_model(2);
+    CHECK(m1->ratio == 25.0f && m1->microsteps == 16 && m1->az_min == 0 && m1->az_max == 450);
+    CHECK(m1->el_min == 0 && m1->el_max == 180 && m1->vmax_az == 20 && m1->vmax_el == 15 && m1->flip);
+    CHECK(m1->acc_az == 25 && m1->acc_el == 20 && m1->az_user_offset == 0);
+    CHECK(lsr_model(7) == m1);
+    CHECK(m2->ratio == 80.0f && m2->microsteps == 8 && m2->vmax_az == 12 && m2->vmax_el == 12 && !m2->flip);
+    axis_cfg_t a1 = {m1->ratio, m1->microsteps * 200, 1, 0, m1->az_min, m1->az_max, 20, 25, 0.05f};
+    axis_cfg_t a2 = {m2->ratio, m2->microsteps * 200, 1, 0, m2->az_min, m2->az_max, 12, 10, 0.05f};
+    NEAR(axis_steps_per_deg(&a1), 3200 * 25 / 360.0, 1e-3);          // 222.22
+    NEAR(axis_steps_per_deg(&a2), 1600 * 80 / 360.0, 1e-3);          // 355.56
+    NEAR(12.0 * axis_steps_per_deg(&a2), 4266.7, 0.1);               // step rate at vmax, well under the opto limit
+    // LSR-2 ranges: AZ -360..+360 user = 0..720 internal, EL -30..150
+    NEAR(lsr_az_to_internal(m2, -360), 0, 1e-4); NEAR(lsr_az_to_internal(m2, 360), 720, 1e-4);
+    NEAR(lsr_az_to_user(m2, 360), 0, 1e-4);
+    NEAR(lsr_clamp_az_user(m2, -400), -360, 1e-4); NEAR(lsr_clamp_az_user(m2, 400), 360, 1e-4);
+    NEAR(lsr_clamp_az_user(m2, 123), 123, 1e-4);
+    NEAR(lsr_clamp_el(m2, -45), -30, 1e-4); NEAR(lsr_clamp_el(m2, 170), 150, 1e-4); NEAR(lsr_clamp_el(m2, 10), 10, 1e-4);
+    NEAR(lsr_clamp_el(m1, 170), 170, 1e-4); NEAR(lsr_clamp_el(m1, -5), 0, 1e-4);
+    NEAR(az_resolve(10, 700, m2->az_min, m2->az_max), 370, 1e-4);   // same wrap logic on 0..720
+    NEAR(az_resolve(10, 100, m2->az_min, m2->az_max), 10, 1e-4);
+    NEAR(az_resolve(100, 450, m2->az_min, m2->az_max), 460, 1e-4);
+
+    // external STEP/DIR sequencing
+    {
+        sd_axis_t s; sd_init(&s);
+        CHECK(!sd_tick(&s, 1000, false, 1, true));                  // not enabled yet: no step
+        CHECK(!sd_tick(&s, 1010, true, 1, true) && s.dir == 1);     // DIR moves first, no step
+        CHECK(!sd_tick(&s, 1010 + SD_DIR_SETUP_US - 1, true, 1, true));   // set-up not elapsed
+        CHECK(sd_tick(&s, 1010 + SD_DIR_SETUP_US, true, 1, true) && s.step_hi);
+        uint32_t t0 = 1010 + SD_DIR_SETUP_US;
+        CHECK(!sd_tick(&s, t0 + SD_PULSE_MIN_US - 1, true, 1, true) && s.step_hi);   // pulse still high
+        CHECK(!sd_tick(&s, t0 + SD_PULSE_MIN_US, false, 1, false) && !s.step_hi);    // >= min width, then low
+        CHECK(sd_tick(&s, t0 + 2 * SD_PULSE_MIN_US, true, 1, true));                // same dir: step at once
+        uint32_t t1 = t0 + 2 * SD_PULSE_MIN_US;
+        sd_tick(&s, t1 + 10, true, -1, true);                                       // reversal: DIR first
+        CHECK(s.dir == -1 && !s.step_hi);
+        CHECK(sd_tick(&s, t1 + 10 + SD_DIR_SETUP_US, true, -1, true));
+        sd_axis_t w; sd_init(&w);                                   // wrap-safe timestamps
+        sd_tick(&w, 0xFFFFFFFFu - 2, true, 1, true);
+        CHECK(sd_tick(&w, 0xFFFFFFFFu - 2 + SD_DIR_SETUP_US, true, 1, true));
+        CHECK(SD_PULSE_MIN_US >= 3 && SD_DIR_SETUP_US >= 5 && SD_ENABLE_SETTLE_US >= 200000);
+
+        sd_enable_t e = {false, 0};
+        CHECK(!sd_enable_ready(&e, 5000000));
+        sd_enable_set(&e, true, 1000);
+        CHECK(!sd_enable_ready(&e, 1000 + SD_ENABLE_SETTLE_US - 1));
+        CHECK(sd_enable_ready(&e, 1000 + SD_ENABLE_SETTLE_US));
+        sd_enable_set(&e, true, 999999);                            // repeated enable does not restart the delay
+        CHECK(sd_enable_ready(&e, 1000 + SD_ENABLE_SETTLE_US));
+        sd_enable_set(&e, false, 2000000);
+        CHECK(!sd_enable_ready(&e, 3000000));
+        sd_enable_set(&e, true, 3000000);
+        CHECK(!sd_enable_ready(&e, 3000000 + 1000));                // re-enable waits again
+    }
+
     // planner: reaches target, no overshoot, respects vmax
     plan_state_t p = {0}; double x = 0, tgt = 90, dt = 0.002, vmax = 20, a = 25, peak = 0, maxx = 0;
     for (int i = 0; i < 20000; i++) { double v = plan_step(&p, (float)(tgt - x), (float)vmax, (float)a, (float)dt, 0.05f); x += v * dt; peak = std::fmax(peak, std::fabs(v)); maxx = std::fmax(maxx, x); }

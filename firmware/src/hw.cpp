@@ -157,13 +157,15 @@ void gps_poll(gps_fix_t *fix) {
 void settings_defaults(settings_t *s) {
     memset(s, 0, sizeof(*s));
     s->magic = SETTINGS_MAGIC; s->version = 1; s->size = sizeof(*s);
-    s->ratio[0] = s->ratio[1] = DEF_RATIO;
-    s->microsteps = DEF_MICROSTEPS;
+    const lsr_model_t *m = lsr_model(LSR_MODEL);
+    s->reserved[0] = LSR_MODEL;
+    s->ratio[0] = s->ratio[1] = m->ratio;
+    s->microsteps = m->microsteps;
     s->dir[0] = s->dir[1] = 1;
-    s->min_deg[0] = DEF_AZ_MIN; s->max_deg[0] = DEF_AZ_MAX;
-    s->min_deg[1] = DEF_EL_MIN; s->max_deg[1] = DEF_EL_MAX;
-    s->vmax[0] = DEF_VMAX_AZ; s->vmax[1] = DEF_VMAX_EL;
-    s->acc[0] = DEF_ACC_AZ; s->acc[1] = DEF_ACC_EL;
+    s->min_deg[0] = m->az_min; s->max_deg[0] = m->az_max;
+    s->min_deg[1] = m->el_min; s->max_deg[1] = m->el_max;
+    s->vmax[0] = m->vmax_az; s->vmax[1] = m->vmax_el;
+    s->acc[0] = m->acc_az; s->acc[1] = m->acc_el;
     s->irun_ma[0] = s->irun_ma[1] = DEF_IRUN_MA; s->ihold_pct = DEF_IHOLD_PCT;
     s->deadband = DEF_DEADBAND;
     s->imu_el_dir = 1.0f;
@@ -175,6 +177,7 @@ void settings_defaults(settings_t *s) {
 bool settings_load(settings_t *s) {
     const settings_t *f = (const settings_t *)(XIP_BASE + SETTINGS_OFFSET);
     if (f->magic != SETTINGS_MAGIC || f->size != sizeof(settings_t)) return false;
+    if ((f->reserved[0] ? f->reserved[0] : 1) != LSR_MODEL) return false;   // settings of the other model
     if (crc32_calc(f, offsetof(settings_t, crc)) != f->crc) return false;
     memcpy(s, f, sizeof(*s));
     return true;

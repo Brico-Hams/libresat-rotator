@@ -12,7 +12,7 @@ LSR-1 starts from two open designs, the [SatNOGS Rotator v3](https://gitlab.com/
 
 ## LSR family / LSR-2 heavy station
 
-LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator (NMRV030 worm gearbox + NEMA23, CNC aluminium plates and sand-cast A356 parts), driven by the same firmware, protocol and head software. Mechanical phases 1-3 are done: parameters and sizing, CNC plates, and the cast parts (AZ bearing housing, mast clamp, EL hubs) with their PLA patterns, a core box and the turned stainless shafts. The AZ shaft is **hollow** (Ø16 bore) so the rotator cables run up the AZ axis, with no cable wrap round the mast. Firmware and software (phases 4-5) are still pending. See the [family architecture](docs/ARCHITECTURE.md), the [design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md), the [LSR-2 sizing and structural checks](docs/LSR2_SIZING.md) and the [LSR-2 materials and cost](docs/LSR2_MATERIALS.md).
+LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator (NMRV030 worm gearbox + NEMA23, CNC aluminium plates and sand-cast A356 parts), driven by the same firmware, protocol and head software. Mechanical phases 1-3 are done: parameters and sizing, CNC plates, and the cast parts (AZ bearing housing, mast clamp, EL hubs) with their PLA patterns, a core box and the turned stainless shafts. The AZ shaft is **hollow** (Ø16 bore) so the rotator cables run up the AZ axis, with no cable wrap round the mast. Mechanical phases 1-3 are done: parameters and sizing, CNC plates, and the cast parts (AZ bearing housing, mast clamp, EL hubs) with their PLA patterns, a core box and the turned stainless shafts. The AZ shaft is **hollow** (Ø16 bore) so the rotator cables run up the AZ axis, with no cable wrap round the mast. Phase 4 (firmware `EXT_STEPDIR` + `lsr2` profile) is in progress, see [docs/FIRMWARE.md](docs/FIRMWARE.md). Phase 5 (documentation) now has a [BOM](docs/BOM_LSR2.md) and an [assembly guide](docs/LSR2_ASSEMBLY.md); the rotctld backend for `antenaSatCommrotor` (branch `feat/lsr-rotctld-backend` of Brico-Hams/antenaSatCommrotor) is in progress. See the [family architecture](docs/ARCHITECTURE.md), the [design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md), the [LSR-2 sizing and structural checks](docs/LSR2_SIZING.md) and the [LSR-2 materials and cost](docs/LSR2_MATERIALS.md).
 
 ![LSR-2 assembly](docs/img/lsr2_assembly.png)
 
@@ -61,6 +61,8 @@ LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator 
 12. [LSR-2 design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md): goals, licence position, changes against the SARCTrac Mk5, phases.
 13. [LSR-2 engineering budget](docs/LSR2_SIZING.md): torque, overturning moment, gearbox choice per payload and structural checks of the cast parts.
 14. [LSR-2 materials and cost](docs/LSR2_MATERIALS.md): plate, casting and shaft mass, stock, waste and cost.
+15. [LSR-2 bill of materials](docs/BOM_LSR2.md): every fabricated and bought part, fasteners, electronics, totals of mass and cost.
+16. [LSR-2 assembly guide](docs/LSR2_ASSEMBLY.md): measure, prototype, CNC, casting, shafts, assembly, corrosion, electronics and acceptance tests.
 
 ## Key ideas
 
