@@ -3,9 +3,10 @@
     freecadcmd -c "exec(open(r'<repo>/cad/lsr2/build.py').read())"
 
 Builds every plate of plates.PLATES as a Part solid in the head frame, exports DXF/STEP/STL per plate,
-the assembly STEP with the bought-part envelopes, and build/lsr2_build_report.json. Raises on failure.
+the assembly STEP with the bought-part envelopes and the cross-boom tube, the EL sweep check, and
+build/lsr2_build_report.json. Raises on failure. Stale files of removed parts are not deleted here.
 """
-import json, os, sys
+import json, math, os, sys
 import Part
 from FreeCAD import Vector as V
 
@@ -22,15 +23,14 @@ for d in ('cnc/lsr2', 'stl/lsr2', 'cast/lsr2', 'build'):
 
 def plate_solid(name):
     p = PL.PLATES[name]
-    u, v = p['size']
+    (u0, u1), (v0, v1) = p['u'], p['v']
     t = p['t']
     if p['frame'] == 'xy':
-        solid = Part.makeBox(u, v, t, V(-u / 2, -v / 2, p['z0']))
-        cyls = [Part.makeCylinder(d / 2, t + 2, V(hu, hv, p['z0'] - 1), V(0, 0, 1)) for hu, hv, d in PL.cutouts(p)]
+        solid = Part.makeBox(u1 - u0, v1 - v0, t, V(u0, v0, p['w']))
+        cyls = [Part.makeCylinder(d / 2, t + 2, V(hu, hv, p['w'] - 1), V(0, 0, 1)) for hu, hv, d in p['holes']]
     else:
-        z0 = p.get('z0', 0.0)
-        solid = Part.makeBox(u, t, v, V(-u / 2, p['y0'], z0))
-        cyls = [Part.makeCylinder(d / 2, t + 2, V(hu, p['y0'] - 1, z0 + hv), V(0, 1, 0)) for hu, hv, d in PL.cutouts(p)]
+        solid = Part.makeBox(u1 - u0, t, v1 - v0, V(u0, p['w'], v0))
+        cyls = [Part.makeCylinder(d / 2, t + 2, V(hu, p['w'] - 1, hv), V(0, 1, 0)) for hu, hv, d in p['holes']]
     for c in cyls:
         solid = solid.cut(c)
     return solid
@@ -42,6 +42,22 @@ def envelope_solid(b):
 
 shapes = {n: plate_solid(n) for n in PL.PLATES}
 envs = {n: envelope_solid(b) for n, b in PL.ENVELOPES.items()}
+# cross-boom tube (6063, hollow square) along +Y, coaxial with the EL axis, 80 mm in the boom_socket (cast_parts.SOCK)
+import cast_parts as CP
+_bw, _bh, _bt = PL.BOOM_W, PL.BOOM_H, PL.BOOM_T
+_bl = P.CROSS_BOOM_L
+_y0 = CP.SOCK_Y1 - CP.SOCK['depth']
+boom = Part.makeBox(_bw, _bl, _bh, V(-_bw / 2, _y0, PL.EL_Z - _bh / 2)).cut(
+    Part.makeBox(_bw - 2 * _bt, _bl + 2, _bh - 2 * _bt, V(-_bw / 2 + _bt, _y0 - 1, PL.EL_Z - _bh / 2 + _bt)))
+envs['cross_boom'] = boom
+# antenna envelopes (thin boxes) at the two stations: 2 m boom along the pointing direction (x at el 0), 1 m elements across (y)
+for _i, _pos in enumerate(P.ANT_POS_Y, 1):
+    _yc = CP.SOCK_Y1 + _pos * 1000.0
+    _b = Part.makeBox(P.ANT_BOOM_L, 30, 30, V(-P.ANT_BOOM_L / 2, _yc - 15, PL.EL_Z + 20))
+    _e = Part.makeBox(100, P.ANT_ELEM_L, 10, V(-50, _yc - P.ANT_ELEM_L / 2, PL.EL_Z + 50))
+    envs[f'ant_{_i}'] = _b.fuse(_e)
+# mast envelope: vertical Ø60 cylinder from the mast clamp down 1.5 m at the mast position (V vertex x = CL_VERTEX, arms open to -x); sweep only
+mast = Part.makeCylinder(P.MAST_D[1] / 2, 1500.0, V(CP.CL_VERTEX - P.MAST_D[1] / 2 * math.sqrt(2), 0, CP.Z_CL_TOP - 1500.0), V(0, 0, 1))
 failures = []
 report = {'plates': {}, 'envelopes': list(envs), 'checks': {}}
 
@@ -71,13 +87,14 @@ for en, es in envs.items():
         failures.append(f'{en}: invalid envelope')
 
 # --- phase 3: cast parts, patterns, core box, shafts ------------------------------------------
-import cast_parts as CP
+import cast_parts as CP   # already imported above; kept for the phase split
 SHRINK = P.CAST['shrink']
 CP.self_test()
-cast = {'az_housing': CP.az_housing(), 'mast_clamp': CP.mast_clamp(), 'el_hub_a': CP.el_hub('a'), 'el_hub_b': CP.el_hub('b')}
+cast = {'az_housing': CP.az_housing(), 'mast_clamp': CP.mast_clamp(), 'el_bearing_housing': CP.el_bearing_housing(),
+        'boom_socket': CP.boom_socket()}
 shafts = {'az_shaft': CP.az_shaft(), 'el_shaft': CP.el_shaft()}
-PAT_OF = {'az_housing': 'az_housing', 'mast_clamp': 'mast_clamp', 'el_hub_a': 'el_hub', 'el_hub_b': 'el_hub'}
-pre = {'az_housing': CP.az_housing_pattern(), 'mast_clamp': CP.mast_clamp(True), 'el_hub': CP.el_hub('a', True)}
+pre = {'az_housing': CP.az_housing_pattern(), 'mast_clamp': CP.mast_clamp(True), 'el_bearing_housing': CP.el_bearing_housing(True),
+       'boom_socket': CP.boom_socket(True)}
 cores = Part.makeCompound(list(CP.az_cores()))
 corebox = CP.az_core_box()
 
@@ -108,8 +125,8 @@ if cores.common(cast['az_housing']).Volume > MAX_INTERFERENCE_MM3:
 
 report['cast'], report['shafts'] = {}, {}
 for n, s in cast.items():
-    pn = PAT_OF[n]
-    pr = pre[pn] if n != 'el_hub_b' else pre[pn].mirror(V(0, 0, 0), V(0, 1, 0))
+    pn = n
+    pr = pre[pn]
     if s.cut(pr).Volume > MAX_INTERFERENCE_MM3:
         failures.append(f'{n}: finished part not inside its pattern (machining allowance missing)')
     for i, ax in enumerate('xyz'):
@@ -133,8 +150,8 @@ for n, s in shafts.items():
 report['clamp_m20_exit'] = CP.M20_EXIT
 report['core_box'] = dict(volume_cm3=round(corebox.Volume / 1000.0, 3), bbox=bbox(corebox))
 
-ALLOWED = {('az_shaft', 'az_gearbox'), ('el_shaft', 'el_gearbox'), ('az_shaft', 'mast_clamp'),
-           ('el_shaft', 'el_hub_a'), ('el_shaft', 'el_hub_b')}   # intended fits: shaft in gearbox bore / clamp bore / hub bore
+ALLOWED = {('az_shaft', 'az_gearbox'), ('el_shaft', 'el_gearbox'), ('az_shaft', 'mast_clamp'), ('az_shaft', 'az_collar'),
+           ('el_shaft', 'boom_socket'), ('el_shaft', 'el_bearing_housing')}   # intended fits: shaft in gearbox bore / clamp bore / socket hub bore / bearing seats
 mine = {**cast, **shafts}
 others = {**shapes, **envs}
 for n, s in mine.items():
@@ -146,6 +163,32 @@ for n, s in mine.items():
         if vol > MAX_INTERFERENCE_MM3:
             failures.append(f'interference {n}/{on}: {vol:.2f} mm3')
 report['allowed_pairs'] = sorted(' / '.join(p) for p in ALLOWED)
+report['items'] = {'cross_boom': dict(volume_cm3=round(boom.Volume / 1000.0, 3), mass_g=round(boom.Volume / 1000.0 * 2.70, 1),
+                                      section_mm=list(P.CROSS_BOOM), length_mm=P.CROSS_BOOM_L)}
+
+if abs(report['cast']['boom_socket']['mass_g'] - P.SOCKET_MASS_KG * 1000) > 0.15 * P.SOCKET_MASS_KG * 1000:
+    failures.append('boom_socket mass differs >15 % from params.SOCKET_MASS_KG (calc/lsr2_sizing.py uses it)')
+
+# EL sweep: socket + cross-boom + antenna envelopes turn about the EL axis (y, x=0, z=EL_Z) over -30..150 deg, 5 deg steps;
+# static = head, az_housing, mast_clamp, plates, gearboxes ... and the mast envelope
+moving_names = ['boom_socket', 'cross_boom'] + [n for n in envs if n.startswith('ant_')]
+allsh = {**shapes, **cast, **envs}
+moving = {n: allsh[n] for n in moving_names}
+static = {n: s for n, s in {**allsh, **shafts, 'mast': mast}.items() if n not in moving_names and n != 'el_shaft'}
+sweep_worst, sweep_at = 0.0, None
+for ang in range(-30, 151, 5):
+    for mn, ms in moving.items():
+        r = ms.copy()
+        r.rotate(V(0, 0, PL.EL_Z), V(0, 1, 0), ang)
+        for sn, ss in static.items():
+            if not r.BoundBox.intersect(ss.BoundBox):
+                continue
+            vol = r.common(ss).Volume
+            if vol > sweep_worst:
+                sweep_worst, sweep_at = vol, f'{mn}/{sn}@{ang}'
+            if vol > MAX_INTERFERENCE_MM3:
+                failures.append(f'EL sweep {mn}/{sn} at {ang} deg: {vol:.2f} mm3')
+report['checks']['el_sweep'] = dict(range_deg=[-30, 150], step_deg=5, moving=moving_names, worst_mm3=round(sweep_worst, 4), worst_at=sweep_at)
 
 for n, s in cast.items():
     s.exportStep(os.path.join(OUT, 'cast', 'lsr2', n + '.step'))
@@ -161,7 +204,7 @@ for n, s in shafts.items():
     s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
 
 report['checks'] = dict(max_interference_mm3=max(worst.values()), limit_mm3=MAX_INTERFERENCE_MM3,
-                        interference_mm3=worst, failures=failures, passed=not failures)
+                        interference_mm3=worst, failures=failures, passed=not failures, el_sweep=report['checks']['el_sweep'])
 Part.makeCompound(list(shapes.values()) + list(envs.values()) + list(mine.values())).exportStep(
     os.path.join(OUT, 'cnc', 'lsr2', 'lsr2_head_assembly.step'))
 with open(os.path.join(OUT, 'build', 'lsr2_build_report.json'), 'w', encoding='utf-8') as fh:

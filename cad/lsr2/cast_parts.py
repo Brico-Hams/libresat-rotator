@@ -9,7 +9,14 @@ Casting choices (light and cheap):
               tube and a flange disc. The two ring bores are CORED (boring 2 x 16 mm of solid would remove ~100 cm3
               of metal); the cores are drafted 3 deg and need a small core box. Outer faces: 2 deg draft in the profile.
   mast_clamp  bore cast solid and bored: a Ø25 core would save ~110 g of metal (~0.5 EUR), not worth a core box.
-  el_hub      bore cast solid and bored/broached: tiny volume, one pattern serves both bores (Ø14 and Ø12).
+  el_bearing_housing  PCD65 flange on the EL gearbox output face B, two rings (2 x 6206, 62 mm apart) joined to the flange by 4 ribs at 45 deg
+              (the bolt heads sit in the window between flange and first ring; tighten with a ball-end hex key from the side).
+              Rings, seats and bores are machined from solid: coring two Ø62 bores would save ~6 EUR of metal per part
+              but needs a core box, not worth it for one unit.
+  boom_socket A356 casting: keyed Ø30 hub (pinch slit + M6) on the EL shaft end, then a 40.5 x 40.5 x 80 deep square socket for the
+              40x40x3 cross-boom tube, locked by 2 x M8 through-bolts. One part replaces saddle_hub + saddle_plate + 2 clamp plates
+              (about 0.4 kg and 4 parts less than a CNC end plate with 2 angle brackets, which also needs a hub). The pocket is
+              formed by one prismatic sand core (print at the mouth), no machining.
   az_shaft    hollow (Ø16 bore, cables up the AZ axis), no integral collar; see AZ_BORE.
 Prismatic ribs, strips and blocks carry no draft in CAD: the pattern maker adds 2 deg (wall >= 6 mm leaves room).
 """
@@ -77,17 +84,32 @@ CL_STRIP = [(-41, 45), (CL_EAR_X, 45), (CL_EAR_X, CL_EAR_Y0), (CL_OUT_X, 0), (CL
 # (see CL_FREE), so the cables leave through the open Ø30 bore end and no M20 hole is modelled.
 M20_D = 20.0
 
-# --- el_hub (one pattern, machined to the Ø14 / Ø12 bore) ----------------------------------------
-HUB = dict(L=50.0, R=15.0, bx=48.0, bz=(9.0, 22.0), lug=(28.0, 24.0, (-25.0, -5.0)), ub_x=15.0, ub_y=17.0, ub_d=6.6,
-           groove=(8.0, 14.0), pinch_z=-16.0, slit=2.0, yc=100.0)
-HUB_BORE = {'a': dict(d=14.0, key=5.0, t1=3.0, t2=2.3), 'b': dict(d=12.0, key=4.0, t1=2.5, t2=1.8)}
+# --- el_bearing_housing: bolted on the EL gearbox output face B (PCD65), local y from that face ---------------
+# Machined recess R26 (not the plate pilot R27.6: it would leave a 1.6 mm web to the PCD65 holes) clears the 3.5 mm hub boss; boss diameter VERIFY.
+# ring1 = floating bearing (2 mm lip on the gearbox side), ring2 = fixed bearing (2 DIN 472 circlips, 2 mm each side). Ring 1 sits 35 mm
+# from the face so that the Ø14 stub between the hub and the bearing is long enough to stay soft (see calc/lsr2_sizing.py).
+BH = dict(y0=PL.Y_EL_B, R_FL=44.0, T_FL=8.0, R_B=36.0, R_REC=26.0, T_REC=4.0, R_FBORE=12.0,
+          ring1=(35.0, 55.0), ring2=(97.0, 117.0), lip=2.0, circlip=2.0, R_LIP=25.0, R_SEAT=P.RADIAL['D'] / 2,
+          rib_t=9.0, rib_x=(32.0, 43.5), rib_y=(8.0, 107.0))
+BH['L'] = BH['ring2'][1]
+BRG_Y = (BH['y0'] + BH['ring1'][0] + BH['lip'] + P.BEARING_EL['B'] / 2,            # bearing centres, absolute y
+         BH['y0'] + BH['ring2'][0] + BH['circlip'] + P.BEARING_EL['B'] / 2)
+# --- boom_socket: keyed Ø30 hub on the EL shaft end, then the square socket, y0 = 5 mm (V-ring) past the housing end ---
+SOCK = dict(y0=BH['y0'] + BH['L'] + 5.0, L_HUB=30.0, R_HUB=24.0, bore=30.0, key=8.0, t2=3.3, web=6.0, W=51.0,
+            pocket=40.5, depth=80.0, lug=(24.0, (-36.0, -12.0)), slit=2.0, pinch_z=-27.0, bolt_back=(20.0, 60.0), bolt_d=9.0, print_l=15.0)
+SOCK['L'] = SOCK['L_HUB'] + SOCK['web'] + SOCK['depth']
+SOCK_Y1 = SOCK['y0'] + SOCK['L']                  # socket mouth: antenna stations are measured from here
 
 # --- shafts, (lo, hi, d) along their axis (Z for az, Y for el) ------------------------------------
 # No integral collar: the 51206 shaft washer (z=-165) rests on a bought DIN 471 Ø30 circlip + 3 mm ring, so the bar
 # stock is Ø30 + 3 mm. Circlip (~0.3 EUR) + ring (~0.5 EUR) beat a DIN 705 Ø30 set collar (~4 EUR, 20 mm wide: does
 # not fit the 10 mm between the washer and the clamp). Prices and DIN sizes VERIFY.
-AZ_SHAFT = [(-225.0, 1.0, 30.0), (1.0, 64.0, 14.0)]
-EL_SHAFT = [(-126.0, -63.0, 12.0), (-63.0, 126.0, 14.0)]
+# AZ top: bought DIN 705 Ø14 collar (about 1.5 EUR, no extra fabricated part) beats a turned disc + M6 into the 1.4404 shaft top.
+AZ_SHAFT = [(-225.0, 1.0, 30.0), (1.0, 81.0, 14.0)]
+# EL shaft: Ø14 h7 (key 5) inside the gearbox hub, which then only transmits torque, and 37 mm beyond it; shoulder against the inner ring
+# of the first 6206; Ø30 through both bearings (DIN 471 circlips either side of the fixed one) to the socket hub (key 8x7), 1 mm short of the hub end.
+_Y_SHOULDER = BH['y0'] + BH['ring1'][0] + BH['lip']
+EL_SHAFT = [(PL.Y_EL_A + 1.0, _Y_SHOULDER, 14.0), (_Y_SHOULDER, SOCK['y0'] + SOCK['L_HUB'] - 1.0, 30.0)]
 SHAFTS = {'az_shaft': AZ_SHAFT, 'el_shaft': EL_SHAFT}
 # Hollow AZ shaft: Ø16 bore from the bottom end up to z=-1. It stops below the Ø30 -> Ø14 step at z=1, so the keyed Ø14
 # top (no room for a Ø16 bore) stays solid. Cables go up the bore and leave through a Ø6 radial hole at z=-4
@@ -100,14 +122,17 @@ CL_FREE = AZ_SHAFT[0][0] - Z_CL_BOT                   # clamp bore left empty be
 M20_EXIT = CL_R - SHAFT_D / 2 >= C['min_wall'] and (CL_FREE - M20_D) / 2 >= C['min_wall']   # False: 10 mm free
 SS_G_CM3 = 7.95
 
-ORIGIN = {'az_housing': (0, 0, Z0), 'mast_clamp': (0, 0, Z_CL_TOP), 'el_hub': (0, HUB['yc'], EL_Z)}
-ALLOW_AXES = {'az_housing': 'z', 'mast_clamp': 'z', 'el_hub': 'yz'}   # axes on which machining allowance adds size
+ORIGIN = {'az_housing': (0, 0, Z0), 'mast_clamp': (0, 0, Z_CL_TOP), 'el_bearing_housing': (0, BH['y0'], EL_Z),
+          'boom_socket': (0, SOCK['y0'], EL_Z)}
+ALLOW_AXES = {'az_housing': 'z', 'mast_clamp': 'z', 'el_bearing_housing': 'y', 'boom_socket': 'y'}   # axes on which machining allowance adds size
 PARTING = {
     'az_housing': 'Parting plane z=-8 (flange face, flat). Single drag half: all outer draft opens towards the flange. '
                   'Core prints: A on the flange face (cope), B through the lip hole (drag); cores in az_housing_corebox.',
     'mast_clamp': 'Parting plane z=-175 (boss top). Drag only, strip and boss drafted 2 deg by the pattern maker; bore cast solid.',
-    'el_hub': 'Parting plane z=EL axis (XY plane through the bore): two pattern halves with 2 dowels; bore cast solid; '
-              'the pattern is common to both hubs.',
+    'el_bearing_housing': 'Parting plane at the flange face (y = EL gearbox face B): flange in the cope, rings and ribs in the drag; '
+                          'drafted 2 deg by the pattern maker; all bores cast solid and bored in one setup (coaxiality of the seats and the face recess).',
+    'boom_socket': 'Parting plane at the mouth face: body in the drag, hub up; the 40.5 pocket is formed by one prismatic sand core '
+                   '(15 mm print at the mouth, 2 deg draft by the pattern maker; core box not modelled); Ø30 bore cast solid and bored, slit sawn.',
 }
 
 
@@ -137,13 +162,13 @@ def machined_area_cm2(name):
         a += pi * (r_out(Z_BOT) ** 2 - R_RECESS ** 2)                      # V-ring land
     elif name == 'mast_clamp':
         a = pi * SHAFT_D * (Z_CL_TOP - Z_CL_BOT) + pi * (CL_R ** 2 - (SHAFT_D / 2) ** 2)
+    elif name == 'el_bearing_housing':
+        b = BH
+        a = pi * (b['R_FL'] ** 2 - b['R_REC'] ** 2) + pi * (b['R_REC'] ** 2 - b['R_FBORE'] ** 2)    # flange face, recess floor
+        a += 2 * 2 * pi * b['R_SEAT'] * P.BEARING_EL['B'] + pi * (b['R_B'] ** 2 - b['R_SEAT'] ** 2)   # two seats, ring 2 end face
     else:
-        h = HUB
-        z0 = h['bz'][0]
-        seg = h['R'] ** 2 * math.acos(z0 / h['R']) - z0 * math.sqrt(h['R'] ** 2 - z0 ** 2)
-        end = pi * h['R'] ** 2 + h['bx'] * (h['bz'][1] - z0) - seg
-        flats = 2 * (h['L'] / 2 - h['groove'][0]) * h['bx']       # top face either side of the V groove
-        a = pi * HUB_BORE['a']['d'] * h['L'] + 2 * end + flats
+        s = SOCK
+        a = pi * s['bore'] * s['L_HUB'] + pi * (s['R_HUB'] ** 2 - (s['bore'] / 2) ** 2)             # bore, hub end face
     return a / 100.0
 
 
@@ -151,8 +176,14 @@ def bore_solid_cm3(name):
     """Metal cast into bores that are drilled/bored out later (extra poured metal)."""
     if name == 'mast_clamp':
         return math.pi * (SHAFT_D / 2) ** 2 * (Z_CL_TOP - Z_CL_BOT) / 1000.0
-    if name.startswith('el_hub'):
-        return math.pi * (HUB_BORE[name[-1]]['d'] / 2) ** 2 * HUB['L'] / 1000.0
+    if name == 'el_bearing_housing':
+        b = BH
+        r1, r2 = b['ring1'], b['ring2']
+        v = b['R_REC'] ** 2 * b['T_REC'] + b['R_FBORE'] ** 2 * b['T_FL'] + b['R_LIP'] ** 2 * b['lip'] \
+            + b['R_SEAT'] ** 2 * ((r1[1] - r1[0] - b['lip']) + (r2[1] - r2[0]))
+        return math.pi * v / 1000.0
+    if name == 'boom_socket':
+        return math.pi * (SOCK['bore'] / 2) ** 2 * SOCK['L_HUB'] / 1000.0
     return 0.0
 
 
@@ -270,35 +301,56 @@ def mast_clamp(cast=False):
     return _cut(s, tools)
 
 
-def el_hub(side, cast=False):
-    """Hub on side 'a' (y>0, Ø14 key 5) or 'b' (y<0, Ø12 key 4); cast=True gives the common pattern at side a."""
+def el_bearing_housing(cast=False):
+    """PCD65 flange (y0 = EL gearbox output face B), 4 ribs at 45 deg, two bearing rings; cast=True gives the pattern body."""
     import Part
-    h = HUB
-    sg = 1.0 if side == 'a' else -1.0
-    yc = sg * h['yc']
+    b = BH
     a = A if cast else 0.0
-    L = h['L'] + 2 * a
-    y0 = yc - L / 2
-    z0, z1 = h['bz']
-    lug_w, lug_l, (lz0, lz1) = h['lug']
-    s = _fuse([Part.makeCylinder(h['R'], L, _v(0, y0, EL_Z), _v(0, 1, 0)),
-               Part.makeBox(h['bx'], L, z1 + a - z0, _v(-h['bx'] / 2, y0, EL_Z + z0)),
-               Part.makeBox(lug_w, lug_l, lz1 - lz0, _v(-lug_w / 2, yc - lug_l / 2, EL_Z + lz0))])
-    gh, gz = h['groove']
-    zg = z1 + a + 1
-    w = zg - gz
-    v = Part.Face(Part.makePolygon([_v(-30, yc - w, EL_Z + zg), _v(-30, yc, EL_Z + gz), _v(-30, yc + w, EL_Z + zg),
-                                    _v(-30, yc - w, EL_Z + zg)])).extrude(_v(60, 0, 0))
-    s = s.cut(v)
+    y0, ax = b['y0'], _v(0, 1, 0)
+    (r1a, r1b), (r2a, r2b) = b['ring1'], b['ring2']
+    parts = [Part.makeCylinder(b['R_FL'], b['T_FL'] + a, _v(0, y0 - a, EL_Z), ax),
+             Part.makeCylinder(b['R_B'], r1b - r1a, _v(0, y0 + r1a, EL_Z), ax),
+             Part.makeCylinder(b['R_B'], r2b - r2a + a, _v(0, y0 + r2a, EL_Z), ax)]
+    for k in range(4):
+        rib = Part.makeBox(b['rib_x'][1] - b['rib_x'][0], b['rib_y'][1] - b['rib_y'][0], b['rib_t'],
+                           _v(b['rib_x'][0], y0 + b['rib_y'][0], EL_Z - b['rib_t'] / 2))
+        rib.rotate(_v(0, 0, EL_Z), ax, 45 + 90 * k)
+        parts.append(rib)
+    s = _fuse(parts)
     if cast:
         return s
-    b = HUB_BORE[side]
-    tools = [Part.makeCylinder(b['d'] / 2, L + 2, _v(0, y0 - 1, EL_Z), _v(0, 1, 0)),
-             Part.makeBox(b['key'], L + 2, b['d'] / 2 + b['t2'], _v(-b['key'] / 2, y0 - 1, EL_Z)),
-             Part.makeBox(h['slit'], L + 2, 22.0, _v(-h['slit'] / 2, y0 - 1, EL_Z - 26.0)),
-             Part.makeCylinder(3.3, 40, _v(-20, yc, EL_Z + h['pinch_z']), _v(1, 0, 0))]
-    tools += [Part.makeCylinder(h['ub_d'] / 2, 16, _v(sx * h['ub_x'], yc + sy * h['ub_y'], EL_Z + z0 - 1), _v(0, 0, 1))
-              for sx in (1, -1) for sy in (1, -1)]
+    tools = [Part.makeCylinder(b['R_REC'], b['T_REC'] + 1, _v(0, y0 - 1, EL_Z), ax),
+             Part.makeCylinder(b['R_FBORE'], b['T_FL'] + 2, _v(0, y0 - 1, EL_Z), ax),
+             Part.makeCylinder(b['R_LIP'], b['lip'] + 1, _v(0, y0 + r1a - 1, EL_Z), ax),
+             Part.makeCylinder(b['R_SEAT'], r1b - r1a - b['lip'] + 1, _v(0, y0 + r1a + b['lip'], EL_Z), ax),
+             Part.makeCylinder(b['R_SEAT'], r2b - r2a + 2, _v(0, y0 + r2a - 1, EL_Z), ax)]
+    r = P.NMRV030_GEO['face_pcd'] / 2
+    tools += [Part.makeCylinder(3.3, b['T_FL'] + 2, _v(sx * r, y0 - 1, EL_Z + sz * r), ax) for sx, sz in ((1, 0), (-1, 0), (0, 1), (0, -1))]
+    return _cut(s, tools)
+
+
+def boom_socket(cast=False):
+    """Keyed Ø30 hub with pinch slit, then the 40.5 square socket (cored) for the cross-boom tube; cast=True gives the pattern body."""
+    import Part
+    h = SOCK
+    a = A if cast else 0.0
+    y0, ax = h['y0'], _v(0, 1, 0)
+    lw, (lz0, lz1) = h['lug']
+    w2 = h['W'] / 2
+    parts = [Part.makeCylinder(h['R_HUB'], h['L_HUB'] + a, _v(0, y0 - a, EL_Z), ax),
+             Part.makeBox(lw, h['L_HUB'] + a, lz1 - lz0, _v(-lw / 2, y0 - a, EL_Z + lz0)),
+             Part.makeBox(h['W'], h['L'] - h['L_HUB'], h['W'], _v(-w2, y0 + h['L_HUB'], EL_Z - w2))]
+    if cast:
+        parts.append(Part.makeBox(h['pocket'], h['print_l'], h['pocket'], _v(-h['pocket'] / 2, y0 + h['L'], EL_Z - h['pocket'] / 2)))
+        return _fuse(parts)
+    s = _fuse(parts)
+    pk = h['pocket']
+    tools = [Part.makeCylinder(h['bore'] / 2, h['L_HUB'] + 1, _v(0, y0 - 1, EL_Z), ax),
+             Part.makeBox(h['key'], h['L_HUB'] + 1, h['bore'] / 2 + h['t2'], _v(-h['key'] / 2, y0 - 1, EL_Z)),
+             Part.makeBox(h['slit'], h['L_HUB'] + 1, 23.0, _v(-h['slit'] / 2, y0 - 1, EL_Z + lz0 - 1.0)),
+             Part.makeCylinder(3.3, lw + 4, _v(-lw / 2 - 2, y0 + h['L_HUB'] / 2, EL_Z + h['pinch_z']), _v(1, 0, 0)),
+             Part.makeBox(pk, h['depth'] + 1, pk, _v(-pk / 2, y0 + h['L'] - h['depth'], EL_Z - pk / 2))]
+    tools += [Part.makeCylinder(h['bolt_d'] / 2, h['W'] + 4, _v(-w2 - 2, y0 + h['L'] - d, EL_Z), _v(1, 0, 0)) for d in h['bolt_back']]
     return _cut(s, tools)
 
 
@@ -322,9 +374,8 @@ def az_shaft():
 def el_shaft():
     import Part
     s = _stack(EL_SHAFT, (0, 1, 0))
-    slots = [Part.makeBox(5.0, 44.0, 4.0, _v(-2.5, 8.0, EL_Z + 4.0)),                 # gearbox key 5, slot depth 3
-             Part.makeBox(5.0, 38.0, 4.0, _v(-2.5, HUB['yc'] - 19.0, EL_Z + 4.0)),     # hub A key 5
-             Part.makeBox(4.0, 38.0, 3.0, _v(-2.0, -HUB['yc'] - 19.0, EL_Z + 3.5))]    # hub B key 4, slot depth 2.5
+    slots = [Part.makeBox(5.0, 50.0, 4.0, _v(-2.5, PL.Y_EL_A + 4.0, EL_Z + 4.0)),                 # gearbox key 5, slot depth 3
+             Part.makeBox(8.0, 26.0, 5.0, _v(-4.0, SOCK['y0'] + 2.0, EL_Z + 11.0))]                    # socket key 8x7, slot depth 4
     return _cut(s, slots)
 
 
@@ -336,10 +387,23 @@ def self_test():
     assert BOSS_R - TAP_D / 2 >= C['min_wall'] and BOSS_H / LUG_T <= C['max_section_ratio']
     assert TAP_DEPTH < BOSS_H and R_CORE <= R_SEAT - A
     assert CL_R - SHAFT_D / 2 >= C['min_wall']
-    assert HUB['bx'] / 2 - HUB['ub_x'] - HUB['ub_d'] / 2 >= C['min_wall'] * 0.95
-    assert HUB['groove'][1] - HUB['bz'][0] >= C['min_wall']
-    assert abs(shaft_length(AZ_SHAFT) - 289.0) < 1e-9 and AZ_SHAFT[-1][1] - AZ_SHAFT[-1][0] == 63.0
-    assert shaft_stock(AZ_SHAFT) == (33.0, 299.0)                       # Ø30 + 3 mm bar, no collar
+    b, h = BH, SOCK
+    pcd_r = P.NMRV030_GEO['face_pcd'] / 2
+    bw = P.BEARING_EL['B']
+    assert b['R_B'] - b['R_SEAT'] >= C['min_wall'] and b['T_FL'] >= C['min_wall'] and b['R_FL'] - pcd_r - 3.3 >= C['min_wall']
+    assert pcd_r - 3.3 - b['R_REC'] >= 3.0 and 2 * b['R_SEAT'] == P.BEARING_EL['D']
+    assert b['ring1'][0] + b['lip'] + bw <= b['ring1'][1] and b['ring2'][0] + 2 * b['circlip'] + bw <= b['ring2'][1]
+    assert abs((BRG_Y[1] - BRG_Y[0]) - P.EL_BEARING_SPAN * 1000) < 1e-9 and BRG_Y[1] - BRG_Y[0] >= 60.0
+    assert P.BEARING_EL['d'] == EL_SHAFT[1][2] == h['bore']
+    assert b['ring1'][0] - b['T_FL'] >= 14.0, 'window for the bolt heads and the hex key'
+    assert math.hypot(b['rib_x'][0], b['rib_t'] / 2) > b['R_SEAT'] and math.hypot(b['rib_x'][1], b['rib_t'] / 2) <= b['R_FL'] and b['rib_t'] >= C['min_wall']
+    assert h['R_HUB'] - h['bore'] / 2 - h['t2'] >= C['min_wall'] and (h['W'] - h['pocket']) / 2 >= C['min_wall'] and h['web'] >= C['min_wall']
+    assert h['pinch_z'] - 3.3 - h['lug'][1][0] >= C['min_wall'] and h['pinch_z'] + h['bore'] / 2 + 3.3 <= -C['min_wall']
+    assert h['pocket'] == P.CROSS_BOOM[0] + 0.5 and h['depth'] == 80.0 and h['W'] / 2 >= h['R_HUB'] and max(h['bolt_back']) + h['bolt_d'] / 2 <= h['depth']
+    assert h['y0'] - (b['y0'] + b['L']) >= 5.0, 'V-ring room between housing end and hub'
+    assert abs(shaft_length(AZ_SHAFT) - 306.0) < 1e-9 and AZ_SHAFT[-1][1] - AZ_SHAFT[-1][0] == 80.0
+    assert shaft_stock(AZ_SHAFT) == (33.0, 316.0)                       # Ø30 + 3 mm bar, no collar
+    assert shaft_stock(EL_SHAFT) == (33.0, 216.0) and EL_SHAFT[0][1] - EL_SHAFT[0][0] == 92.0
     lo, hi, bd = AZ_BORE
     assert hi < AZ_SHAFT[-1][0] and lo == AZ_SHAFT[0][0]                # bore ends below the solid Ø14 section
     assert (SHAFT_D - bd) / 2 >= C['min_wall'] and AZ_EXIT_Z - AZ_EXIT_D / 2 >= Z0 and AZ_EXIT_Z + AZ_EXIT_D / 2 <= hi
@@ -349,7 +413,7 @@ def self_test():
     assert abs(shaft_volume_cm3([(0, 100, 30)], [(0, 100, 16)]) - 50.580) < 1e-3
     assert abs(shaft_volume_cm3([(0, 100, 30)], [(0, 100, 16)]) * SS_G_CM3 - 402.1) < 0.05
     assert shaft_stock([(0, 100, 30)]) == (33.0, 110.0)
-    for n in ('az_housing', 'mast_clamp', 'el_hub'):
+    for n in ('az_housing', 'mast_clamp', 'el_bearing_housing', 'boom_socket'):
         assert machined_area_cm2(n) > 0
 
 

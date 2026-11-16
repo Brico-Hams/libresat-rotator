@@ -1,14 +1,14 @@
 {
   "plates": {
     "base": {
-      "volume_cm3": 335.901,
-      "mass_g": 906.9,
+      "volume_cm3": 94.943,
+      "mass_g": 256.3,
       "valid": true,
       "bbox": [
-        -185.0,
-        185.0,
-        -78.0,
-        78.0,
+        -55.0,
+        55.0,
+        -62.0,
+        72.0,
         -8.0,
         0.0
       ]
@@ -26,64 +26,29 @@
         8.0
       ]
     },
-    "spacer_el": {
-      "volume_cm3": 30.96,
-      "mass_g": 83.6,
+    "el_bracket": {
+      "volume_cm3": 41.2,
+      "mass_g": 111.2,
       "valid": true,
       "bbox": [
-        -40.0,
-        40.0,
-        57.0,
-        65.0,
-        72.0,
-        152.0
-      ]
-    },
-    "side_a": {
-      "volume_cm3": 465.785,
-      "mass_g": 1257.6,
-      "valid": true,
-      "bbox": [
-        -185.0,
-        185.0,
-        65.0,
-        73.0,
+        -48.0,
+        48.0,
+        61.0,
+        69.0,
         0.0,
-        185.0
-      ]
-    },
-    "side_b": {
-      "volume_cm3": 476.95,
-      "mass_g": 1287.8,
-      "valid": true,
-      "bbox": [
-        -185.0,
-        185.0,
-        -73.0,
-        -65.0,
-        0.0,
-        185.0
-      ]
-    },
-    "top": {
-      "volume_cm3": 344.678,
-      "mass_g": 930.6,
-      "valid": true,
-      "bbox": [
-        -185.0,
-        185.0,
-        -78.0,
-        78.0,
-        185.0,
-        191.0
+        80.0
       ]
     }
   },
   "envelopes": [
     "az_gearbox",
     "az_motor",
+    "az_collar",
     "el_gearbox",
-    "el_motor"
+    "el_motor",
+    "cross_boom",
+    "ant_1",
+    "ant_2"
   ],
   "checks": {
     "max_interference_mm3": 0.0,
@@ -91,38 +56,53 @@
     "interference_mm3": {
       "base/az_gearbox": 0.0,
       "base/az_motor": 0.0,
+      "base/az_collar": 0.0,
       "base/el_gearbox": 0.0,
       "base/el_motor": 0.0,
+      "base/cross_boom": 0.0,
+      "base/ant_1": 0.0,
+      "base/ant_2": 0.0,
       "spacer/az_gearbox": 0.0,
       "spacer/az_motor": 0.0,
+      "spacer/az_collar": 0.0,
       "spacer/el_gearbox": 0.0,
       "spacer/el_motor": 0.0,
-      "spacer_el/az_gearbox": 0.0,
-      "spacer_el/az_motor": 0.0,
-      "spacer_el/el_gearbox": 0.0,
-      "spacer_el/el_motor": 0.0,
-      "side_a/az_gearbox": 0.0,
-      "side_a/az_motor": 0.0,
-      "side_a/el_gearbox": 0.0,
-      "side_a/el_motor": 0.0,
-      "side_b/az_gearbox": 0.0,
-      "side_b/az_motor": 0.0,
-      "side_b/el_gearbox": 0.0,
-      "side_b/el_motor": 0.0,
-      "top/az_gearbox": 0.0,
-      "top/az_motor": 0.0,
-      "top/el_gearbox": 0.0,
-      "top/el_motor": 0.0,
+      "spacer/cross_boom": 0.0,
+      "spacer/ant_1": 0.0,
+      "spacer/ant_2": 0.0,
+      "el_bracket/az_gearbox": 0.0,
+      "el_bracket/az_motor": 0.0,
+      "el_bracket/az_collar": 0.0,
+      "el_bracket/el_gearbox": 0.0,
+      "el_bracket/el_motor": 0.0,
+      "el_bracket/cross_boom": 0.0,
+      "el_bracket/ant_1": 0.0,
+      "el_bracket/ant_2": 0.0,
       "az_housing/base": 0.0,
       "az_housing/az_shaft": 0.0,
+      "el_bearing_housing/el_gearbox": 0.0,
+      "boom_socket/cross_boom": 0.0,
+      "boom_socket/ant_1": 0.0,
       "az_shaft/base": 0.0,
-      "az_shaft/spacer": 0.0,
-      "el_shaft/spacer_el": 0.0,
-      "el_shaft/side_a": 0.0,
-      "el_shaft/side_b": 0.0
+      "az_shaft/spacer": 0.0
     },
     "failures": [],
-    "passed": true
+    "passed": true,
+    "el_sweep": {
+      "range_deg": [
+        -30,
+        150
+      ],
+      "step_deg": 5,
+      "moving": [
+        "boom_socket",
+        "cross_boom",
+        "ant_1",
+        "ant_2"
+      ],
+      "worst_mm3": 0.0,
+      "worst_at": null
+    }
   },
   "cast": {
     "az_housing": {
@@ -179,65 +159,65 @@
       ],
       "parting": "Parting plane z=-175 (boss top). Drag only, strip and boss drafted 2 deg by the pattern maker; bore cast solid."
     },
-    "el_hub_a": {
-      "volume_cm3": 54.663,
-      "mass_g": 146.5,
+    "el_bearing_housing": {
+      "volume_cm3": 118.234,
+      "mass_g": 316.9,
       "valid": true,
-      "machined_area_cm2": 62.92,
-      "bore_solid_cm3": 7.7,
+      "machined_area_cm2": 129.15,
+      "bore_solid_cm3": 130.77,
       "bbox": [
-        -24.0,
-        24.0,
-        75.0,
+        -44.0,
+        44.0,
         125.0,
-        87.0,
-        134.0
+        242.0,
+        -4.0,
+        84.0
       ],
-      "pattern": "el_hub_pattern",
-      "pattern_volume_cm3": 80.522,
-      "pattern_area_cm2": 140.28,
+      "pattern": "el_bearing_housing_pattern",
+      "pattern_volume_cm3": 284.481,
+      "pattern_area_cm2": 549.87,
       "pattern_bbox": [
-        -24.31,
-        24.31,
-        72.14,
-        127.86,
-        86.67,
-        136.82
+        -44.57,
+        44.57,
+        122.47,
+        246.05,
+        -4.57,
+        84.57
       ],
-      "parting": "Parting plane z=EL axis (XY plane through the bore): two pattern halves with 2 dowels; bore cast solid; the pattern is common to both hubs."
+      "parting": "Parting plane at the flange face (y = EL gearbox face B): flange in the cope, rings and ribs in the drag; drafted 2 deg by the pattern maker; all bores cast solid and bored in one setup (coaxiality of the seats and the face recess)."
     },
-    "el_hub_b": {
-      "volume_cm3": 56.835,
-      "mass_g": 152.3,
+    "boom_socket": {
+      "volume_cm3": 130.752,
+      "mass_g": 350.4,
       "valid": true,
-      "machined_area_cm2": 62.92,
-      "bore_solid_cm3": 5.65,
+      "machined_area_cm2": 39.3,
+      "bore_solid_cm3": 21.21,
       "bbox": [
-        -24.0,
-        24.0,
-        -125.0,
-        -75.0,
-        87.0,
-        134.0
+        -25.5,
+        25.5,
+        247.0,
+        363.0,
+        4.0,
+        65.5
       ],
-      "pattern": "el_hub_pattern",
-      "pattern_volume_cm3": 80.522,
-      "pattern_area_cm2": 140.28,
+      "pattern": "boom_socket_pattern",
+      "pattern_volume_cm3": 329.808,
+      "pattern_area_cm2": 323.58,
       "pattern_bbox": [
-        -24.31,
-        24.31,
-        72.14,
-        127.86,
-        86.67,
-        136.82
+        -25.83,
+        25.83,
+        244.47,
+        379.7,
+        3.53,
+        65.83
       ],
-      "parting": "Parting plane z=EL axis (XY plane through the bore): two pattern halves with 2 dowels; bore cast solid; the pattern is common to both hubs."
+      "parting": "Parting plane at the mouth face: body in the drag, hub up; the 40.5 pocket is formed by one prismatic sand core (15 mm print at the mouth, 2 deg draft by the pattern maker; core box not modelled); \u00d830 bore cast solid and bored, slit sawn."
     }
   },
   "shafts": {
     "az_shaft": {
-      "volume_cm3": 123.241,
-      "mass_g": 979.8,
+      "volume_cm3": 125.858,
+      "mass_g": 1000.6,
       "valid": true,
       "bbox": [
         -15.0,
@@ -245,11 +225,11 @@
         -15.01,
         15.01,
         -225.0,
-        64.0
+        81.0
       ],
-      "length_mm": 289.0,
+      "length_mm": 306.0,
       "stock_d_mm": 33.0,
-      "stock_l_mm": 299.0,
+      "stock_l_mm": 316.0,
       "steps": [
         [
           -225.0,
@@ -258,7 +238,7 @@
         ],
         [
           1.0,
-          64.0,
+          81.0,
           14.0
         ]
       ],
@@ -271,30 +251,30 @@
       ]
     },
     "el_shaft": {
-      "volume_cm3": 34.689,
-      "mass_g": 275.8,
+      "volume_cm3": 93.237,
+      "mass_g": 741.2,
       "valid": true,
       "bbox": [
-        -7.0,
-        7.0,
-        -126.0,
-        126.0,
-        105.0,
-        119.0
+        -15.0,
+        15.0,
+        70.0,
+        276.0,
+        25.0,
+        55.0
       ],
-      "length_mm": 252.0,
-      "stock_d_mm": 17.0,
-      "stock_l_mm": 262.0,
+      "length_mm": 206.0,
+      "stock_d_mm": 33.0,
+      "stock_l_mm": 216.0,
       "steps": [
         [
-          -126.0,
-          -63.0,
-          12.0
+          70.0,
+          162.0,
+          14.0
         ],
         [
-          -63.0,
-          126.0,
-          14.0
+          162.0,
+          276.0,
+          30.0
         ]
       ],
       "bores": []
@@ -313,10 +293,23 @@
     ]
   },
   "allowed_pairs": [
+    "az_shaft / az_collar",
     "az_shaft / az_gearbox",
     "az_shaft / mast_clamp",
-    "el_shaft / el_gearbox",
-    "el_shaft / el_hub_a",
-    "el_shaft / el_hub_b"
-  ]
+    "el_shaft / boom_socket",
+    "el_shaft / el_bearing_housing",
+    "el_shaft / el_gearbox"
+  ],
+  "items": {
+    "cross_boom": {
+      "volume_cm3": 488.4,
+      "mass_g": 1318.7,
+      "section_mm": [
+        40.0,
+        40.0,
+        3.0
+      ],
+      "length_mm": 1100.0
+    }
+  }
 }

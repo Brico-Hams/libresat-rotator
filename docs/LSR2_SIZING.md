@@ -31,15 +31,24 @@ EL axis 300 mm above the upper AZ bearing; external 6206 pair, 120 mm apart, plu
 ## Structural checks of the cast parts (survival wind)
 
 Payload Crossed Yagi pair 145/435, ~2 m booms, 100 km/h, parked. Geometry from cad/lsr2/cast_parts.py. A356-T6 sand allowable 80 MPa and E 72 GPa (**VERIFY** with the foundry). U-bolts: 8 kN preload per M8 U-bolt (2 legs), friction mu 0.2, class A4-80 or 8.8 (**VERIFY**). Rib model: the moment axis runs through two of the four ribs (couple over the rib radius), the lower-bearing shear bends the ribs fixed-guided in their strong plane. Arm model: cantilever from the mast tangent point to the U-bolt leg, worst case for the smallest mast. Clamp preload bending of the arms is not covered: proof-load the first casting (**VERIFY**).
+EL head (phase 6b): one-sided boom along the EL axis, Yagi payload, survival wind. Weight and wind of the two Yagis (stations at 0.45, 0.95 m from the socket mouth), the tube and the socket give a bending moment at the outer of the two 6206 bearings (62 mm apart, in the el_bearing_housing); wind and weight are combined at 90 deg (conservative). The Ø14 shaft section in the gearbox hub then only transmits torque; its radial load follows from 0.04 mm coaxiality plus the slope of the Ø30 section (cantilever stub model, **VERIFY**), limit 0.2 fr2. Shaft yield 200 MPa (1.4404, **VERIFY**), von Mises with bending and torsion on the 30 mm section; keyway stress concentration, the keyed Ø14 section torsion (SF about 2), fatigue and the el_bracket joint tilt are not covered: proof-load the first unit (**VERIFY**). Housing bolts: moment over a PCD65 couple, thread strength in the NMRV face 10 kN per M6 (**VERIFY**). Tube: 6063-T6, 170 MPa (**VERIFY**).
+
+**Finding:** with the boom one-sided along the EL axis, the antenna moment is far beyond what the gearbox hub carries, so the EL axis needs a bearing pair exactly like AZ (the Ø14 gearbox section stays torque-only).
 
 | Part | Check | Demand | Capacity / allowable | SF | Needed | Result |
 |---|---|---|---|---|---|---|
 | az_housing rib | axial force 703 N + bending from shear 175 N | 23.5 MPa | 80.0 MPa | 3.4 | 3 | ✅ |
 | az_housing rib | Euler buckling, K=0.5, L=102 mm, 8x18.9 mm | 703.4 N | 220073.4 N | 312.9 | 3 | ✅ |
-| mast_clamp U-bolt | wind tension 1049 N per leg vs preload per leg | 1048.7 N | 4000.0 N | 3.8 | 2 | ✅ |
-| mast_clamp U-bolt | preload + wind per leg vs M8 yield | 5048.7 N | 21960.0 N | 4.3 | 2 | ✅ |
-| mast_clamp arm | bending, arm 11 mm, lever 20.9 mm, width 30 mm | 36.2 MPa | 80.0 MPa | 2.2 | 2 | ✅ |
+| mast_clamp U-bolt | wind tension 811 N per leg vs preload per leg | 810.5 N | 4000.0 N | 4.9 | 2 | ✅ |
+| mast_clamp U-bolt | preload + wind per leg vs M8 yield | 4810.5 N | 21960.0 N | 4.6 | 2 | ✅ |
+| mast_clamp arm | bending, arm 11 mm, lever 20.9 mm, width 30 mm | 27.9 MPa | 80.0 MPa | 2.9 | 2 | ✅ |
 | mast_clamp friction | gearbox standstill torque 33.4 N·m vs friction torque | 33.4 N·m | 90.5 N·m | 2.7 | 2 | ✅ |
+| el_shaft Ø30 | von Mises at the outer bearing, M 174.5 N·m + T 31.0 N·m | 66.6 MPa | 200.0 MPa | 3.0 | 2 | ✅ |
+| el bearing pair | static load 3027 N on the outer 6206 vs C0 | 3026.7 N | 11200.0 N | 3.7 | 2 | ✅ |
+| EL gearbox output | radial load 160 N from coaxiality 0.04 mm + shaft flex vs 0.2 fr2 | 160.4 N | 250.0 N | 1.6 | 1 | ✅ |
+| el_bearing_housing ribs | bending 197 N·m at the flange, 4 ribs 11.5x9 mm | 22.4 MPa | 80.0 MPa | 3.6 | 3 | ✅ |
+| el_bearing_housing bolts | M6 tension 3034 N vs min(thread in the gearbox, proof) | 3033.9 N | 10000.0 N | 3.3 | 2 | ✅ |
+| cross-boom tube | bending 147 N·m at the socket mouth | 28.8 MPa | 170.0 MPa | 5.9 | 2 | ✅ |
 
 ## Motion
 

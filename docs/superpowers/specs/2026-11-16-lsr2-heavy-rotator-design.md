@@ -1,6 +1,6 @@
 # LSR-2 heavy rotator and the LSR rotor family: design spec
 
-Status: draft for review, 2026-11-16; phases 1-3 built (phase 3 as built: see §9). Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams).
+Status: draft for review, 2026-11-16; phases 1-3 built (phase 3 as built: see §9); phase 6 (two-block layout) written, see §9 "Phase 6". Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams).
 
 ## 1. Goal
 
@@ -65,7 +65,7 @@ Mk5 facts used (from the public page and our measurements of their model):
 |---|---|---|---|
 | Saddle plates (front, left, right), platform, gearbox adapter plates, brackets | PLA/PETG 1:1 (or MDF from the DXF) | **CNC 2D**: 6061-T6 or 5083, 8–10 mm | Clamp from the DXF, threads tapped by hand; drawings note tolerances |
 | AZ bearing housing and mast clamp | PETG | **Sand cast A356-T6**, then machined | Bearing seat bored to H7, sealing face machined |
-| EL hub / boom clamp | PETG | **Sand cast A356**, then machined | Bore Ø14 H7 with keyway |
+| EL boom socket (phase 6b; was EL saddle hub) | PETG | **Sand cast A356**, then machined | Bore Ø30 H7 with keyway 8, pinch slit, 40.5 square socket |
 | Motor/gearbox covers | PETG/ASA | 2 mm aluminium sheet, bent (or kept in ASA) | |
 | Encoder carriers, index disc, cable gland bosses | PETG/ASA | stay printed | Non-structural |
 
@@ -102,11 +102,41 @@ Heavy, mechanical generation work (the FreeCAD part scripts) is delegated to Cop
 
 ### Phase 3 as built
 
-Cast parts (`az_housing`, `mast_clamp`, `el_hub`), their PLA patterns, the az_housing core box and the turned shafts are in `cad/lsr2/cast_parts.py`; structural checks are in `calc/lsr2_sizing.py` ([LSR2_SIZING](../../LSR2_SIZING.md)), masses and costs in [LSR2_MATERIALS](../../LSR2_MATERIALS.md). The AZ shaft is hollow (Ø16 bore, cables up the AZ axis) and has no integral collar. Deviations from the plan above:
+Cast parts (`az_housing`, `mast_clamp`, `el_hub`; phase 6 replaced `el_hub` by `el_bearing_housing` and `saddle_hub`; phase 6b replaced `saddle_hub` by `boom_socket`), their PLA patterns, the az_housing core box and the turned shafts are in `cad/lsr2/cast_parts.py`; structural checks are in `calc/lsr2_sizing.py` ([LSR2_SIZING](../../LSR2_SIZING.md)), masses and costs in [LSR2_MATERIALS](../../LSR2_MATERIALS.md). The AZ shaft is hollow (Ø16 bore, cables up the AZ axis) and has no integral collar. Deviations from the plan above:
 - `az_housing` has no mid shoulder: two bearing rings joined by 4 ribs and 6 bolt lugs, with the cored ring bores and the 51206 lip at the bottom;
 - draft is modelled only on the revolved housing; prismatic parts (ribs, clamp strip, hub blocks) get 2° from the pattern maker;
 - no fillets are modelled (minimum fillet 3 mm to be added by the pattern maker);
 - the rib and mast clamp arm thicknesses were increased after the structural checks failed at the first sizes.
+
+### Phase 6: two-block layout
+
+Status: geometry, checks, BOM and docs written; first build and renders pending. Phase 6 replaces the closed plate box (`side_a`, `side_b`, `top`, `spacer_el`) and the two `el_hub` castings.
+
+Reasons: (1) the owner's reference picture shows a compact two-block worm rotator, two gearboxes side by side with parallel motors; (2) fewer parts (6 small plates instead of 6 large ones, no second spacer, one saddle instead of two hubs); (3) lighter and cheaper (about 0.7 kg of plate instead of 4.55 kg, no lightening holes needed).
+
+As built (`cad/lsr2/plates.py`, `cast_parts.py`, `build.py`):
+- one 8 mm `base` plate carries both NMRV030 gearboxes; the AZ one stands on `spacer`, the EL one on an upright `el_bracket` (PCD 65 face pattern, M6 tapped edge into the base plate); both motors parallel, pointing +X;
+- `el_bearing_housing` (cast) on the EL gearbox output face B holds two 6206 on a Ø30 shaft section (phase 6b); `el_shaft` (Ø14 / Ø30) ends in the cast `boom_socket` (key 8, pinch bolt, square socket);
+- the 40 × 40 × 3 6063 cross-boom tube (1100 mm, VERIFY) runs along the EL axis in the socket with 2 × M8 through-bolts (phase 6b; phase 6 had a saddle plate with clamp plates);
+- DIN 705 flanged collar on the AZ shaft top;
+- new checks: EL sweep −30..150° (every 5°) of the moving group against everything else; in `calc/lsr2_sizing.py` the EL shaft (von Mises, SF ≥ 2), the bearing pair (s0 ≥ 2) and the gearbox radial load against fr2.
+
+Open VERIFY items: joint tilt of `el_bracket` (not calculated), the keyed Ø14 section torsion (SF about 2), the gearbox radial-load model and the Ø52 recess for the gearbox boss.
+
+### Phase 6b: boom along the EL axis, EL bearing pair
+
+Status: geometry, checks, BOM and docs written; build and renders pending.
+
+Why: (1) the phase 6 cross boom was clamped perpendicular to the EL axis, so at EL 0° it stood vertical and its lower end reached z ≈ −460 (the lower Yagi, elements about 1 m, would hit the mast); in the owner's reference picture the square tube leaves the saddle ALONG the EL axis; (2) a one-sided boom puts the antenna weight and wind on the EL shaft as a bending moment that the Ø14 shaft in the NMRV030 hub cannot carry (fr2 is small).
+
+Changes:
+- the 40 × 40 × 3 tube runs along +Y, coaxial with the EL axis, one-sided; the Yagis sit on it at `ANT_POS_Y` = 0.45 and 0.95 m from the socket mouth (VERIFY);
+- one cast A356 `boom_socket` (keyed Ø30 hub + pinch slit, 40.5 × 40.5 × 80 deep pocket, 2 × M8 through-bolts) replaces `saddle_hub`, `saddle_plate`, `clamp_a` and `clamp_b`; a CNC end plate with 2 angle brackets would need more parts and fasteners;
+- as on AZ, `el_bearing_housing` carries two 6206 (62 mm apart) on a Ø30 shaft section; the shaft steps down to Ø14 h7 inside the gearbox hub, which only transmits torque (radial load < 0.2 fr2 checked); 6206 and Ø30 replace the first idea of 6205/Ø25 because the shaft von Mises SF was below 2;
+- checks: EL sweep −30..150° of the socket, tube and Yagi envelopes against the head, `az_housing`, mast clamp and a Ø60 mast envelope; `calc/lsr2_sizing.py` replaces the cantilever check by the bearing pair (shaft von Mises, s0 of the more loaded 6206, gearbox radial load, ribs, bolts, tube);
+- cost: plates are priced as the cheaper of full sheet and cut-to-size blank; `scripts/bom.py` reads every fabricated mass from `build/lsr2_build_report.json`.
+
+A printed ASA weather cover is a future option. **Phase 7 (planned):** replace the bought NMRV030 housings by our own two-half cast worm-gear housing with the SAME output-face PCD 65 pattern and hub, so all phase 6 parts stay compatible.
 
 ## 10. Out of scope
 

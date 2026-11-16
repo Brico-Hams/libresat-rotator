@@ -38,6 +38,23 @@ THRUST = dict(name='51206', d=30.0, D=52.0, H=16.0, C=25.1e3, C0=40.0e3)   # cat
 RADIAL = dict(name='6206', d=30.0, D=62.0, B=16.0, C=20.3e3, C0=11.2e3)    # external pair
 RADIAL_SPAN = 0.120      # m between the two radial bearings in the AZ housing
 
+# --- EL head (phase 6b) ---------------------------------------------------------------------
+# The one-sided cross boom (along the EL axis) makes a bending moment that only a bearing PAIR can carry (as on AZ).
+# 2 x 6206 on a Ø30 shaft section, same bearing as the AZ pair (one stock item): 6205 on Ø25 gives a shaft SF of 1.8 (< 2).
+BEARING_EL = RADIAL
+EL_BEARING_SPAN = 0.062  # m between the two EL bearing centres (>= 60 mm wanted, VERIFY)
+SS_YIELD_MPA = 200.0     # 1.4404 (316L) annealed bar yield: VERIFY with the mill certificate
+SS_E_MPA = 193000.0      # stainless modulus: VERIFY
+CROSS_BOOM = (40.0, 40.0, 3.0)   # square 6063 tube: width, height, wall (mm): VERIFY with the supplier
+CROSS_BOOM_L = 1100.0    # mm: 80 mm inside the boom_socket + 1020 mm free (last antenna station at 0.95 m)
+TUBE_YIELD_MPA = 170.0   # 6063-T6 minimum yield: VERIFY
+# Antenna stations along the boom, metres from the socket mouth (VERIFY). The mass is the Yagi payload of calc/lsr2_sizing.py, shared equally.
+ANT_POS_Y = (0.45, 0.95)
+ANT_BOOM_L, ANT_ELEM_L = 2000.0, 1000.0   # mm, Yagi boom along the pointing direction, elements across: envelope boxes for the EL sweep
+SOCKET_MASS_KG = 0.35    # boom_socket: build/lsr2_build_report.json says the real value (build.py fails if it differs by > 15 %)
+FACE_THREAD_N = 10000.0  # axial capacity of one M6 in the NMRV face (11 mm in cast aluminium) and of an 8.8 screw: VERIFY
+EL_COAX_MM = 0.04        # coaxiality of the housing bearing seats and the gearbox hub, bored in one setup with the face recess: VERIFY
+
 # --- Geometry used by the loads ------------------------------------------------------------
 EL_AXIS_HEIGHT = 0.30    # m from the upper AZ radial bearing to the EL axis
 MAST_D = (40.0, 60.0)    # accepted mast range, mm

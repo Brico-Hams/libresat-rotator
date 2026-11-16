@@ -3,44 +3,41 @@
 <!-- palette: blue #12263f, orange #e8871e -->
 Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina.
 
-Goal: light and cheap. Plates are 8 mm (top 6 mm) with lightening holes (cad/lsr2/plates.py). Prices, yield and sheet size are generic: **VERIFY** with local quotes.
+Goal: light and cheap. All plates are 8 mm, no lightening holes (cad/lsr2/plates.py). Prices, yield and sheet size are generic: **VERIFY** with local quotes.
 
-Parameters (VERIFY): plate 9.0 EUR/kg (6061-T6 or 5083), cutting 1.5 EUR/m, A356 ingot 4.5 EUR/kg, foundry 8.0 EUR/kg, yield 0.55, sheet 1000x500 mm, blank margin 10 mm, kerf 3 mm.
+Parameters (VERIFY): full sheet 9.0 EUR/kg (6061-T6 or 5083), cut-to-size 14.0 EUR/kg (blank + margin), cutting 1.5 EUR/m, A356 ingot 4.5 EUR/kg, foundry 8.0 EUR/kg, yield 0.55, sheet 1000x500 mm, blank margin 10 mm, kerf 3 mm.
 
 ## CNC plates (one head)
 
 | Plate | t (mm) | Finished area (cm²) | Finished mass (g) | Blank (mm) | Blank mass (g) | Waste (%) | Cut path (m) |
 |---|---|---|---|---|---|---|---|
-| base | 8 | 420 | 907 | 390x176 | 1483 | 39 | 2.16 |
+| base | 8 | 119 | 256 | 130x154 | 432 | 41 | 0.95 |
 | spacer | 8 | 39 | 84 | 100x100 | 216 | 61 | 0.58 |
-| spacer_el | 8 | 39 | 84 | 100x100 | 216 | 61 | 0.58 |
-| side_a | 8 | 582 | 1258 | 390x205 | 1727 | 27 | 1.81 |
-| side_b | 8 | 596 | 1288 | 390x205 | 1727 | 25 | 1.71 |
-| top | 6 | 574 | 931 | 390x176 | 1112 | 16 | 1.22 |
+| el_bracket | 8 | 52 | 111 | 116x100 | 251 | 56 | 0.61 |
 
-| Thickness (mm) | Sheets | Stock mass (kg) |
-|---|---|---|
-| 6 | 1 | 8.10 |
-| 8 | 1 | 10.80 |
+| Thickness (mm) | Full sheets | Full sheet kg / EUR | Cut-to-size kg / EUR | Choice |
+|---|---|---|---|---|
+| 8 | 1 | 10.80 / 97 | 0.90 / 13 | **cut-to-size** |
 
-Plate stock 18.90 kg for 4.55 kg finished: total waste 76 %. Cost: stock 170 EUR + cutting 12 EUR = **182 EUR** (full sheets bought; a cut-to-size supplier lowers it).
+Plate stock 0.90 kg for 0.45 kg finished: total waste 50 %. Cost: stock 13 EUR + cutting 3 EUR = **16 EUR** (the cheaper option per thickness; the choice follows automatically from the prices above).
 
 ## Sand casting, phase 3 parts
 
-Casting metal = (finished + metal in bores cast solid + machined area x 2.5 mm) x shrink^3 (1.013) at 2.68 g/cm³ (A356); poured metal = casting / 0.55. Volumes and machined areas come from build/lsr2_build_report.json. el_hub is cast twice (one pattern). PLA at 1.24 g/cm³, 30 % infill, 1.2 mm walls.
+Casting metal = (finished + metal in bores cast solid + machined area x 2.5 mm) x shrink^3 (1.013) at 2.68 g/cm³ (A356); poured metal = casting / 0.55. Volumes and machined areas come from build/lsr2_build_report.json. PLA at 1.24 g/cm³, 30 % infill, 1.2 mm walls.
 
 | Part | Finished (cm³) | Machined (cm²) | Casting (g) | Poured (g) | Cost (EUR) |
 |---|---|---|---|---|---|
 | az_housing | 180 | 172 | 622 | 1131 | 10.1 |
 | mast_clamp | 98 | 63 | 435 | 790 | 7.0 |
-| el_hub_a | 55 | 63 | 218 | 396 | 3.5 |
-| el_hub_b | 57 | 63 | 218 | 396 | 3.5 |
+| el_bearing_housing | 118 | 129 | 784 | 1425 | 12.7 |
+| boom_socket | 131 | 39 | 451 | 819 | 7.3 |
 
 | PLA pattern / core box (printed once) | Volume (cm³) | Surface (cm²) | PLA (g) |
 |---|---|---|---|
 | az_housing_pattern | 405 | 716 | 225 |
 | mast_clamp_pattern | 153 | 241 | 82 |
-| el_hub_pattern | 81 | 140 | 45 |
+| el_bearing_housing_pattern | 284 | 550 | 163 |
+| boom_socket_pattern | 330 | 324 | 156 |
 | az_housing_corebox | 409 | 331 | 187 |
 
 ## Turned shafts (stainless 1.4404)
@@ -49,19 +46,19 @@ Stock = finished length + 10 mm, diameter = largest step + 3 mm; 7.95 g/cm³; 6.
 
 | Shaft | Stock Ø x L (mm) | Stock (g) | Finished (g) | Cost (EUR) |
 |---|---|---|---|---|
-| az_shaft | 33 x 299 | 2033 | 980 | 12.2 |
-| el_shaft | 17 x 262 | 473 | 276 | 2.8 |
+| az_shaft | 33 x 316 | 2149 | 1001 | 12.9 |
+| el_shaft | 33 x 216 | 1469 | 741 | 8.8 |
 
 Dimension tables (axis coordinate from the head frame: z for az_shaft, y for el_shaft):
 
 | Shaft | From (mm) | To (mm) | Ø (mm) |
 |---|---|---|---|
 | az_shaft | -225 | 1 | 30 |
-| az_shaft | 1 | 64 | 14 |
-| el_shaft | -126 | -63 | 12 |
-| el_shaft | -63 | 126 | 14 |
+| az_shaft | 1 | 81 | 14 |
+| el_shaft | 70 | 162 | 14 |
+| el_shaft | 162 | 276 | 30 |
 
-az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 63 keyed top (key 5x5, slot 40 long) into the gearbox hollow output, Ø30 bearing seats, no integral collar (the 51206 shaft washer rests on a DIN 471 circlip + 3 mm ring, see bought parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 through gearbox, side_a and hub A, shoulder at y=-63 against the 6201, Ø12 to hub B. Files: cnc/lsr2/az_shaft.step, cnc/lsr2/el_shaft.step.
+az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 80 keyed top (key 5x5, slot 40 long) into the gearbox hollow output and up to the flanged retaining collar (DIN 705 Ø14, M6 set screw), Ø30 bearing seats, no integral collar (the 51206 shaft washer rests on a DIN 471 circlip + 3 mm ring, see bought parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 h7 through the EL gearbox hub (key 5, torque only) and 37 mm beyond it, Ø30 through the two 6206 of the el_bearing_housing (DIN 471 circlips) to the boom_socket hub (key 8x7). Cross-boom tube 6063 40.0x40.0x3.0 x 1100.0 mm = 1.32 kg (included in the bought-part total). Files: cnc/lsr2/az_shaft.step, cnc/lsr2/el_shaft.step.
 
 ## Bought parts (every price VERIFY)
 
@@ -69,26 +66,29 @@ az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 st
 |---|---|---|---|
 | NMRV030 worm gearbox 80:1, Ø14 hollow | 2 | 55.00 VERIFY | 110.00 |
 | NEMA23 stepper 2.8 N·m | 2 | 18.00 VERIFY | 36.00 |
-| 6206-2RS bearing | 2 | 3.50 VERIFY | 7.00 |
+| 6206-2RS bearing (AZ pair + EL pair) | 4 | 3.50 VERIFY | 14.00 |
 | 51206 thrust bearing | 1 | 6.00 VERIFY | 6.00 |
-| 6201-2RS bearing | 1 | 2.00 VERIFY | 2.00 |
-| Keys DIN 6885 (3x 5x5, 1x 4x4) | 4 | 0.50 VERIFY | 2.00 |
+| Keys DIN 6885 (2x 5x5, 1x 8x7) | 3 | 0.50 VERIFY | 1.50 |
 | M6 U-bolts for the Yagi boom | 4 | 1.50 VERIFY | 6.00 |
 | M8 U-bolts for the mast | 2 | 2.50 VERIFY | 5.00 |
-| V-ring seal + Ø6 cross pin + circlips | 1 | 3.00 VERIFY | 3.00 |
+| V-ring seals (AZ + EL VA15/20) + Ø6 cross pin | 1 | 3.00 VERIFY | 3.00 |
 | DIN 471 Ø30 circlip + 3 mm ring under the 51206 (cheaper than a DIN 705 Ø30 set collar, ~4 EUR) | 1 | 0.80 VERIFY | 0.80 |
+| AZ top retaining collar: DIN 705 Ø14 flanged set collar + M6 screw (cheaper than a turned disc) | 1 | 2.50 VERIFY | 2.50 |
+| M8 through-bolts + nuts + washers, boom in the socket (2 sets) | 1 | 1.00 VERIFY | 1.00 |
+| M6 screws, motors/gearboxes/bracket/hub/housing (about 40) | 1 | 4.00 VERIFY | 4.00 |
+| EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62 | 1 | 1.20 VERIFY | 1.20 |
 
-Full 1:1 PLA prototype of all plates: 1.16 kg.
+Full 1:1 PLA prototype of all plates: 0.12 kg.
 
 ## Totals
 
 | Item | Value |
 |---|---|
-| Aluminium bought (plate + poured ingot) | 21.61 kg |
-| Stainless bar (shafts) | 2.51 kg |
-| PLA (patterns + prototype) at 20 EUR/kg VERIFY | 1.70 kg |
-| Material + cutting + foundry + PLA cost (VERIFY) | 255 EUR |
-| Bought parts (VERIFY) | 178 EUR |
-| Total estimated cost (VERIFY) | 433 EUR |
-| Finished head mass (plates + cast parts, without shafts and bought parts) | 5.59 kg |
-| Finished / bought aluminium | 26 % |
+| Aluminium bought (plate + poured ingot) | 5.06 kg |
+| Stainless bar (shafts) | 3.62 kg |
+| PLA (patterns + prototype) at 20 EUR/kg VERIFY | 0.94 kg |
+| Material + cutting + foundry + PLA cost (VERIFY) | 93 EUR |
+| Bought parts (VERIFY) | 202 EUR |
+| Total estimated cost (VERIFY) | 295 EUR |
+| Finished head mass (plates + cast parts, without shafts and bought parts) | 1.86 kg |
+| Finished / bought aluminium | 37 % |

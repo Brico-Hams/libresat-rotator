@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LSR-2 engineering budget: wind torque, gearbox rating, worm holding and AZ bearing loads.
+"""LSR-2 engineering budget: wind torque, gearbox rating, worm holding, AZ bearing loads and the one-sided EL boom head.
 
 Writes docs/LSR2_SIZING.md. Inputs live in cad/lsr2/params.py (hardware) and PAYLOADS below.
 `python calc/lsr2_sizing.py --check` runs the self-test only.
@@ -10,6 +10,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
 import params as P  # noqa: E402
 import cast_parts as CP  # noqa: E402
+import plates as PL  # noqa: E402
 
 G, RHO = 9.81, 1.225
 WIND_OP_KMH, WIND_SURV_KMH = 60.0, 100.0   # operating (tracking) and survival (parked, worm holding)
@@ -19,6 +20,7 @@ A356_ALLOW_MPA, A356_E_MPA = 80.0, 72000.0  # sand-cast A356-T6 design allowable
 SF_CAST, SF_CLAMP = 3.0, 2.0               # wanted safety factors: cast housing ribs, mast clamp
 UBOLT_PRELOAD_N, MU_CLAMP = 8000.0, 0.2    # per M8 U-bolt (2 legs, 4 kN per leg), friction on the V faces: VERIFY
 M8_AS_MM2, UBOLT_RP_MPA = 36.6, 600.0      # M8 stress area, A4-80 / 8.8 U-bolts (4.6 grade is NOT enough): VERIFY
+M6_AS_MM2 = 20.1                           # M6 stress area (8.8 housing bolts, same proof stress)
 
 # kind 'yagi': moment = F * cp_offset.  kind 'dish': moment = q * A * D * cm * solidity
 # (cm ~ 0.12 worst-angle aerodynamic moment coefficient for a parabolic dish about its mount).
@@ -123,9 +125,70 @@ def structural():
     t_fr = MU_CLAMP * math.sqrt(2) * 2 * UBOLT_PRELOAD_N * r_min / 1000.0   # 90 deg V: friction on both faces
     t_hold = P.GEARBOX[P.GEARBOX_DEFAULT]['m2_rated'] * P.GEAR_PEAK_FACTOR
     add('mast_clamp friction', f'gearbox standstill torque {t_hold:.1f} N·m vs friction torque', t_hold, 'N·m', t_fr, SF_CLAMP)
+
+    # EL head (phase 6b): one-sided boom along the EL axis, two 6206 in the el_bearing_housing, Ø14 stub in the gearbox hub
+    h = el_head(p)
+    d_sh = P.BEARING_EL['d'] / 1000.0
+    s_b, s_t = 32 * h['m_b2'] / (math.pi * d_sh ** 3) / 1e6, 16 * h['t_el'] / (math.pi * d_sh ** 3) / 1e6
+    add('el_shaft Ø30', f'von Mises at the outer bearing, M {h["m_b2"]:.1f} N·m + T {h["t_el"]:.1f} N·m',
+        math.sqrt(s_b ** 2 + 3 * s_t ** 2), 'MPa', P.SS_YIELD_MPA, SF_CLAMP)
+    add('el bearing pair', f'static load {max(h["r1"], h["r2"]):.0f} N on the outer {P.BEARING_EL["name"]} vs C0', max(h['r1'], h['r2']),
+        'N', P.BEARING_EL['C0'], S0_MIN)
+    fr2 = P.GEARBOX[P.GEARBOX_DEFAULT]['fr2']
+    add('EL gearbox output', f'radial load {h["f_gb"]:.0f} N from coaxiality {P.EL_COAX_MM:g} mm + shaft flex vs 0.2 fr2', h['f_gb'],
+        'N', 0.2 * fr2, 1.0)
+    b_r = (CP.BH['rib_x'][1] - CP.BH['rib_x'][0])
+    t_r = CP.BH['rib_t']
+    yc = (CP.BH['rib_x'][0] + CP.BH['rib_x'][1]) / 2 * math.sin(math.radians(45))
+    i_tot = 4 * (b_r * t_r * yc ** 2 + (b_r ** 3 * t_r / 12 + t_r ** 3 * b_r / 12) / 2)    # 4 ribs at 45 deg, mm4
+    c = (CP.BH['rib_x'][1] + t_r / 2) * math.sin(math.radians(45))
+    add('el_bearing_housing ribs', f'bending {h["m_fl"]:.0f} N·m at the flange, 4 ribs {b_r:g}x{t_r:g} mm', h['m_fl'] * 1000 * c / i_tot,
+        'MPa', A356_ALLOW_MPA, SF_CAST)
+    r_pcd = P.NMRV030_GEO['face_pcd'] / 2000.0
+    t_bolt = h['m_fl'] / (2 * r_pcd)                                # couple over two bolts, conservative
+    add('el_bearing_housing bolts', f'M6 tension {t_bolt:.0f} N vs min(thread in the gearbox, proof)', t_bolt, 'N',
+        min(P.FACE_THREAD_N, M6_AS_MM2 * UBOLT_RP_MPA), SF_CLAMP)
+    z_t = (P.CROSS_BOOM[0] ** 4 - (P.CROSS_BOOM[0] - 2 * P.CROSS_BOOM[2]) ** 4) / (6 * P.CROSS_BOOM[0])   # mm3
+    add('cross-boom tube', f'bending {h["m_tube"]:.0f} N·m at the socket mouth', h['m_tube'] * 1000 / z_t, 'MPa', P.TUBE_YIELD_MPA, SF_CLAMP)
     for r in rows:
         r['ok'] = r['sf'] >= r['need']
     return p['name'], rows
+
+
+def el_head(p):
+    """Survival loads of payload p on the one-sided boom, split over the two EL bearings (N, N·m, m).
+
+    The payload (weight + wind) is shared by the ANT_POS_Y stations; wind and weight act at 90 deg to each other (combined by hypot,
+    conservative: the wind can come from any side). Loads outboard of the outer bearing give M_b2; R1/R2 are the bearing reactions.
+    """
+    t_el, f_w = loads(p, WIND_SURV_KMH)
+    w = p['mass'] * G
+    span = P.EL_BEARING_SPAN
+    y_b2, y_b1 = CP.BRG_Y[1], CP.BRG_Y[0]
+    tube_kg = (P.CROSS_BOOM[0] ** 2 - (P.CROSS_BOOM[0] - 2 * P.CROSS_BOOM[2]) ** 2) * P.CROSS_BOOM_L * P.ALU_PLATE_G_CM3 * 1e-6
+    sock_y = CP.SOCK['y0'] + CP.SOCK['L'] / 2
+    tube_y = CP.SOCK_Y1 - CP.SOCK['depth'] + P.CROSS_BOOM_L / 2
+    n = len(P.ANT_POS_Y)
+    arms = [(CP.SOCK_Y1 - y_b2) / 1000.0 + pos for pos in P.ANT_POS_Y]
+    mx = sum(f_w / n * a for a in arms)
+    wz = w + tube_kg * G + P.SOCKET_MASS_KG * G
+    mz = sum(w / n * a for a in arms) + tube_kg * G * (tube_y - y_b2) / 1000.0 + P.SOCKET_MASS_KG * G * (sock_y - y_b2) / 1000.0
+    f_x, f_z = f_w, wz
+    m_b2 = math.hypot(mx, mz)
+    r2 = math.hypot(f_x + mx / span, f_z + mz / span)
+    r1 = m_b2 / span
+    lf = (y_b2 - CP.BH['y0']) / 1000.0                              # loads' moment arm about the housing flange (face B)
+    m_fl = math.hypot(mx + f_x * lf, mz + f_z * lf)
+    # gearbox radial load: coaxiality error + slope of the Ø30 shaft between the bearings, acting on the Ø14 stub as a cantilever
+    e_pa = P.SS_E_MPA * 1e6
+    i30, i14 = math.pi * 0.030 ** 4 / 64, math.pi * 0.014 ** 4 / 64
+    l_stub = (y_b1 - (PL.Y_EL_A + P.NMRV030_GEO['out_width'] / 2)) / 1000.0   # hub centre to the first bearing
+    theta = m_b2 * span / (6 * e_pa * i30)
+    f_gb = 3 * e_pa * i14 / l_stub ** 3 * (P.EL_COAX_MM * 1e-3 + theta * l_stub)
+    # boom tube bending at the socket mouth
+    mt_x = sum(f_w / n * pos for pos in P.ANT_POS_Y)
+    mt_z = sum(w / n * pos for pos in P.ANT_POS_Y) + tube_kg * G * (tube_y - CP.SOCK_Y1) / 1000.0
+    return dict(t_el=t_el, m_b2=m_b2, r1=r1, r2=r2, m_fl=m_fl, f_gb=f_gb, m_tube=math.hypot(mt_x, mt_z), tube_kg=tube_kg)
 
 
 def structural_ok():
@@ -168,7 +231,18 @@ def report():
                f'per M8 U-bolt (2 legs), friction mu {MU_CLAMP}, class A4-80 or 8.8 (**VERIFY**). Rib model: the moment axis runs through '
                'two of the four ribs (couple over the rib radius), the lower-bearing shear bends the ribs fixed-guided in their '
                'strong plane. Arm model: cantilever from the mast tangent point to the U-bolt leg, worst case for the smallest mast. '
-               'Clamp preload bending of the arms is not covered: proof-load the first casting (**VERIFY**).\n')
+               'Clamp preload bending of the arms is not covered: proof-load the first casting (**VERIFY**).\n'
+               f'EL head (phase 6b): one-sided boom along the EL axis, Yagi payload, survival wind. Weight and wind of the two Yagis (stations at '
+               f'{", ".join(f"{x:g}" for x in P.ANT_POS_Y)} m from the socket mouth), the tube and the socket give a bending moment at the outer '
+               f'of the two {P.BEARING_EL["name"]} bearings ({P.EL_BEARING_SPAN * 1000:.0f} mm apart, in the el_bearing_housing); wind and weight '
+               f'are combined at 90 deg (conservative). The Ø14 shaft section in the gearbox hub then only transmits torque; its radial load follows '
+               f'from {P.EL_COAX_MM:g} mm coaxiality plus the slope of the Ø30 section (cantilever stub model, **VERIFY**), limit 0.2 fr2. Shaft yield '
+               f'{P.SS_YIELD_MPA:.0f} MPa (1.4404, **VERIFY**), von Mises with bending and torsion on the {P.BEARING_EL["d"]:g} mm section; '
+               f'keyway stress concentration, the keyed Ø14 section torsion (SF about 2), fatigue and the el_bracket joint tilt are not covered: '
+               f'proof-load the first unit (**VERIFY**). Housing bolts: moment over a PCD65 couple, thread strength in the NMRV face '
+               f'{P.FACE_THREAD_N / 1000:g} kN per M6 (**VERIFY**). Tube: 6063-T6, {P.TUBE_YIELD_MPA:.0f} MPa (**VERIFY**).\n')
+    out.append('**Finding:** with the boom one-sided along the EL axis, the antenna moment is far beyond what the gearbox hub carries, so '
+               'the EL axis needs a bearing pair exactly like AZ (the Ø14 gearbox section stays torque-only).\n')
     out.append('| Part | Check | Demand | Capacity / allowable | SF | Needed | Result |')
     out.append('|---|---|---|---|---|---|---|')
     for r in srows:
@@ -201,7 +275,13 @@ def self_test():
     assert abs(60.0 / (2 * 0.04) - 750.0) < 1e-9 and abs(euler_n(72000.0, 100.0, 100.0, 0.5) - 28424.5) < 1.0
     assert design_payload() is yagi
     rows = structural()[1]
-    assert len(rows) == 6
+    assert len(rows) == 12
+    h = el_head(yagi)
+    assert h['tube_kg'] > 1.3 and 100 < h['m_b2'] < 400 and h['r2'] > h['r1'] > 0 and h['f_gb'] < 0.2 * P.GEARBOX['NMRV030']['fr2']
+    # hand check: sigma_b = 32 M / (pi d3) = 32 * 100 / (pi * 0.03^3) = 37.73 MPa
+    assert abs(32 * 100 / (math.pi * 0.03 ** 3) / 1e6 - 37.73) < 0.05
+    # hand check: 40x40x3 tube Z = (40^4 - 34^4) / (6 * 40) = 5098.6 mm3
+    assert abs((40 ** 4 - 34 ** 4) / 240 - 5098.6) < 0.1
     for r in rows:
         assert r['ok'], f"structural check failed: {r['part']} {r['check']} SF {r['sf']:.2f} < {r['need']:g}"
 
