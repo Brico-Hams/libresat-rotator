@@ -3,7 +3,7 @@
 ## Unreleased: LSR-2 phase 6c (SARCTrac Mk5 alignment, SARCNET data)
 - **Firmware 1.1.0:** LSR-2 at 400 microsteps/rev, EasyComm II 9600 8N1 default, photo-interrupter index homing, `XCAL BACKLASH` / `XCAL HOMEEL`, 48 V power-loss detect with save to flash (error bit 64); `main.cpp` preprocessor lines repaired.
 - **Software:** optional pass-planner anti-windup (`Limits.anti_windup`, default off).
-- **CAD/BOM:** index discs and sensor bracket (`cad/lsr2/index_parts.py`), M30×56×3 shim, 57BYG250H-8, electronics BOM, budget-build section.
+- **CAD/BOM:** index discs and sensor bracket (`cad/lsr2/axes.py`), M30×56×3 shim, 57BYG250H-8, electronics BOM, budget-build section.
 - **Docs:** Mk5 decision table in ARCHITECTURE §7b, calibration and inspection procedure, tracker list.
 
 ## 1.0.0 — 2026-10-01

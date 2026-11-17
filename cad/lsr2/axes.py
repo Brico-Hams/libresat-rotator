@@ -3,7 +3,7 @@
 Frame: origin = centre of the body bottom mounting face, z up = AZ axis, x forward = boresight at EL 0, y along the EL axis and the cross boom.
 The EL axis is the line (x = 0, z = K['z_el']) along y. a = distance along the boresight from the EL axis, h = height above it (at EL 0).
 Tags: D = DATASHEET (source named), M = MEASURE (caliper), P = PARAMETRIC (our choice, editable).
-Pure-Python numbers are importable without FreeCAD; the builders use a lazy `import visual_parts` (FreeCAD).
+Pure-Python numbers are importable without FreeCAD; the builders use a lazy `import bought_parts` (FreeCAD).
 Our own geometry. Catalogue sizes (bearings, circlips, seals) are D in the maker catalogues and VERIFY on the bought part.
 """
 import math

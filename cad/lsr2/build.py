@@ -5,7 +5,9 @@
 Builds the Mk5-schematic head (body, lid, mast bracket, yoke arms, saddle, boom, clamps, lift arms, counterweights, shafts), runs the EL sweep,
 then both manufacturing routes of every structural part: Route A (cast/lsr2/<part>_{finished,preform,pattern}.step|stl|3mf, cores, lost-PLA)
 and Route B (cnc/lsr2/<part>_{finished,blank}.step + cam/lsr2/<part>_setups.csv), with their checks. Writes build/lsr2_build_report.json
-(key `parts` feeds calc/lsr2_materials.py and scripts/bom.py). Raises on failure. Stale phase-6 files are not deleted here.
+(key `parts` feeds calc/lsr2_materials.py and scripts/bom.py). Phase 11e: also bought-part visual models (stl/lsr2/visual), route B blank STLs, the editable
+cad/lsr2/LSR2_assembly.FCStd (groups Bought / Machined / Cast / Printed pattern, Spreadsheet Params), cad/lsr2/LSR2_assembly.step and
+build/lsr2_render_scene.json (assembly_doc.py, parts_table.py, bought_parts.py). Raises on failure. Stale phase-6 files are not deleted here.
 """
 import json, math, os, sys
 import Part
@@ -19,12 +21,14 @@ import body as BD
 import axes as AX
 import route_a as RA
 import route_b as RB
+import parts_table as PT
+import bought_parts as BP
 
 MAX_INTERFERENCE_MM3 = 1.0
 CW_KG = 1.02                                  # PARAMETRIC counterweight mass per side
-for d in ('cnc/lsr2', 'stl/lsr2', 'cast/lsr2', 'cam/lsr2', 'build'):
+for d in ('cnc/lsr2', 'stl/lsr2/visual', 'cast/lsr2', 'cam/lsr2', 'build', 'cad/lsr2'):
     os.makedirs(os.path.join(OUT, d), exist_ok=True)
-for m in (BD, AX, RA, RB):
+for m in (BD, AX, RA, RB, PT):
     m.self_test()
 
 K = AX.K
@@ -75,8 +79,14 @@ for n, p in parts.items():
 # --- other exports and the report ---------------------------------------------------------------------------------------------------
 for n, s in shafts.items():
     s.exportStep(os.path.join(cnc_dir, n + '.step'))
-for n, s in {**fin, **other, **shafts}.items():   # whole-head STL set for scripts/render_lsr2.py and the Blender renders
+for n, s in {**fin, **other, **shafts}.items():   # whole-head STL set for the Blender renders
     s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
+bought = BP.build_all()                           # bought parts and customer items: visual models, never part of the fabricated mass
+for n, s in bought.items():
+    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', 'visual', n + '.stl'))
+    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))   # flat copy too: copy-back of stl/lsr2/*.stl and drawings.py find it without the subfolder
+for n in RB.PARTS:                                # route B blanks as STL for the "CNC blanks" render
+    Part.read(os.path.join(cnc_dir, n + '_blank.step')).exportStl(os.path.join(cnc_dir, n + '_blank.stl'))
 report = dict(rev=P.REV, parts=parts, shafts={}, items={}, mass_check={})
 for n, s in shafts.items():
     cm3 = s.Volume / 1000.0
@@ -86,12 +96,23 @@ for n, s in shafts.items():
 bm = other['boom']
 report['items']['cross_boom'] = dict(volume_cm3=round(bm.Volume / 1000.0, 3), mass_g=round(bm.Volume / 1000.0 * 2.70, 1),
                                      section_mm=[K['boom_w'], K['boom_w'], K['boom_t']], length_mm=K['boom_len'])
+report['items']['lift_arm'] = dict(volume_cm3=round(other['lift_arm_pos'].Volume / 1000.0, 3), mass_g=round(other['lift_arm_pos'].Volume / 1000.0 * 2.70, 1))
+report['items']['counterweight'] = dict(mass_g=CW_KG * 1000.0, length_mm=round(AX.cw_length(CW_KG), 1))
 for n, est in {'body': 5.4, 'lid': 1.3}.items():   # inputs.HEAD estimates (kg): flagged when > 10 % apart, never a failure
     kg = parts[n]['finished_cm3'] * P.ALU_CAST_G_CM3 / 1000.0
     report['mass_check'][n] = dict(finished_kg=round(kg, 3), inputs_kg=est, differs_over_10pct=abs(kg - est) > 0.1 * est)
 report['checks'] = dict(limit_mm3=MAX_INTERFERENCE_MM3, interference_mm3=worst, failures=failures, passed=not failures,
                         el_sweep=dict(range_deg=list(P.EL_RANGE), step_deg=5, moving=sorted(moving), worst_mm3=round(sweep_worst, 4), worst_at=sweep_at))
 Part.makeCompound(list(fin.values()) + list(other.values()) + list(shafts.values())).exportStep(os.path.join(cnc_dir, 'lsr2_head_assembly.step'))
+import assembly_doc as AD
+head = {**fin, **other, **shafts, **bought}
+missing = sorted(set(PT.BY_MODEL) - set(head))
+if missing:
+    failures.append('parts_table models without a shape: ' + ', '.join(missing))
+else:
+    scene = AD.build(OUT, head, cast_dir, dict(stl_dir='stl/lsr2', cast_dir='cast/lsr2', cnc_dir='cnc/lsr2', floor_z=BP.MAST_BOTTOM, lid_lift=PT.EXPLODE['lid'][2],
+                                               cast_parts=list(RA.PARTS), cnc_parts=list(RB.PARTS), hero_el=30.0))
+    AD.save_scene(OUT, scene)
 with open(os.path.join(OUT, 'build', 'lsr2_build_report.json'), 'w', encoding='utf-8') as fh:
     json.dump(report, fh, indent=2)
 if failures:

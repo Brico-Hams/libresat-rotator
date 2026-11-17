@@ -17,7 +17,7 @@ GASKET = dict(outer=(-49.0, 179.0, 72.0), inner=(-46.0, 176.0, 69.0), depth=2.0)
 LID_SCREWS = [(-40, -64), (10, -64), (60, -64), (110, -64), (160, -64), (110, 64), (160, 64), (171, -30), (171, 30), (-41, -20)]
 GLANDS = [(70.0, -40.0, 14.0, 16.5), (70.0, 40.0, 11.0, 12.5)]      # x, y, boss R, hole d: harness M16 / coax M12
 DRAIN = (150.0, 0.0, 4.0)
-DRIVER_PAD = dict(x=(54.0, 176.0), z=(20.0, 178.0), t=3.0)          # thermal pad wall on the inner -y side
+DRIVER_PAD = dict(x=(54.0, 176.0), z=(20.0, 178.0), t=3.0)          # thermal pad on the inner face of the -y wall (y -BY+W .. -BY+W+t)
 NAMEPLATE = dict(y=(-30.0, 30.0), z=(100.0, 122.0), depth=1.0)      # BricoHams plate on the front face (logo per docs/BRANDING.md)
 BREATHER = (180.0, -30.0, 250.0, 8.0)                               # front wall, away from the EL sweep at the rear
 
@@ -30,6 +30,7 @@ def self_test():
     for x, y in LID_SCREWS:
         assert BX[0] + 4 <= x <= BX[1] - 4 and abs(y) <= BY - 4, (x, y)
     assert Z_LID - Z_RIM == W and Z_EL < Z_RIM - 26
+    assert DRIVER_PAD['t'] > 0 and -BY + W + DRIVER_PAD['t'] < -30.0 - W / 2   # pad stays clear of the rib at y = -30
     print('body self-test OK')
 
 
@@ -48,7 +49,7 @@ def body(blank=False):
         yo = BY if s > 0 else -BY - 9.0
         add.append(box(70.0, 160.0, yo, yo + 9.0, 10.0, 185.0))
         add.append(cyl(26.0, BOSS_Y - BY + 7.0, (0, s * (BY - 7.0) if s > 0 else -BOSS_Y, Z_EL), (0, 1, 0)))
-    add.append(box(*DRIVER_PAD['x'], -BY + W - DRIVER_PAD['t'], -BY + W, *DRIVER_PAD['z']))
+    add.append(box(*DRIVER_PAD['x'], -BY + W, -BY + W + DRIVER_PAD['t'], *DRIVER_PAD['z']))
     add.append(box(-44.0, 52.0, 58.0, BY - W, 218.0, 310.0))
     add.append(box(-45.0, 60.0, -BY + W, BY - W, 140.0, 148.0))
     add.append(cyl(40.0, 115.0, (0, 0, W), (0, 0, 1)))

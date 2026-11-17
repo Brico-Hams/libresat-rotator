@@ -1,8 +1,8 @@
 # Photoreal Cycles renders of the LSR-2 from the STL files of cad/lsr2/build.py (render, not a photo).
 #   blender -b --factory-startup -P scripts/render_blender.py -- <repo_root> <stl_dir> <out_dir> [--samples N]
-# stl_dir = <build out>/stl/lsr2 (fabricated parts; stl_dir/visual/<name>.stl, when present, is the finer copy used instead, and holds the
-# visual-only bought parts). Scene data (EL axis, groups, exploded offsets, index discs) = build/lsr2_render_scene.json from build.py.
-# Output: lsr2_hero.png, lsr2_head_closeup.png, lsr2_exploded_real.png, lsr2_castings_real.png, lsr2_el_sweep_real.png, lsr2_calibration.png
+# stl_dir = <build out>/stl/lsr2 (fabricated parts; stl_dir/visual/<name>.stl holds the bought parts). Scene data (EL axis, groups, exploded offsets,
+# categories, route A/B folders) = build/lsr2_render_scene.json from build.py.
+# Output: lsr2_hero.png, lsr2_head_closeup.png (lid lifted), lsr2_exploded_real.png, lsr2_castings_real.png (route A), lsr2_blanks_real.png (route B), lsr2_el_sweep_real.png
 import bpy, sys, os, re, json, math, struct
 import numpy as np
 from mathutils import Vector, Matrix
@@ -136,7 +136,7 @@ MAT = {
     'motor_caps': pbr('motor_caps', '#b0b6bc', 1.0, 0.40, bump=0.06, bump_scale=900.0),
     'stainless': pbr('stainless', '#d0d3d6', 1.0, 0.20),
     'tube': pbr('tube', '#c8cdd2', 1.0, 0.26, aniso=0.4, bump=0.03, bump_scale=700.0, stretch=0.03),               # aluminium tube
-    'pla': pbr('pla', ORANGE, 0.0, 0.42),
+    'pla': pbr('pla', '#3a9d5d', 0.0, 0.42),
     'asa': pbr('asa', '#101113', 0.0, 0.50),
     'galv': pbr('galv', '#9ea4aa', 1.0, 0.45, bump=0.35, bump_scale=350.0),
     'rubber': pbr('rubber', '#0b0b0c', 0.0, 0.70),
@@ -148,30 +148,27 @@ MAT = {
 
 
 def mat_for(n):
-    if n in ('base', 'spacer', 'el_bracket'):
-        return 'alu_brushed'
-    if n in ('az_housing', 'mast_clamp', 'el_bearing_housing', 'boom_socket'):
-        return 'cast_alu'
-    if n.endswith('_pattern') or n == 'az_housing_corebox':
+    cat = S['category'].get(n)
+    if n.endswith('_pattern'):
         return 'pla'
-    if n == 'az_housing_cores':
-        return 'sand'
-    if n in ('az_shaft', 'el_shaft') or n.endswith('_motor_shaft') or n.startswith('hardware_'):
+    if n.endswith('_blank'):
+        return 'alu_brushed'
+    if cat == 'Cast' or n.endswith('_finished'):
+        return 'cast_alu'
+    if n in ('az_shaft', 'el_shaft', 'el_sleeve', 'clamp_bolts') or n.startswith('brg_'):
         return 'stainless'
-    if n.endswith('index_disc'):
-        return 'asa'
-    if n == 'cross_boom' or n.startswith('yagi'):
+    if n in ('boom', 'yagi_145', 'yagi_435') or n.startswith('lift_arm'):
         return 'tube'
     if n == 'mast':
         return 'galv'
+    if n.startswith('counterweight'):
+        return 'galv'
     if n.endswith('_gearbox'):
         return 'nmrv'
-    if n.endswith('_motor_body'):
+    if n.endswith('_motor'):
         return 'motor_black'
-    if n.endswith('_motor_caps'):
-        return 'motor_caps'
-    if n.endswith('_motor_cable'):
-        return 'rubber'
+    if n == 'drivers':
+        return 'asa'
     return 'cast_alu'
 
 
@@ -212,16 +209,11 @@ def assign(ob, key):
     ob.data.materials.append(MAT[key] if isinstance(key, str) else key)
 
 
-OBJ = {}
-for n in S['parts']:
-    p = next((q for q in (os.path.join(stl_dir, 'visual', n + '.stl'), os.path.join(stl_dir, n + '.stl')) if os.path.exists(q)), None)
-    if p is None:
-        print('missing STL, skipped:', n)
-        continue
+def load(n, p):
     v = read_stl(p) * MM
     if len(v) == 0:
         print('empty STL, skipped:', n)
-        continue
+        return None
     key = np.round(v * 1e6).astype(np.int64)
     _, idx, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
     f = np.asarray(inv).reshape(-1).reshape(-1, 3)
@@ -230,6 +222,16 @@ for n in S['parts']:
     assign(ob, mat_for(n))
     smooth(ob)
     OBJ[n] = ob
+    return ob
+
+
+OBJ = {}
+for n in S['category']:
+    p = next((q for q in (os.path.join(stl_dir, 'visual', n + '.stl'), os.path.join(stl_dir, n + '.stl')) if os.path.exists(q)), None)
+    if p is None:
+        print('missing STL, skipped:', n)
+        continue
+    load(n, p)
 print('imported', len(OBJ), 'objects')
 
 
@@ -257,34 +259,7 @@ def cyl_mm(name, r, h, c, axis, key, seg=48):
     return ob
 
 
-# calibration extras: photo-interrupters on both index discs and the pinhole sun sight (hidden except in lsr2_calibration.png)
-def sensor(tag, to_world, u_s, n_mid, n_base, mat='glow'):
-    gap, t = S['index']['gap'], S['index']['t']
-    parts = [((u_s - 4, u_s + 7), (-5, 5), (n_mid - gap / 2 - 2.5, n_mid - gap / 2)),
-             ((u_s - 4, u_s + 7), (-5, 5), (n_mid + gap / 2, n_mid + gap / 2 + 2.5)),
-             ((u_s + 3, u_s + 7), (-5, 5), (n_mid - gap / 2 - 2.5, n_mid + gap / 2 + 2.5)),
-             ((u_s + 3, u_s + 7), (-5, 5), (n_base, n_mid - gap / 2 - 2.5))]
-    for i, (ur, vr, nr) in enumerate(parts):
-        a, b = to_world(ur[0], vr[0], nr[0]), to_world(ur[1], vr[1], nr[1])
-        lo, hi = [min(a[k], b[k]) for k in range(3)], [max(a[k], b[k]) for k in range(3)]
-        ob = box_mm(f'{tag}_{i}', lo[0], hi[0], lo[1], hi[1], lo[2], hi[2], mat)
-        OBJ[ob.name] = ob
-        EXTRA.append(ob.name)
-
-
-EXTRA = []
-ix = S['index']
-t = ix['t']
-sensor('sensor_az', lambda u, v, n: (u, v, n), ix['az']['r_sensor'], (ix['az']['z'][0] + ix['az']['z'][1]) / 2, S['gearbox_top_z'])
-sensor('sensor_el', lambda u, v, n: (u, n, v), ix['el']['r_sensor'], ix['el']['y'] + t / 2, S['housing_end_y'])
-ys, zs = S['sun_sight']['y'], S['sun_sight']['z']
-for ob in (box_mm('sunsight_base', -50, 50, ys - 8, ys + 8, zs, zs + 6, 'asa'), box_mm('sunsight_post', -47, -45, ys - 7, ys + 7, zs + 6, zs + 26, 'asa'),
-           cyl_mm('sunsight_target', 12.0, 2.0, (45, ys, zs + 18), 'x', 'glow')):
-    OBJ[ob.name] = ob
-    EXTRA.append(ob.name)
-    EL_GROUP.append(ob.name)
-for n in EXTRA:
-    OBJ[n].hide_render = True
+EXTRA = []   # no helper objects in the phase-11 scenes
 
 
 def plane(name, size, z, key):
@@ -427,12 +402,11 @@ def render(fname, objs, pts, direction, lens, floor_z=None):
         bpy.data.objects.remove(ob)
 
 
-ALL = [n for n in OBJ if n not in EXTRA]
-PATTERN = [n for n in ALL if n.endswith('_pattern') or n.startswith('az_housing_core')]
-YAGI = ['yagi_145', 'yagi_435', 'hardware_ant']
-MASTWARE = ['mast', 'hardware_clamp']
-FULL = [n for n in ALL if n not in PATTERN]
-HEAD = [n for n in FULL if n not in YAGI + MASTWARE + ['cross_boom']]
+ALL = list(OBJ)
+YAGI = ['yagi_145', 'yagi_435']
+MASTWARE = ['mast']
+FULL = list(ALL)
+HEAD = [n for n in FULL if n not in YAGI + MASTWARE]
 
 
 def run(fname, names, el, explode, direction, lens, frame_names=None, floor_z=None):
@@ -444,42 +418,56 @@ def run(fname, names, el, explode, direction, lens, frame_names=None, floor_z=No
 
 
 # 1. hero: whole rotator on the mast, both Yagis, EL 30 deg
-run('lsr2_hero.png', FULL, 30.0, False, (1.0, -1.15, 0.38), 42)
+run('lsr2_hero.png', FULL, S.get('hero_el', 30.0), False, (1.0, -1.15, 0.38), 42)
 
-# 2. close-up of the head like the owner's reference photo, on a table
-cl = HEAD + ['cross_boom']
-run('lsr2_head_closeup.png', cl, 12.0, False, (0.85, -0.95, 0.55), 50, frame_names=HEAD,
-    floor_z=min(p.z for p in points([OBJ[n] for n in HEAD])) - 0.0005)
+# 2. lifted-lid close-up: gearboxes, motors, drivers visible, lid raised by lid_lift
+LID = OBJ.get('lid')
+show(HEAD)
+pose(0.0, False)
+if LID is not None:
+    LID.matrix_world = Matrix.Translation((0, 0, S['lid_lift'] * MM))
+fr = [OBJ[n] for n in HEAD]
+FLOOR.hide_render = False
+render('lsr2_head_closeup.png', HEAD, points(fr), (0.85, -0.95, 0.65), 50, floor_z=min(p.z for p in points(fr)) - 0.0005)
 
-# 3. exploded along the axes (same offsets as render_lsr2.py)
-ex = [n for n in FULL if n not in YAGI + ['mast']]
-exo = [OBJ[n] for n in ex]
+# 3. exploded along the axes (offsets of cad/lsr2/parts_table.py)
+ex = [n for n in FULL if n not in YAGI]
 pose(0.0, True)
-zmin = min(p.z for p in points(exo))
+zmin = min(p.z for p in points([OBJ[n] for n in ex]))
 run('lsr2_exploded_real.png', ex, 0.0, True, (1.0, -0.45, 0.42), 45, floor_z=zmin - 0.02)
 
-# 4. the four A356 castings next to their PLA patterns, core box and cores, on the floor
-cast_pairs = [('az_housing', 'az_housing_pattern'), ('mast_clamp', 'mast_clamp_pattern'),
-              ('el_bearing_housing', 'el_bearing_housing_pattern'), ('boom_socket', 'boom_socket_pattern')]
-show([n for pair in cast_pairs for n in pair] + ['az_housing_corebox', 'az_housing_cores'])
-pose(0.0, False)
-cols = [(a, b) for a, b in cast_pairs] + [('az_housing_corebox', 'az_housing_cores')]
-bbs = lambda n: points([OBJ[n]])
-ext = lambda n: [(min(p[i] for p in bbs(n)), max(p[i] for p in bbs(n))) for i in range(3)]
-ydepth = max(e[1][1] - e[1][0] for pair in cols for e in map(ext, pair))
-cursor, placed = 0.0, []
-for a, b in cols:
-    wa, wb = [e[0][1] - e[0][0] for e in map(ext, (a, b))]
-    w = max(wa, wb)
-    for n, yrow in ((a, 0.0), (b, ydepth + 0.05)):
-        e = ext(n)
-        dx = cursor + w / 2 - (e[0][0] + e[0][1]) / 2
-        dy = yrow - (e[1][0] + e[1][1]) / 2
-        OBJ[n].matrix_world = Matrix.Translation((dx, dy, -e[2][0]))
-        placed.append(OBJ[n])
-    cursor += w + 0.04
-FLOOR.hide_render = False
-render('lsr2_castings_real.png', [], points(placed), (0.35, -1.0, 0.55), 50, floor_z=0.0)
+
+# 4/5. route A castings (pattern next to finished) and route B CNC blanks (blank next to finished), laid out on the floor
+def route_row(parts, suffix, fname):
+    row = []
+    for p in parts:
+        for tag, folder in ((suffix, S['cast_dir'] if suffix == 'pattern' else S['cnc_dir']), ('finished', S['cast_dir'] if suffix == 'pattern' else S['cnc_dir'])):
+            f = os.path.join(folder, f'{p}_{tag}.stl')
+            if os.path.exists(f) and load(f'{p}_{tag}', f):
+                row.append((p, tag))
+    if not row:
+        return
+    for ob in OBJ.values():
+        ob.hide_render = True
+    cursor, placed = 0.0, []
+    for k in range(0, len(row), 2):
+        pair = [OBJ[f'{p}_{t}'] for p, t in row[k:k + 2]]
+        ext = lambda ob: [(min(q[i] for q in points([ob])), max(q[i] for q in points([ob]))) for i in range(3)]
+        w = max(ext(ob)[0][1] - ext(ob)[0][0] for ob in pair)
+        yrow = 0.0
+        for ob in pair:
+            e = ext(ob)
+            ob.hide_render = False
+            ob.matrix_world = Matrix.Translation((cursor + w / 2 - (e[0][0] + e[0][1]) / 2, yrow - (e[1][0] + e[1][1]) / 2, -e[2][0]))
+            yrow += e[1][1] - e[1][0] + 0.05
+            placed.append(ob)
+        cursor += w + 0.04
+    FLOOR.hide_render = False
+    render(fname, [], points(placed), (0.35, -1.0, 0.55), 50, floor_z=0.0)
+
+
+route_row(S.get('cast_parts', []), 'pattern', 'lsr2_castings_real.png')
+route_row(S.get('cnc_parts', []), 'blank', 'lsr2_blanks_real.png')
 
 # 5. EL sweep: the moving group ghosted at -30, 45 and 150 deg about the EL axis
 sw_static = [n for n in FULL if n not in EL_GROUP]
@@ -487,7 +475,7 @@ show(sw_static)
 pose(0.0, False)
 ghosts = []
 group = [n for n in EL_GROUP if n in OBJ and n not in EXTRA]
-for ang, col in ((-30, BLUE), (45, ORANGE), (150, '#2e7d32')):
+for ang, col in ((-30, BLUE), (45, '#2e7d32'), (150, '#8a3b8a')):
     gm = pbr(f'ghost{ang}', col, 0.0, 0.35, alpha=0.45)
     for n in group:
         g = bpy.data.objects.new(f'{n}_g{ang}', OBJ[n].data.copy())
@@ -499,13 +487,3 @@ FLOOR.hide_render = False
 render('lsr2_el_sweep_real.png', [], points([OBJ[n] for n in sw_static] + ghosts), (0.45, -1.0, 0.2), 38)
 for g in ghosts:
     bpy.data.objects.remove(g)
-
-# 6. calibration: index discs, photo-interrupters and sun sight highlighted
-cal = HEAD + ['cross_boom'] + EXTRA
-show(cal)
-pose(20.0, False)
-for n in ('az_index_disc', 'el_index_disc'):
-    assign(OBJ[n], 'hi_disc')
-fr = [OBJ[n] for n in HEAD + [e for e in EXTRA if e.startswith('sunsight')]]
-FLOOR.hide_render = False
-render('lsr2_calibration.png', cal, points(fr), (0.55, -1.0, 0.75), 50, floor_z=min(p.z for p in points([OBJ[n] for n in HEAD])) - 0.0005)

@@ -1,4 +1,4 @@
-"""LSR-2 FreeCAD Part helpers shared by body.py, axes.py, visual_parts.py and the route modules (mm, no phase-specific data)."""
+"""LSR-2 FreeCAD Part helpers shared by body.py, axes.py, bought_parts.py and the route modules (mm, no phase-specific data)."""
 import math
 import Part
 import FreeCAD

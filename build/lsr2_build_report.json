@@ -3,16 +3,16 @@
   "parts": {
     "body": {
       "qty": 1,
-      "finished_cm3": 2348.867701341928,
+      "finished_cm3": 2395.976060561063,
       "route_a": {
         "rev": "A0",
         "qty": 1,
-        "finished_cm3": 2348.867701341928,
-        "preform_cm3": 2591.9717956881545,
-        "cast_cm3": 2591.9717956881545,
-        "pattern_cm3": 12823.06834166883,
-        "pla_cm3": 3205.7670854172075,
-        "core_cm3": 9383.69004770618,
+        "finished_cm3": 2395.976060561063,
+        "preform_cm3": 2639.062020375429,
+        "cast_cm3": 2639.062020375429,
+        "pattern_cm3": 12823.068341668773,
+        "pla_cm3": 3205.7670854171934,
+        "core_cm3": 9336.599823016239,
         "machined_cm2": 371.01556645003234,
         "pattern_pieces": 5,
         "mockup_pieces": 2,
@@ -69,8 +69,8 @@
         ],
         "lost_pla": {
           "stock_mm": 3.0,
-          "cast_cm3": 2619.288676274677,
-          "pla_cm3": 1462.1824376635504,
+          "cast_cm3": 2666.375274175475,
+          "pla_cm3": 1451.2781832429473,
           "watertight": true
         },
         "dowels": [
@@ -87,7 +87,7 @@
       "route_b": {
         "alloy": "6082-T6",
         "qty": 1,
-        "finished_cm3": 2357.106792357015,
+        "finished_cm3": 2403.1178932793277,
         "blank_cm3": 18386.16,
         "pieces": [
           "slab1",
@@ -98,10 +98,10 @@
         ],
         "setups": 15,
         "blank_kg": 49.643,
-        "removed_cm3": 16029.053,
-        "minutes": 1443.604,
+        "removed_cm3": 15983.042,
+        "minutes": 1440.536,
         "stock_eur": 546.069,
-        "machine_eur": 962.402
+        "machine_eur": 960.357
       }
     },
     "lid": {
@@ -504,11 +504,19 @@
         3.0
       ],
       "length_mm": 1600.0
+    },
+    "lift_arm": {
+      "volume_cm3": 82.865,
+      "mass_g": 223.7
+    },
+    "counterweight": {
+      "mass_g": 1020.0,
+      "length_mm": 145.5
     }
   },
   "mass_check": {
     "body": {
-      "finished_kg": 6.295,
+      "finished_kg": 6.421,
       "inputs_kg": 5.4,
       "differs_over_10pct": true
     },

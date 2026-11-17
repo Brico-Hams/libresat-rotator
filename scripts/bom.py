@@ -54,6 +54,7 @@ def lsr2():
     sys.path.insert(0, os.path.join(ROOT, 'calc'))
     import params as P
     import axes as AX
+    import parts_table as PT
     import lsr2_materials as M
     c = yaml.safe_load(open(os.path.join(ROOT, 'bom', 'bom_lsr2.yaml'), encoding='utf-8'))
     rep = json.load(open(os.path.join(ROOT, 'build', 'lsr2_build_report.json')))
@@ -67,7 +68,7 @@ def lsr2():
     for k, f in listed.items():
         if k.startswith('shafts.'):
             s = next(x for x in t['shafts'] if x['name'] == k.split('.')[1])
-            rows.append(f"| `{f['part']}` | turned | {f['material']} | 1 | {s['fin_g']:.1f} | {s['cost']:.1f} | | | {s['cost']:.1f} | {f['source']} | {f.get('alt', '')} |")
+            rows.append(f"| {PT.pos_for(k)} | `{f['part']}` | turned | {f['material']} | 1 | {s['fin_g']:.1f} | {s['cost']:.1f} | | | {s['cost']:.1f} | {f['source']} | {f.get('alt', '')} |")
             fab_g += s['fin_g']
             eur_fab += s['cost']
             indep_g += rep['shafts'][k.split('.')[1]]['volume_cm3'] * AX.SS_G_CM3
@@ -75,7 +76,7 @@ def lsr2():
         cmp_, v = t['cmp'][k], rep['parts'][k]
         d = cmp_['default']
         x = cmp_[d]
-        rows.append(f"| `{f['part']}` | **{d}** ({'cast' if d == 'A' else 'CNC'}) | {f['material_' + d.lower()]} | {cmp_['qty']} | {x['fin_g']:.1f} | "
+        rows.append(f"| {PT.pos_for(k)} | `{f['part']}` | **{d}** ({'cast' if d == 'A' else 'CNC'}) | {f['material_' + d.lower()]} | {cmp_['qty']} | {x['fin_g']:.1f} | "
                     f"{cmp_['A']['eur'] / cmp_['qty']:.1f} | {cmp_['B']['eur'] / cmp_['qty']:.1f} | {x['eur'] / cmp_['qty']:.1f} | {x['eur'] - x['pla_eur']:.1f} | "
                     f"{f['source_' + d.lower()]} | {f.get('alt', '')} |")
         fab_g += cmp_['qty'] * x['fin_g']
@@ -83,6 +84,12 @@ def lsr2():
         indep_g += cmp_['qty'] * (v['finished_cm3'] * P.ALU_CAST_G_CM3 if d == 'A' else v['route_b']['finished_cm3'] * P.CNC['density'])
     tube = next(i for i in c['items'] if i['group'] == 'Cross boom')
     tube['mass_g'] = rep['items']['cross_boom']['mass_g'] / tube['qty']
+    for it in c['items']:                       # masses of the lift arm and the counterweight come from the build report
+        if it.get('ref') in ('lift_arm', 'counterweight'):
+            it['mass_g'] = rep['items'][it['ref']]['mass_g']
+    refs = {it['ref'] for it in c['items'] if it.get('ref')} | set(listed)
+    if {p['ref'] for p in PT.PARTS if p['ref']} - refs:
+        sys.exit(f"parts_table balloons without a BOM entry: {sorted({p['ref'] for p in PT.PARTS if p['ref']} - refs)}")
     if abs(fab_g - indep_g) > 0.01 * indep_g:
         sys.exit(f'LSR-2 BOM fabricated mass {fab_g:.0f} g vs volume x density {indep_g:.0f} g (> 1 %)')
     rep_g = fab_g
@@ -92,24 +99,24 @@ def lsr2():
          '`build/lsr2_build_report.json` (finished solids); costs of both routes come from `calc/lsr2_materials.py`; the script checks the fabricated total within 1 % against reported volume x density. '
          'Goal: light and cheap: the default route of each part is the cheaper one (within 5 % the lighter).\n',
          '## Fabricated parts (route A sand cast + machining, route B 3-axis CNC from block, turned shafts)\n',
-         '| Part | Default route | Material | Qty | Finished mass (g each) | Route A € each | Route B € each | Default € each | Default € total (without PLA) | Source files | Note |',
-         '|---|---|---|---|---|---|---|---|---|---|---|'] + rows
-    o.append(f'| **Fabricated total** | | | | **{fab_g:.0f}** | | | | **{eur_fab:.0f}** | | |')
+         '| Pos | Part | Default route | Material | Qty | Finished mass (g each) | Route A € each | Route B € each | Default € each | Default € total (without PLA) | Source files | Note |',
+         '|---|---|---|---|---|---|---|---|---|---|---|---|'] + rows
+    o.append(f'| | **Fabricated total** | | | | **{fab_g:.0f}** | | | | **{eur_fab:.0f}** | | |')
     o.append('\nRoute A cost = poured A356 + foundry + machining of the stock pads; route B = block stock + machining minutes (PARAMETRIC rates, LSR2_MATERIALS). '
              'Shafts cost bar only (turning not included). The pattern PLA is listed under the totals.\n')
     o += ['## Bought parts, fasteners and electronics\n',
-          '| Group | Item | Qty | Unit € (VERIFY) | Total € | Cheaper |', '|---|---|---|---|---|---|']
+          '| Pos | Group | Item | Qty | Unit € (VERIFY) | Total € | Cheaper |', '|---|---|---|---|---|---|---|']
     eur_b = g_b = 0.0
     groups = {}
     for it in c['items']:
-        t = it['qty'] * it['eur']
-        eur_b += t
+        line = it['qty'] * it['eur']
+        eur_b += line
         g_b += it['qty'] * it['mass_g']
-        groups[it['group']] = groups.get(it['group'], 0) + t
-        o.append(f"| {it['group']} | {it['item']} | {it['qty']} | {it['eur']:.2f} | {t:.2f} | {it.get('alt', '')} |")
+        groups[it['group']] = groups.get(it['group'], 0) + line
+        o.append(f"| {PT.pos_for(it.get('ref'))} | {it['group']} | {it['item']} | {it['qty']} | {it['eur']:.2f} | {line:.2f} | {it.get('alt', '')} |")
     tot_eur = eur_fab + eur_b + t['pla_eur']
     tot_g = fab_g + g_b
-    o += [f'| **Bought total** | | | | **{eur_b:.0f}** | |\n',
+    o += [f'| | **Bought total** | | | | **{eur_b:.0f}** | |\n',
           '## Totals (VERIFY)\n', '| Item | Value |', '|---|---|',
           f'| Fabricated parts (default routes) | {eur_fab:.0f} € / {fab_g / 1000:.2f} kg |',
           f'| Bought parts, fasteners, electronics | {eur_b:.0f} € / {g_b / 1000:.2f} kg (estimated masses) |',

@@ -1,228 +1,226 @@
 {
-  "units": "mm",
-  "el_axis": {
-    "point": [
-      0,
-      0,
-      40.0
-    ],
-    "dir": [
-      0,
-      1,
-      0
-    ]
-  },
-  "az_axis": {
-    "point": [
-      0,
-      0,
-      0
-    ],
-    "dir": [
-      0,
-      0,
-      1
-    ]
-  },
-  "el_sign": -1,
-  "el_range": [
-    -30.0,
-    150.0
+ "rev": "A0",
+ "el_axis": {
+  "point": [
+   0,
+   0,
+   268
   ],
-  "el_group": [
-    "boom_socket",
-    "cross_boom",
-    "el_index_disc",
-    "yagi_145",
-    "yagi_435",
-    "hardware_socket",
-    "hardware_ant"
+  "dir": [
+   0,
+   1,
+   0
+  ]
+ },
+ "el_sign": -1,
+ "el_range": [
+  -30.0,
+  150.0
+ ],
+ "el_group": [
+  "yoke_arm",
+  "yoke_arm_neg",
+  "saddle",
+  "boom",
+  "boom_clamp",
+  "boom_clamp_neg",
+  "lift_arm_pos",
+  "lift_arm_neg",
+  "counterweight_pos",
+  "counterweight_neg",
+  "clamp_bolts",
+  "yagi_145",
+  "yagi_435"
+ ],
+ "category": {
+  "body": "Cast",
+  "lid": "Cast",
+  "mast_bracket": "Cast",
+  "yoke_arm": "Cast",
+  "yoke_arm_neg": "Cast",
+  "saddle": "Cast",
+  "boom_clamp": "Cast",
+  "boom_clamp_neg": "Cast",
+  "boom": "Bought",
+  "lift_arm_pos": "Machined",
+  "lift_arm_neg": "Machined",
+  "counterweight_pos": "Machined",
+  "counterweight_neg": "Machined",
+  "az_shaft": "Machined",
+  "el_shaft": "Machined",
+  "el_sleeve": "Machined",
+  "az_gearbox": "Bought",
+  "el_gearbox": "Bought",
+  "drivers": "Bought",
+  "mast": "Bought",
+  "az_motor": "Bought",
+  "el_motor": "Bought",
+  "brg_az_lower": "Bought",
+  "brg_az_upper": "Bought",
+  "brg_az_thrust": "Bought",
+  "brg_el_pos": "Bought",
+  "brg_el_neg": "Bought",
+  "clamp_bolts": "Bought",
+  "yagi_145": "Bought",
+  "yagi_435": "Bought"
+ },
+ "explode": {
+  "lid": [
+   0,
+   0,
+   260
   ],
-  "explode": {
-    "az_index_disc": [
-      0,
-      0,
-      110
-    ],
-    "az_gearbox": [
-      0,
-      0,
-      45
-    ],
-    "spacer": [
-      0,
-      0,
-      20
-    ],
-    "el_bracket": [
-      0,
-      -45,
-      0
-    ],
-    "el_bearing_housing": [
-      0,
-      45,
-      0
-    ],
-    "hardware_housing": [
-      0,
-      45,
-      0
-    ],
-    "boom_socket": [
-      0,
-      90,
-      0
-    ],
-    "hardware_socket": [
-      0,
-      90,
-      0
-    ],
-    "el_index_disc": [
-      0,
-      90,
-      0
-    ],
-    "cross_boom": [
-      0,
-      150,
-      0
-    ],
-    "yagi_145": [
-      0,
-      150,
-      0
-    ],
-    "yagi_435": [
-      0,
-      150,
-      0
-    ],
-    "hardware_ant": [
-      0,
-      150,
-      0
-    ],
-    "el_shaft": [
-      0,
-      0,
-      130
-    ],
-    "az_housing": [
-      0,
-      0,
-      -50
-    ],
-    "az_shaft": [
-      0,
-      0,
-      -100
-    ],
-    "mast_clamp": [
-      0,
-      0,
-      -200
-    ],
-    "hardware_clamp": [
-      0,
-      0,
-      -200
-    ],
-    "mast": [
-      0,
-      0,
-      -200
-    ],
-    "az_motor_body": [
-      0,
-      0,
-      45
-    ],
-    "az_motor_caps": [
-      0,
-      0,
-      45
-    ],
-    "az_motor_shaft": [
-      0,
-      0,
-      45
-    ],
-    "az_motor_cable": [
-      0,
-      0,
-      45
-    ]
-  },
-  "parts": [
-    "az_gearbox",
-    "az_housing",
-    "az_housing_corebox",
-    "az_housing_cores",
-    "az_housing_pattern",
-    "az_index_disc",
-    "az_motor_body",
-    "az_motor_cable",
-    "az_motor_caps",
-    "az_motor_shaft",
-    "az_shaft",
-    "base",
-    "boom_socket",
-    "boom_socket_pattern",
-    "cross_boom",
-    "el_bearing_housing",
-    "el_bearing_housing_pattern",
-    "el_bracket",
-    "el_gearbox",
-    "el_index_disc",
-    "el_motor_body",
-    "el_motor_cable",
-    "el_motor_caps",
-    "el_motor_shaft",
-    "el_shaft",
-    "hardware_ant",
-    "hardware_base",
-    "hardware_clamp",
-    "hardware_housing",
-    "hardware_socket",
-    "mast",
-    "mast_clamp",
-    "mast_clamp_pattern",
-    "spacer",
-    "yagi_145",
-    "yagi_435"
+  "mast": [
+   0,
+   0,
+   -420
   ],
-  "floor_z": -1675.0,
-  "sock_y1": 363.0,
-  "ant_pos_y": [
-    0.45,
-    0.95
+  "mast_bracket": [
+   0,
+   0,
+   -200
   ],
-  "gearbox_top_z": 64.0,
-  "housing_end_y": 242.0,
-  "index": {
-    "t": 3.0,
-    "gap": 5.0,
-    "notch_depth": 5.0,
-    "az": {
-      "z": [
-        130.0,
-        133.0
-      ],
-      "r_out": 15.1,
-      "r_sensor": 12.6,
-      "notch_deg": 15.177689937240352
-    },
-    "el": {
-      "y": 248.0,
-      "r_out": 32.1,
-      "r_sensor": 29.6,
-      "notch_deg": 7.139660998514931
-    }
-  },
-  "sun_sight": {
-    "y": 563.0,
-    "z": 60.0
-  }
+  "az_shaft": [
+   0,
+   0,
+   -120
+  ],
+  "brg_az_thrust": [
+   0,
+   0,
+   -80
+  ],
+  "brg_az_lower": [
+   0,
+   0,
+   -40
+  ],
+  "brg_az_upper": [
+   0,
+   0,
+   40
+  ],
+  "az_motor": [
+   150,
+   0,
+   0
+  ],
+  "el_motor": [
+   150,
+   0,
+   0
+  ],
+  "drivers": [
+   0,
+   110,
+   0
+  ],
+  "el_shaft": [
+   0,
+   -200,
+   0
+  ],
+  "el_sleeve": [
+   0,
+   200,
+   0
+  ],
+  "brg_el_pos": [
+   0,
+   60,
+   0
+  ],
+  "brg_el_neg": [
+   0,
+   -60,
+   0
+  ],
+  "yoke_arm": [
+   0,
+   150,
+   100
+  ],
+  "yoke_arm_neg": [
+   0,
+   -150,
+   100
+  ],
+  "saddle": [
+   0,
+   0,
+   100
+  ],
+  "boom": [
+   0,
+   0,
+   200
+  ],
+  "boom_clamp": [
+   0,
+   0,
+   300
+  ],
+  "boom_clamp_neg": [
+   0,
+   0,
+   300
+  ],
+  "clamp_bolts": [
+   0,
+   0,
+   380
+  ],
+  "lift_arm_pos": [
+   0,
+   120,
+   200
+  ],
+  "lift_arm_neg": [
+   0,
+   -120,
+   200
+  ],
+  "counterweight_pos": [
+   0,
+   120,
+   200
+  ],
+  "counterweight_neg": [
+   0,
+   -120,
+   200
+  ],
+  "yagi_145": [
+   0,
+   0,
+   300
+  ],
+  "yagi_435": [
+   0,
+   0,
+   300
+  ]
+ },
+ "stl_dir": "stl/lsr2",
+ "cast_dir": "cast/lsr2",
+ "cnc_dir": "cnc/lsr2",
+ "floor_z": -1400.0,
+ "lid_lift": 260,
+ "cast_parts": [
+  "body",
+  "lid",
+  "mast_bracket",
+  "yoke_arm",
+  "saddle",
+  "boom_clamp"
+ ],
+ "cnc_parts": [
+  "body",
+  "lid",
+  "mast_bracket",
+  "yoke_arm",
+  "saddle",
+  "boom_clamp"
+ ],
+ "hero_el": 30.0
 }

@@ -50,12 +50,12 @@ EL_BEARING_SPAN = 0.062  # m between the two EL bearing centres (>= 60 mm wanted
 SS_YIELD_MPA = 200.0     # 1.4404 (316L) annealed bar yield: VERIFY with the mill certificate
 SS_E_MPA = 193000.0      # stainless modulus: VERIFY
 CROSS_BOOM = (40.0, 40.0, 3.0)   # square 6063 tube: width, height, wall (mm): VERIFY with the supplier
-CROSS_BOOM_L = 1100.0    # mm: 80 mm inside the boom_socket + 1020 mm free (last antenna station at 0.95 m)
+CROSS_BOOM_L = 1100.0    # mm: legacy phase-6 boom length (phase 11 boom length is in axes.K)
 TUBE_YIELD_MPA = 170.0   # 6063-T6 minimum yield: VERIFY
 # Antenna stations along the boom, metres from the socket mouth (VERIFY). The mass is the Yagi payload of calc/lsr2_sizing.py, shared equally.
 ANT_POS_Y = (0.45, 0.95)
 ANT_BOOM_L, ANT_ELEM_L = 2000.0, 1000.0   # mm, Yagi boom along the pointing direction, elements across: envelope boxes for the EL sweep
-SOCKET_MASS_KG = 0.35    # boom_socket: build/lsr2_build_report.json says the real value (build.py fails if it differs by > 15 %)
+SOCKET_MASS_KG = 0.35    # legacy phase-6 socket mass, unused by phase 11
 FACE_THREAD_N = 10000.0  # axial capacity of one M6 in the NMRV face (11 mm in cast aluminium) and of an 8.8 screw: VERIFY
 EL_COAX_MM = 0.04        # coaxiality of the housing bearing seats and the gearbox hub, bored in one setup with the face recess: VERIFY
 
@@ -73,7 +73,7 @@ EL_RANGE = (-30.0, 150.0)
 # Printed ASA disc (ring 8 mm wide, 3 mm thick) with one radial notch on its rim; a slotted photo-interrupter (EE-SX1103 class, 5 mm
 # gap: VERIFY with the datasheet) straddles the rim. Phase 11: AZ disc is pinned on the stationary Ø14 AZ shaft stub in the free air
 # z 115..140 between the body pillar top and the gearbox shelf (PARAMETRIC, VERIFY), its sensor bracket stands on the pillar top (rotates
-# with the body, post az_post high); EL disc on the boom_socket hub (turns with the boom), sensor zip-tied to the bearing housing.
+# with the body, post az_post high); EL disc on the EL shaft (turns with the boom), sensor on the body wall.
 INDEX = dict(material='ASA', t=3.0, ring=8.0, notch_arc=4.0, notch_depth=5.0, gap=5.0, fit_clear=0.2,
              sensor_holes=19.0, sensor_hole_d=3.2, az_shaft_d=14.0, az_z=(130.0, 133.0), az_post=12.0, min_notch_deg=4.0, edge_margin_deg=3.0)
 # Mk5 uses M14 stainless threaded rod + 5x8 roll pins as the axis shafts; calc/lsr2_sizing.py evaluates it against our turned keyed shafts.

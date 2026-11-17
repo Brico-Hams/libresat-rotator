@@ -16,7 +16,7 @@ LSR-1 starts from two open designs, the [SatNOGS Rotator v3](https://gitlab.com/
 
 *LSR-2 on its mast, antennas at EL 30°: render, not a photo (`make render`).*
 
-LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator (two NMRV030 worm gearboxes side by side on one plate, each with a NEMA23 bolted on, CNC aluminium plates and sand-cast A356 parts), driven by the same firmware, protocol and head software. Mechanical phases 1-3 are done: parameters and sizing, CNC plates, and the cast parts with their PLA patterns, a core box and the turned stainless shafts. **Phase 6** replaced the plate box by a compact two-block head: AZ and EL gearboxes with parallel motors pointing the same way, and a one-sided 40 × 40 × 3 square cross-boom tube along the EL axis (antennas on it) in a cast `boom_socket`. **Phase 6b** corrected the boom orientation (it leaves the head along the EL axis, not across it) and gave the EL shaft a two-bearing housing like AZ, so the antenna moment never reaches the gearbox output bearings. A flanged collar retains the AZ shaft top. A printed ASA weather cover is a future option. The AZ shaft is **hollow** (Ø16 bore) so the rotator cables run up the AZ axis, with no cable wrap round the mast. Phase 7 (planned) will replace the bought NMRV030 housings by our own two-half cast worm-gear housing with the same output-face pattern. Phase 4 (firmware `EXT_STEPDIR` + `lsr2` profile) is in progress, see [docs/FIRMWARE.md](docs/FIRMWARE.md). **Phase 6c** aligns LSR-2 with the facts SARCNET published for the SARCTrac Mk5 (400 microsteps/rev drive, XL7015 and level-converter electronics, 48 V power-loss save, photo-interrupter index with backlash calibration, EasyComm II 9600 8N1, shim washers); the adopted and rejected items with the reasons are in the [Mk5 table](docs/ARCHITECTURE.md). Compatible trackers: PstRotator, Gpredict, SatPC32 and Orbitron (EasyComm II), plus our rotctld path. Phase 5 (documentation) now has a [BOM](docs/BOM_LSR2.md) and an [assembly guide](docs/LSR2_ASSEMBLY.md); the rotctld backend for `antenaSatCommrotor` (branch `feat/lsr-rotctld-backend` of Brico-Hams/antenaSatCommrotor) is in progress. See the [family architecture](docs/ARCHITECTURE.md), the [design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md), the [LSR-2 sizing and structural checks](docs/LSR2_SIZING.md) and the [LSR-2 materials and cost](docs/LSR2_MATERIALS.md).
+LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator (phase 11, the Mk5-schematic architecture of the [owner's brief](docs/reference/BRICOHAMS_LSR2_BRIEF.md)): one open-box aluminium body with ribs and a gasketed removable lid (origin at its bottom mounting face, AZ vertical, EL horizontal), the AZ NMRV030 gearbox low and the EL gearbox high with both NEMA23 motors on the same side, the DM542 drivers on an inner wall with a thermal path, and an EL through-shaft that drives a U-yoke, a saddle plate and a 40 × 40 × 3 cross boom parallel to the EL axis, with lift arms, antennas and counterweights at the boom ends and a mast clamp bracket below. Dedicated bearings (2 × 6206 + 51206 on AZ, 2 × 6004 on EL) take the external loads, so the gearboxes only transmit torque. Parts are sand-cast A356 (route A) or CNC aluminium slabs (route B); our own geometry comes from `cad/lsr2/*.py`. Phase 11e delivers the editable assembly, dimensioned drawings, tolerances, inspection sheet, risk review, assembly guide and test plan (see the documentation list). Firmware, protocol and head software are shared with LSR-1 (EXT_STEPDIR driver and `lsr2` profile, [docs/FIRMWARE.md](docs/FIRMWARE.md)); the Mk5 adopted and rejected items are in the [family architecture](docs/ARCHITECTURE.md). Compatible trackers: PstRotator, Gpredict, SatPC32 and Orbitron (EasyComm II), plus our rotctld path. See the [design spec](docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md), the [sizing and structural checks](docs/LSR2_SIZING.md), the [materials and cost](docs/LSR2_MATERIALS.md) and the [BOM](docs/BOM_LSR2.md).
 
 **Technical views** (matplotlib line drawings from the same STL files):
 
@@ -24,7 +24,15 @@ LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator 
 
 ![LSR-2 exploded view](docs/img/lsr2_exploded.png)
 
-![LSR-2 cast parts and their patterns](docs/img/lsr2_patterns.png)
+![LSR-2 cast parts and their printed patterns (route A)](docs/img/lsr2_castings.png)
+
+![LSR-2 CNC blanks (route B)](docs/img/lsr2_blanks.png)
+
+![LSR-2 lid lifted: gearboxes, motors and drivers](docs/img/lsr2_head_closeup.png)
+
+![LSR-2 castings and patterns, render](docs/img/lsr2_castings_real.png)
+
+![LSR-2 CNC blanks, render](docs/img/lsr2_blanks_real.png)
 
 ![LSR-2 EL sweep](docs/img/lsr2_el_sweep.png)
 
@@ -70,7 +78,12 @@ LSR-1 is the portable rotator. **LSR-2** is a fixed-station heavy az/el rotator 
 13. [LSR-2 engineering budget](docs/LSR2_SIZING.md) (Mk5-schematic architecture, phase 11a): wind and gravity torques, bearings, mast, clamps, fixings, pointing error; input data and open decisions in [LSR-2 inputs](docs/LSR2_INPUTS.md).
 14. [LSR-2 materials and cost](docs/LSR2_MATERIALS.md): plate, casting and shaft mass, stock, waste and cost.
 15. [LSR-2 bill of materials](docs/BOM_LSR2.md): every fabricated and bought part, fasteners, electronics, totals of mass and cost.
-16. [LSR-2 assembly guide](docs/LSR2_ASSEMBLY.md): measure, prototype, CNC, casting, shafts, assembly, corrosion, electronics and acceptance tests.
+16. [LSR-2 assembly guide](docs/LSR2_ASSEMBLY.md): installation order, fasteners and torques, bearing/seal fitting, gearbox coupling, balancing, cabling and corrosion protection.
+17. [LSR-2 tolerances](docs/LSR2_TOLERANCES.md) (generated from `cad/lsr2/tolerances.py`): datums, ISO fits, finishes, casting versus CNC capability.
+18. [LSR-2 inspection sheet](docs/LSR2_INSPECTION.md): feature, nominal, tolerance, gauge, empty result column.
+19. [LSR-2 risk review](docs/LSR2_RISKS.md): risk, cause, effect, likelihood, severity, mitigation, verification.
+20. [LSR-2 test plan](docs/LSR2_TEST_PLAN.md): progressive bench tests (unloaded, test loads, target antenna), acceptance criteria and the results table.
+21. [LSR-2 dimensioned drawings](docs/drawings/) (SVG and PDF from `scripts/drawings.py`, BricoHams title block, exploded view with BOM balloons) and the editable parametric model `cad/lsr2/LSR2_assembly.FCStd` (plus `LSR2_assembly.step`).
 
 ## Key ideas
 

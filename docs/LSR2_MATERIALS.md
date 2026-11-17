@@ -11,8 +11,8 @@ Parameters: A356 ingot 4.5 EUR/kg, foundry 8.0 EUR/kg of casting, yield 0.55, sh
 
 | Part | Qty | Route | Alloy | Finished (g each) | Stock (g each) | Waste (%) | PLA (g) | Machining (min each) | Cost (EUR) | Default |
 |---|---|---|---|---|---|---|---|---|---|---|
-| body | 1 | A | A356-T6 | 6295 | 12630 | 50 | 6884 | 56 | 287.5 | **yes** |
-| body | 1 | B | 6082-T6 | 6364 | 49643 | 87 | 0 | 1444 | 1508.5 |  |
+| body | 1 | A | A356-T6 | 6421 | 12859 | 50 | 6869 | 56 | 289.3 | **yes** |
+| body | 1 | B | 6082-T6 | 6488 | 49643 | 87 | 0 | 1441 | 1506.4 |  |
 | lid | 1 | A | A356-T6 | 435 | 1227 | 65 | 81 | 56 | 49.6 | **yes** |
 | lid | 1 | B | 6061-T6 | 438 | 1109 | 60 | 0 | 67 | 56.6 |  |
 | mast_bracket | 1 | A | A356-T6 | 1144 | 2423 | 53 | 620 | 51 | 67.8 | **yes** |
@@ -61,10 +61,10 @@ Cross boom 6063 40x40x3 x 1600 mm = 1.92 kg (in the bought-part total).
 
 | Item | Value |
 |---|---|
-| Fabricated finished mass (structural parts + shafts) | 9923 g |
-| Fabricated cost, metal + foundry/blank + machining + shafts (VERIFY) | 459 EUR |
-| PLA patterns and cores at 20 EUR/kg (VERIFY) | 7.70 kg / 154 EUR |
+| Fabricated finished mass (structural parts + shafts) | 10049 g |
+| Fabricated cost, metal + foundry/blank + machining + shafts (VERIFY) | 461 EUR |
+| PLA patterns and cores at 20 EUR/kg (VERIFY) | 7.69 kg / 154 EUR |
 | Bought parts incl. cross boom (VERIFY) | 213 EUR |
-| Total estimated cost (VERIFY) | 826 EUR |
+| Total estimated cost (VERIFY) | 827 EUR |
 
 The phase-6 figure (3605 g fabricated, 429 EUR) belonged to the two-block layout and is no longer a reference.

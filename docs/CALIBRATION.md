@@ -4,9 +4,9 @@ Applies to LSR-1 and LSR-2. Every step works alone, writes its result to the con
 
 ## Procedure
 
-![Index discs, photo-interrupters and sun sight highlighted on the LSR-2 head](img/lsr2_calibration.png)
+![Phase-11 head with the lid lifted: gearboxes, motors and drivers](img/lsr2_head_closeup.png)
 
-*Render, not a photo: AZ and EL index discs (orange) with their photo-interrupters (glowing), and the pinhole sun sight on the boom.*
+*Render, not a photo: the LSR-2 head with the lid lifted. The AZ index disc sits inside the pillar and the photo-interrupters are described in [ELECTRONICS](ELECTRONICS.md); the EL disc position is an open decision.*
 
 | # | Step | Command | Needs | Result |
 |---|---|---|---|---|
