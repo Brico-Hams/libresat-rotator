@@ -12,6 +12,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
 import params as PR  # noqa: E402
 import inputs as IN  # noqa: E402
+import gearbox as GBX  # noqa: E402  (pure-Python gear data of the own gearbox LSR-WG30, phase 7)
 
 I = IN.I
 G = 9.81
@@ -232,6 +233,37 @@ def shaft_decision(mb_s, mb_op, t_op):
 
 
 # ---- Evaluation -----------------------------------------------------------------------------------------------------------------
+def wg30(R):
+    """Phase 7: own worm gearbox LSR-WG30 (cad/lsr2/gearbox.py): tooth strength, bearings, housing, efficiency, thermal. Rows are reported but gate --check only
+    when GEARBOX_SOURCE = 'lsr_wg30' (the default head uses the bought NMRV030); the self-locking row always gates. Every allowable: VERIFY with the gear maker."""
+    W, sec = PR.WG30, 'LSR-WG30 (own gearbox)'
+    own = PR.GEARBOX_SOURCE == 'lsr_wg30'
+    t_op, t_surv = max(R['taz'], R['tel']), max(R['ps']['tau_az'], R['ps']['tau_el'])
+    T = dict(fat=GBX.t_wheel_bend(W['sigma_f']), stat=GBX.t_wheel_bend(W['rp02']), wear=GBX.t_wheel_wear())
+    f = GBX.forces(t_surv, W['mu_hold'])
+    wb, ob = W['wheel_brg'], W['worm_brg']
+    half_w, half_o = math.hypot(f['ft2'], f['fr']) / 2, math.hypot(f['fr'], f['ft1']) / 2
+    p0_w, p0_o = max(half_w, 0.6 * half_w + 0.5 * f['ft1']), max(half_o, 0.6 * half_o + 0.5 * f['ft2'])
+    wall, sig_h = W['boss_r'] - wb['D'] / 2, W['hold_kc'] * half_w / ((W['boss_r'] - wb['D'] / 2) * wb['B'])
+    eta_r, eta_h = GBX.eta(W['mu_run']), GBX.eta(W['mu_hold'])
+    avail = R['tm'] * I['motor_usable'] * RATIO * eta_r
+    p_out = t_op * OMEGA
+    loss = p_out * (1 / eta_r - 1)
+    dt_cont = loss / (W['h_conv'] * W['area_m2'])
+    chk(sec, 'wheel tooth bending, fatigue, at the worst operating torque', t_op, T['fat'], I['service_factor'], 'N·m (Lewis, sigma_f %g MPa, VERIFY)' % W['sigma_f'], not own)
+    chk(sec, 'wheel surface durability at the worst operating torque', t_op, T['wear'], I['service_factor'], 'N·m (K %g N/mm², VERIFY)' % W['k_wear'], not own)
+    chk(sec, 'wheel tooth static bending at the standstill holding torque (peak)', PEAK, T['stat'], 1.0, 'N·m (Rp0.2 %g MPa, peak = %g x rating)' % (W['rp02'], PR.GEAR_PEAK_FACTOR), not own)
+    chk(sec, 'wheel tooth static bending at the survival torque', t_surv, T['stat'], 1.5, 'N·m', not own)
+    chk(sec, f'wheel bearing {wb["name"]} static P0 at the survival torque', p0_w, wb['C0'] / 2, 1.0, 'N vs C0/2 (VERIFY C0)', not own)
+    chk(sec, f'worm bearing {ob["name"]} static P0 (fixed one, axial = wheel tangential force)', p0_o, ob['C0'] / 2, 1.0, 'N vs C0/2 (VERIFY C0)', not own)
+    chk(sec, 'housing: bearing seat ring stress at the survival torque', sig_h, W['a356_yield'], 1.5, f'MPa, wall {wall:g} x {wb["B"]:g} mm, Kc {W["hold_kc"]:g}; external loads go to the dedicated bearings', not own)
+    chk(sec, 'worm self-locking factor with dynamic friction', I['lock_min_dyn'], GBX.lock(W['mu_run']), 1.0, 'factor mu/cos(alpha)/tan(lead), lead %.2f deg' % GBX.gear()['gamma'])
+    chk(sec, 'motor torque margin with the LSR-WG30 efficiency', t_op, avail, 1.5, 'N·m at the output (eta %.2f instead of %.2f)' % (eta_r, ETA), not own)
+    chk(sec, 'housing temperature rise, continuous at the worst torque and vmax', dt_cont, 40.0, 1.0, 'K (conservative: no duty cycle, natural convection)', not own)
+    return dict(gear=GBX.gear(), T=T, f=f, t_op=t_op, t_surv=t_surv, half_w=half_w, half_o=half_o, p0_w=p0_w, p0_o=p0_o, sig_h=sig_h, wall=wall, eta_r=eta_r, eta_h=eta_h,
+                avail=avail, loss=loss, dt_cont=dt_cont, dt_duty=dt_cont * W['duty'], a_eq=GBX.a_equal_rating(), own=own)
+
+
 def evaluate():
     CHK.clear()
     R = {}
@@ -387,6 +419,7 @@ def evaluate():
     chk('Power loss', 'EL holding torque, survival, parked at the best elevation', ps['tau_el'], PEAK, 1.5, 'N·m vs gearbox peak')
     chk('Survival 130 km/h (option)', 'AZ holding torque', p130['tau_az'], PEAK, 1.5, 'N·m, reported only', True)
     chk('Survival 130 km/h (option)', 'EL holding torque', p130['tau_el'], PEAK, 1.5, 'N·m, reported only', True)
+    R['wg30'] = wg30(R)
     return R
 
 
@@ -493,6 +526,29 @@ def report(R):
               ('Replacement', 'turn one shaft, press fit, keys are standard', 'cheapest and field-replaceable (Mk5 choice)')])
     L += ['**Decision: turned keyed shaft** (higher margin at the gearbox peak and a defined fit). The M14 rod is acceptable only with a torque limit '
           f'<= {RATED:g} N·m (rated, not peak) and an inspection of the roll-pin holes. Keep the M14 rod as the low-cost fallback.', '']
+    w, gd = R['wg30'], R['wg30']['gear']
+    L += ['## 14. LSR-WG30: our own worm gearbox (phase 7)', '']
+    L += [f'Drop-in for the NMRV030 (same faces, Ø14 keyed hollow output, Ø55 boss, NEMA23 flange, 80:1, same envelope); source in the head: **{PR.GEARBOX_SOURCE}**. '
+          f'Rows of this section gate `--check` only when `GEARBOX_SOURCE = lsr_wg30`; the self-locking row always gates. All allowables are VERIFY (gear maker, catalogue).', '']
+    L += tbl(['Item', 'Value', 'Tag'], [
+        ('Gear set', f'z1 = {PR.WG30["z1"]}, z2 = {PR.WG30["z2"]}, m = {PR.WG30["m"]}, q = {PR.WG30["q"]:g}, alpha_n = {PR.WG30["alpha_n"]:g} deg', 'PARAMETRIC'),
+        ('Pitch diameters', f'worm {gd["d1"]:g}, wheel {gd["d2"]:g}; centre a = (d1 + d2) / 2 = {gd["a"]:g} mm = NMRV030 centre', 'a = 30 fixed by the NEMA23 flange axis'),
+        ('Lead angle, lead', f'{gd["gamma"]:.3f} deg, {gd["lead"]:.3f} mm per turn', 'tan g = z1 / q'),
+        ('Tip / root', f'worm Ø{gd["tip1"]:g} / Ø{gd["root1"]:g}, wheel Ø{gd["tip2"]:g} / Ø{gd["root2"]:g}, wheel width {PR.WG30["b2"]:g}', 'PARAMETRIC'),
+        ('Self-locking factor, mu 0.05 / 0.10', f'{GBX.lock(0.05):.2f} / {GBX.lock(0.10):.2f} (need >= {I["lock_min_dyn"]} with the dynamic value)', 'VERIFY mu'),
+        ('Efficiency, mu 0.05 / 0.10', f'{w["eta_r"]:.3f} / {w["eta_h"]:.3f} (NMRV030 value used above: {ETA})', 'VERIFY'),
+        ('Motor torque at the output with this efficiency', f'{w["avail"]:.1f} N·m vs {w["t_op"]:.1f} N·m required', 'MEASURE the motor curve'),
+        ('Wheel torque limits (bending fatigue / bending static / wear)', f'{w["T"]["fat"]:.2f} / {w["T"]["stat"]:.2f} / {w["T"]["wear"]:.2f} N·m', 'Lewis Y = 0.437, VERIFY'),
+        ('Reference: NMRV030 rating / peak', f'{RATED:g} / {PEAK:g} N·m', 'DATASHEET, VERIFY'),
+        ('Survival torque / mesh forces (mu 0.10)', f'{w["t_surv"]:.1f} N·m: wheel tangential {w["f"]["ft2"]:.0f} N, radial {w["f"]["fr"]:.0f} N, worm tangential {w["f"]["ft1"]:.0f} N', 'calc'),
+        ('Bearing P0 wheel / worm (per bearing)', f'{w["p0_w"]:.0f} / {w["p0_o"]:.0f} N vs C0/2 {PR.WG30["wheel_brg"]["C0"] / 2:.0f} / {PR.WG30["worm_brg"]["C0"] / 2:.0f} N', 'VERIFY C0'),
+        ('Housing seat ring stress', f'{w["sig_h"]:.1f} MPa vs A356 yield {PR.WG30["a356_yield"]:g} MPa (wall {w["wall"]:g} mm)', 'VERIFY'),
+        ('Heat at the worst continuous operating point', f'{w["loss"]:.1f} W loss; {w["dt_cont"]:.0f} K rise continuous, {w["dt_duty"]:.0f} K at the satellite duty ({PR.WG30["duty"]:.0%})', 'PARAMETRIC duty')])
+    L += [f'**Verdict.** A single-stage 80:1 worm at a = {gd["a"]:g} mm with the only standard module that fits (m = {PR.WG30["m"]}) carries about {w["T"]["fat"]:.1f} N·m (bending, fatigue) '
+          f'and {w["T"]["wear"]:.1f} N·m (wear), against the {RATED:g} N·m rating of the bought NMRV030: roughly {RATED / w["T"]["fat"]:.0f} times short. Capacity grows with the cube of the centre distance; '
+          f'parity needs a ≈ {w["a_eq"]:.0f} mm (an NMRV050-class envelope, heavier and dearer). A two-stage or coaxial pre-stage cannot fit inside the NMRV030 envelope because the NEMA23 flange axis '
+          f'is the worm axis. The geometry, patterns, bearings and interfaces are complete and drop-in, but with these gears the **LSR-WG30 is an option for light duty (holding at stand-still with a '
+          f'lower wind survival, or a different gear set), not a replacement for the NMRV030 at the loads of this head: keep the bought NMRV030.** The cost comparison is in [LSR2_MATERIALS](LSR2_MATERIALS.md).', '']
     return '\n'.join(L)
 
 
@@ -535,6 +591,9 @@ def self_test():
     assert abs(lock_factor(0.05) - 1.325) < 0.005 and abs(lock_factor(0.10) - 2.650) < 0.01
     # motor curve at 160 rpm: 2.4 - 0.6 * (2.4 - 2.0) = 2.16 N·m
     assert abs(motor_torque(160) - 2.16) < 1e-9
+    # LSR-WG30: efficiency at mu 0.05 = 0.3192, so the motor gives 2.16 * 0.8 * 80 * 0.3192 = 44.1 N·m at the output; wheel bending limit 3.06 N·m
+    GBX.self_test()
+    assert abs(motor_torque(160) * 0.8 * 80 * GBX.eta(0.05) - 44.1) < 0.1 and abs(GBX.t_wheel_bend(50.0) - 3.059) < 2e-3
     # stop energy for I_total = 1 kg·m²: 0.5 * 1 * 0.20944^2 = 0.02193 J (vmax 12 deg/s)
     assert abs(stop(1.0 - J_R, 1.0)[0] - 0.02193) < 1e-4
     # life: (10)^3 * 1e6 revs / (12 passes * 365 * 300/360 rev) = 1e9 / 3650 = 273973 years

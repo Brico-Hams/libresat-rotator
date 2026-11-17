@@ -1,5 +1,5 @@
 # Render the whole LSR-2 (plates, cast parts, shafts, bought-part envelopes) and the cast parts next to their patterns.
-# Args: repo_root stl_dir out_dir -> out_dir/lsr2_assembly.png, lsr2_exploded.png, lsr2_patterns.png, lsr2_el_sweep.png (ASCII STL from build.py)
+# Args: repo_root stl_dir out_dir -> out_dir/lsr2_assembly.png, lsr2_exploded.png, lsr2_patterns.png, lsr2_gearbox.png, lsr2_el_sweep.png (ASCII STL from build.py)
 import sys, os, math, struct
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -101,6 +101,23 @@ out = os.path.join(out_dir, 'lsr2_patterns.png')
 fig.savefig(out, dpi=110)
 print('wrote', out)
 
+# LSR-WG30 gearbox (phase 7): the two cast halves apart with wheel, worm and bearings in the lower half; skipped without the STLs
+GB = ('half_low', 'half_up', 'wheel', 'worm', 'bearings')
+if all(os.path.exists(os.path.join(stl_dir, f'gearbox_{k}.stl')) for k in GB):
+    g = {k: load(f'gearbox_{k}') for k in GB}
+    g['half_up'] = moved(g['half_up'], (0, 0, 60))
+    col = {'half_low': PLATE, 'half_up': PLATE, 'wheel': '#b08d57', 'worm': STEEL, 'bearings': BLUE}
+    fig = plt.figure(figsize=(12, 7), facecolor='#fcfcfb')
+    for k, (view, title) in enumerate([((25, -60), 'Isometric'), ((0, -90), 'Side (XZ)')]):
+        ax = fig.add_subplot(1, 2, k + 1, projection='3d')
+        for n in GB:
+            add(ax, g[n], col[n], 0.35 if n == 'half_up' else 0.9)
+        frame(ax, [t for v in g.values() for t in v], view, title)
+    fig.suptitle(TITLE + ': LSR-WG30 gearbox, upper half lifted (local frame, output axis Z, worm along X)', color=BLUE)
+    fig.tight_layout()
+    out = os.path.join(out_dir, 'lsr2_gearbox.png')
+    fig.savefig(out, dpi=110)
+    print('wrote', out)
 # EL sweep: the moving group (boom socket, cross boom, Yagi envelopes) at -30, 45 and 150 deg, seen along the EL axis (+Y)
 def rot_y(tris, deg):
     c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))

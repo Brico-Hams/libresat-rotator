@@ -118,6 +118,12 @@ Changes:
 - software: optional anti-windup in the pass planner (`Limits.anti_windup`), tracker integration pending (needs a one-line change in `tracker.py`);
 - docs: calibration procedure, thrust-bearing inspection interval, Tef-Gel everywhere, compatible trackers (PstRotator, Gpredict, SatPC32, Orbitron through EasyComm II, plus our rotctld path).
 
+### Phase 7: own worm gearbox LSR-WG30
+
+Status: written; self-tests, both FreeCAD builds (`LSR2_GEARBOX=nmrv030` default and `lsr_wg30`) and renders to be run.
+
+Goal: a drop-in for the bought NMRV030 (same PCD 65 4×M6 output faces, Ø14 H8 keyed hollow output with hub length 63, Ø55 boss, NEMA23 flange, 80:1, same envelope), selected by `params.GEARBOX_SOURCE` / env `LSR2_GEARBOX`. Design in `cad/lsr2/gearbox.py`: A356 housing in two halves split on the wheel mid-plane (M5 screws, 2 Ø5 dowels, gasket groove), bought worm + CuSn12 wheel, 2 × 61905 on the wheel carrier, 2 × 6003 on the worm, lip seals, fins under the worm. Patterns, core and core box per half come from route A. Findings, the cost comparison (bought wins, no break-even) and the open decisions are in `docs/ARCHITECTURE.md` §7f and `docs/LSR2_SIZING.md` §14. Verdict: the geometry is a drop-in, but at the fixed 30 mm centre distance m0.5 z80 carries about a fifth of the NMRV030 rating, so the bought unit stays the default.
+
 ## 10. Out of scope
 
 - Commercial kits.

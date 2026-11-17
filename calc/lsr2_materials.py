@@ -33,6 +33,16 @@ BOUGHT = [                  # (item, qty, unit EUR): every price VERIFY with a q
     ('Lid gasket cord + 2x slotted photo-interrupter (EE-SX1103 class, index; actuator design open)', 1, 7.0)]
 REPORT = os.path.join(ROOT, 'build', 'lsr2_build_report.json')
 PARTS = ('body', 'lid', 'mast_bracket', 'yoke_arm', 'saddle', 'boom_clamp')
+# Phase 7: own gearbox LSR-WG30 (cad/lsr2/gearbox.py) vs the bought NMRV030; every price VERIFY with a quote
+GB_GEARSET = ('Worm Ø20 hardened steel + CuSn12 wheel z80 m0.5 (catalogue pair, quote)', 1, 25.0)
+GB_HARDWARE = [('61905-2RS wheel bearing 25x42x9', 2, 3.0), ('6003-2RS worm bearing 17x35x10', 2, 1.5), ('Lip seal TC 25x42x7 (output)', 2, 0.6),
+               ('Lip seal TC 17x30x7 (input)', 1, 0.5), ('M5 socket screws (joint)', 4, 0.1), ('Dowel pin Ø5 ISO 8734', 2, 0.15),
+               ('Circlip Ø17 + shim set (worm backlash)', 2, 0.3), ('Grease NLGI 00 + sealant', 1, 0.8), ('Input key 4x4', 1, 0.3)]
+GB_FINISH_MIN = 20.0        # PARAMETRIC: machining minutes per unit beyond the stock pads (bearing seats, bores, joint faces, taps, dowel holes)
+GB_JIG_EUR = 10.0           # PARAMETRIC: drilling / boring fixture, once per batch
+GB_COREBOX_EUR = 6.0        # PARAMETRIC: printed core box per half, once per batch
+GB_NMRV_EUR = BOUGHT[0][2]  # bought NMRV030 unit price
+GB_QTY_MAX = 1000
 
 
 def load_report():
@@ -113,6 +123,49 @@ def totals(rep=None):
                 bought=bought, total=fab_eur + pla_kg * PRICE_PLA_EUR_KG + bought, rep=rep)
 
 
+def gearbox_costs(halves):
+    """LSR-WG30 own unit cost from the build-report entries of its two halves: variable part (metal, machining, gear set, hardware) + fixed batch part
+    (patterns, cores, core boxes, jig, machine set-ups) / batch size; break-even batch against the bought NMRV030 (None = never)."""
+    metal = cut_min = fixed = 0.0
+    for v in halves.values():
+        metal += route_a(v, 1)['metal_eur']
+        cut_min += v['machined_cm2'] * v['stock_mm'] / 10 / C['mrr_cm3_min']
+        fixed += pla_g(v['pla_cm3'] + v['core_cm3'] * P.CAST['pla_fill']) / 1000 * PRICE_PLA_EUR_KG + GB_COREBOX_EUR + A_SETUPS * C['setup_min'] / 60 * C['rate_eur_h']
+    fixed += GB_JIG_EUR
+    hw = sum(q * u for _, q, u in GB_HARDWARE)
+    var = metal + (cut_min + GB_FINISH_MIN) / 60 * C['rate_eur_h'] + GB_GEARSET[2] + hw
+    unit = lambda n: var + fixed / n
+    return dict(metal=metal, cut_min=cut_min, machine=(cut_min + GB_FINISH_MIN) / 60 * C['rate_eur_h'], gearset=GB_GEARSET[2], hardware=hw, var=var, fixed=fixed, unit=unit,
+                breakeven=next((n for n in range(1, GB_QTY_MAX + 1) if unit(n) < GB_NMRV_EUR), None))
+
+
+def gearbox_section(rep):
+    g = rep.get('gearbox', {}).get('halves')
+    if not g:
+        return ['## NMRV030 bought vs LSR-WG30 own', '', 'Not available: rebuild with the phase-7 `cad/lsr2/build.py` (report key `gearbox`).', '']
+    c = gearbox_costs(g)
+    o = ['## NMRV030 bought vs LSR-WG30 own (phase 7, every price VERIFY)', '',
+         'LSR-WG30 = A356 housing in two cast halves (route A, patterns and core boxes printed) + bought worm/bronze wheel + bearings and seals; drop-in for the NMRV030. '
+         f'Machining: stock pads from the build report plus {GB_FINISH_MIN:g} min per unit for seats, bores, joint faces, taps and dowel holes (PARAMETRIC). '
+         'Batch costs (patterns, core boxes, jig, machine set-ups of both halves) are shared by the units poured together.', '',
+         '| Item | EUR per unit |', '|---|---|',
+         f"| Metal + foundry (both halves, yield {YIELD}) | {c['metal']:.1f} |", f"| Machining ({c['cut_min']:.1f} min pads + {GB_FINISH_MIN:g} min finishing) | {c['machine']:.1f} |",
+         f"| Gear set ({GB_GEARSET[0]}) | {c['gearset']:.1f} |", f"| Bearings, seals, screws, dowels, grease ({sum(q for _, q, _ in GB_HARDWARE)} pieces) | {c['hardware']:.1f} |",
+         f"| **Variable cost per unit** | **{c['var']:.1f}** |", f"| Fixed batch cost (patterns, cores, core boxes, jig, set-ups) | {c['fixed']:.1f} per batch |", '',
+         '| Case | NMRV030 bought (EUR) | LSR-WG30 own (EUR) | Difference (EUR) |', '|---|---|---|---|']
+    for lbl, n in (('1 unit', 1), ('2 units (one rotator, batch of 2)', 2), ('10 units (batch of 10)', 10), ('100 units (batch of 100)', 100)):
+        own = c['unit'](n) * n
+        o.append(f'| {lbl} | {GB_NMRV_EUR * n:.0f} | {own:.0f} | {own - GB_NMRV_EUR * n:+.0f} |')
+    be = c['breakeven']
+    o += ['', f'Break-even batch size: ' + (f'**{be} units**' if be else f"**none**: even with the fixed cost spread over {GB_QTY_MAX} units the own unit costs {c['unit'](GB_QTY_MAX):.0f} EUR, "
+                                             f"above the bought {GB_NMRV_EUR:.0f} EUR") + '.',
+          '', '**Recommendation: keep the bought NMRV030** ' + ('and revisit the LSR-WG30 only when casting in batches above the break-even size. ' if be else
+                                                                'unless the gear set or the machining get much cheaper. ') +
+          'The own unit is not cheaper and, with a m0.5 gear set at a = 30 mm, it carries about a fifth of the NMRV030 torque (docs/LSR2_SIZING.md §14); '
+          'its value is a known, repairable, drop-in design for a future larger-centre version or a batch run.', '']
+    return o
+
+
 def report():
     t = totals()
     o = ['# BricoHams · LibreSat LSR-2: materials and cost budget, both routes (generated by calc/lsr2_materials.py)', '',
@@ -148,7 +201,7 @@ def report():
           f"| PLA patterns and cores at {PRICE_PLA_EUR_KG:g} EUR/kg (VERIFY) | {t['pla_kg']:.2f} kg / {t['pla_eur']:.0f} EUR |",
           f"| Bought parts incl. cross boom (VERIFY) | {t['bought']:.0f} EUR |",
           f"| Total estimated cost (VERIFY) | {t['total']:.0f} EUR |", '',
-          'The phase-6 figure (3605 g fabricated, 429 EUR) belonged to the two-block layout and is no longer a reference.', '']
+          'The phase-6 figure (3605 g fabricated, 429 EUR) belonged to the two-block layout and is no longer a reference.', ''] + gearbox_section(t['rep'])
     return '\n'.join(o)
 
 
@@ -164,6 +217,10 @@ def self_test():
     assert pick(dict(eur=100.0, fin_g=500), dict(eur=102.0, fin_g=450)) == 'B'      # within 5 %: the lighter
     assert pick(dict(eur=100.0, fin_g=500), dict(eur=150.0, fin_g=400)) == 'A'      # clearly cheaper
     assert abs(tube_kg() - 1.6 * 1000 * 0.444 * 2.70e-3 * 1.0) < 0.01                  # hand check: (1600 - 1156) mm2 x 1600 mm x 2.70 g/cm3 = 1.918 kg
+    # LSR-WG30: two halves of 100 cm3 cast: metal 2 x 4.337 = 8.673; machining (0.4 + 20) min x 40 / 60 = 13.6; gear set 25; hardware 13.1 -> 60.37 EUR > NMRV030 55: never
+    gc = gearbox_costs({'l': v, 'u': v})
+    assert abs(gc['var'] - 60.373) < 0.01 and gc['breakeven'] is None and gc['unit'](1) > gc['unit'](10) > gc['var']
+    assert abs(sum(q * u for _, q, u in GB_HARDWARE) - 13.1) < 1e-9
     d, ln = AX.shaft_stock([(0, 100, 30)])
     assert abs(math.pi * d * d / 4 * ln / 1000 * AX.SS_G_CM3 - 747.96) < 0.05           # hand check: Ø33 x 110 bar at 7.95 g/cm3
 

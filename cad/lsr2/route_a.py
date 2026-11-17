@@ -15,7 +15,8 @@ import params as P
 import inputs as IN
 
 PARTS = ('body', 'lid', 'mast_bracket', 'yoke_arm', 'saddle', 'boom_clamp')
-QTY = {'body': 1, 'lid': 1, 'mast_bracket': 1, 'yoke_arm': 2, 'saddle': 1, 'boom_clamp': 2}     # yoke arm / clamp: side +1 modelled, the other mirrored
+QTY = {'body': 1, 'lid': 1, 'mast_bracket': 1, 'yoke_arm': 2, 'saddle': 1, 'boom_clamp': 2,     # yoke arm / clamp: side +1 modelled, the other mirrored
+       'gearbox_half_low': 2, 'gearbox_half_up': 2}                                           # phase 7 LSR-WG30 halves (not in PARTS: built by gearbox.build)
 
 
 def cast_params(part):
@@ -46,6 +47,11 @@ def junctions(part):
                 ('AZ neck + floor + pillar foot block (z -12..15)', 27.0, W, 'chill under the neck; riser through the AZ core print; foundry to confirm')]
     if part == 'lid':
         return [('plate', W + s, W + s, '')]
+    if part.startswith('gearbox_half'):
+        w = P.WG30
+        return [('face disc around the wheel pocket (r%g, pocket r24)' % w['disc_r'], w['disc_r'] - 24.0, W, 'riser on the disc face and chill ring around the pocket; foundry to confirm'),
+                ('output boss ring (r%g, cast hole r%.1f)' % (w['boss_r'], 21.0 - s), w['boss_r'] - (21.0 - s), W, 'riser on the boss face; foundry to confirm'),
+                ('worm tube wall (r22, seat r17.5)', 22.0 - 17.5, 4.5, ''), ('fin-tube tee', d_tee(w['fin_t'], w['fin_t'], r), w['fin_t'], '')]
     if part == 'mast_bracket':
         return [('tube ring (r38, cast bore r%.2f)' % (30.25 - s), 38.0 - (30.25 - s), 38.0 - (30.25 - s), ''),
                 ('pinch lug 24 x 28 x 32', 24.0, 38.0 - (30.25 - s), 'chill on the lug, feed from the tube; or CNC route'),
@@ -167,6 +173,9 @@ PRINT_GUIDE = {
                      checks='boss centre height, flange top height above the axis plane (125), core-print stub centre'),
     'saddle': dict(orient='flat, parting face down', supports='none (the window is a drafted lump)', joints='pin D8 / socket D8.6', checks='window 28 x 76, plate 8 + stock'),
     'boom_clamp': dict(orient='flat, parting face down', supports='none', joints='not split (fits the bed)', checks='block 50+ x 30 x 10 + stock'),
+    'gearbox_half_low': dict(orient='joint face (z = 28 + stock) down, boss end up', supports='none', joints='not split (fits the bed); dowel and screw holes are drilled, not cast',
+                             checks='disc Ø80, boss Ø55 height, flange 57 square, worm-axis height above the joint, core print stubs'),
+    'gearbox_half_up': dict(orient='joint face (z = 28 - stock) down, boss end up', supports='none', joints='as the lower half', checks='as the lower half; counterbore side is machined'),
 }
 MOULD = {
     'body': dict(plane='y = 0, draw along +y / -y (cope and drag)', cores='1 dry-sand core: cavity + AZ prong, print on the open top (z)', loose='none after the y draw (no undercut)',
@@ -176,6 +185,9 @@ MOULD = {
     'yoke_arm': dict(plane='z = EL axis, draw along z', cores='1 through the bore with a print at each end', loose='none', gating='sketch: ingate at the foot, riser on the flange top'),
     'saddle': dict(plane='top face', cores='none (window is a sand lump)', loose='none', gating='sketch: edge gate, vents at the corners'),
     'boom_clamp': dict(plane='top face', cores='none', loose='none', gating='sketch: edge gate'),
+    'gearbox_half_low': dict(plane='joint face + stock, pattern in the cope, draw along z', cores='2 dry-sand cores: wheel bore + pocket; stepped worm bore (cantilever, chaplet or two-piece core: foundry to confirm); core box exported',
+                             loose='none (fins drafted along z)', gating='sketch: ingate at the boss face rim, riser on the disc face; vents on the core prints'),
+    'gearbox_half_up': dict(plane='joint face - stock, draw along z', cores='as the lower half', loose='none', gating='as the lower half'),
 }
 
 
@@ -217,6 +229,9 @@ def spec(name, stock, plen):
     K = AX.K
     x0, x1, BY, W = B.BX[0], B.BX[1], B.BY, B.W
     zy, zz = (0, 1, 0), (0, 0, 1)
+    if name.startswith('gearbox_half'):
+        import gearbox
+        return gearbox.cast_spec(name, stock, plen)
     s = dict(holes=[], keep=[], cavity=[], prints=lambda c: [])
     if name == 'body':
         def inner(z0, z1):
@@ -349,22 +364,34 @@ def orient(shape, axis, sg):
 
 def _find_keys(s, ax, mid, r, dd, n=2):
     """Up to n key positions on the cut plane where the solid is present on both sides over the key depth and the key radius."""
+    import Part
     from FreeCAD import Vector as V
     bb = s.BoundBox
     lo, hi = (bb.XMin, bb.YMin, bb.ZMin), (bb.XMax, bb.YMax, bb.ZMax)
     i, j = [k for k in range(3) if k != ax]
+    nrm = V(*[1.0 if k == ax else 0.0 for k in range(3)])
+    # solid isInside is very slow on drafted bodies: test against the two planar sections of the solid instead (same points, 2D face tests)
+    sections = []
+    for off in (-3.0, dd + 1.0):
+        wires = s.slice(nrm, mid + off)
+        if not wires:
+            return []
+        sections.append((off, Part.makeFace(wires, 'Part::FaceMakerBullseye')))
     found = []
     u = lo[i] + r + 2
     while u < hi[i] - r - 2:
         v = lo[j] + r + 2
         while v < hi[j] - r - 2:
             ok = True
-            for off in (-3.0, dd + 1.0):
+            for off, face in sections:
                 for du, dv in ((0, 0), (r + 1, 0), (-r - 1, 0), (0, r + 1), (0, -r - 1)):
                     q = [0.0, 0.0, 0.0]
                     q[ax], q[i], q[j] = mid + off, u + du, v + dv
-                    if not s.isInside(V(*q), 1e-6, True):
+                    if not face.isInside(V(*q), 1e-6, True):
                         ok = False
+                        break
+                if not ok:
+                    break
             if ok:
                 found.append((u, v))
             v += 10.0
@@ -507,7 +534,7 @@ def lost_pla(name, outdir):
     pat = scaled(pre, L['shrink'])
     assert pat.isValid(), name + ': lost-PLA pattern invalid'
     ok = _write_all(os.path.join(outdir, name + '_lostpla'), pat)
-    return dict(stock_mm=L['machining'], cast_cm3=pre.Volume / 1000.0, pla_cm3=pat.Area * L['wall'] / 1000.0, watertight=ok)
+    return dict(stock_mm=L['machining'], cast_cm3=pre.Volume / 1000.0, pla_cm3=pre.Area * L['shrink'] ** 2 * L['wall'] / 1000.0, watertight=ok)
 
 
 def build_all(outdir):

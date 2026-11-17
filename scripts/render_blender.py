@@ -2,7 +2,7 @@
 #   blender -b --factory-startup -P scripts/render_blender.py -- <repo_root> <stl_dir> <out_dir> [--samples N]
 # stl_dir = <build out>/stl/lsr2 (fabricated parts; stl_dir/visual/<name>.stl holds the bought parts). Scene data (EL axis, groups, exploded offsets,
 # categories, route A/B folders) = build/lsr2_render_scene.json from build.py.
-# Output: lsr2_hero.png, lsr2_head_closeup.png (lid lifted), lsr2_exploded_real.png, lsr2_castings_real.png (route A), lsr2_blanks_real.png (route B), lsr2_el_sweep_real.png
+# Output: lsr2_hero.png, lsr2_head_closeup.png (lid lifted), lsr2_exploded_real.png, lsr2_castings_real.png (route A), lsr2_blanks_real.png, lsr2_gearbox_real.png (LSR-WG30 halves apart), lsr2_el_sweep_real.png
 import bpy, sys, os, re, json, math, struct
 import numpy as np
 from mathutils import Vector, Matrix
@@ -135,6 +135,7 @@ MAT = {
     'motor_black': pbr('motor_black', '#16181b', 0.6, 0.45),                                                      # black anodised
     'motor_caps': pbr('motor_caps', '#b0b6bc', 1.0, 0.40, bump=0.06, bump_scale=900.0),
     'stainless': pbr('stainless', '#d0d3d6', 1.0, 0.20),
+    'bronze': pbr('bronze', '#b08d57', 1.0, 0.35),
     'tube': pbr('tube', '#c8cdd2', 1.0, 0.26, aniso=0.4, bump=0.03, bump_scale=700.0, stretch=0.03),               # aluminium tube
     'pla': pbr('pla', '#3a9d5d', 0.0, 0.42),
     'asa': pbr('asa', '#101113', 0.0, 0.50),
@@ -153,6 +154,12 @@ def mat_for(n):
         return 'pla'
     if n.endswith('_blank'):
         return 'alu_brushed'
+    if n.startswith('gearbox_half'):
+        return 'cast_alu'
+    if n == 'gearbox_wheel':
+        return 'bronze'
+    if n in ('gearbox_worm', 'gearbox_bearings'):
+        return 'stainless'
     if cat == 'Cast' or n.endswith('_finished'):
         return 'cast_alu'
     if n in ('az_shaft', 'el_shaft', 'el_sleeve', 'clamp_bolts') or n.startswith('brg_'):
@@ -468,6 +475,21 @@ def route_row(parts, suffix, fname):
 
 route_row(S.get('cast_parts', []), 'pattern', 'lsr2_castings_real.png')
 route_row(S.get('cnc_parts', []), 'blank', 'lsr2_blanks_real.png')
+
+# 4b. LSR-WG30 gearbox (phase 7), local frame: upper half lifted so the wheel and worm inside show; skipped without the STLs
+gb = {k: os.path.join(stl_dir, f'gearbox_{k}.stl') for k in ('half_low', 'half_up', 'wheel', 'worm', 'bearings')}
+if all(os.path.exists(f) for f in gb.values()):
+    for ob in OBJ.values():
+        ob.hide_render = True
+    gbo = {k: load(f'gearbox_{k}', f) for k, f in gb.items()}
+    if all(gbo.values()):
+        for k, ob in gbo.items():
+            ob.hide_render = False
+            ob.matrix_world = Matrix.Translation((0, 0, 0.06 if k == 'half_up' else 0.0))
+        FLOOR.hide_render = False
+        render('lsr2_gearbox_real.png', [], points(list(gbo.values())), (0.9, -1.0, 0.55), 50, floor_z=min(p.z for p in points(list(gbo.values()))) - 0.0005)
+        for ob in gbo.values():
+            ob.hide_render = True
 
 # 5. EL sweep: the moving group ghosted at -30, 45 and 150 deg about the EL axis
 sw_static = [n for n in FULL if n not in EL_GROUP]

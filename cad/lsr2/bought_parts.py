@@ -59,17 +59,39 @@ def nema23(origin):
     return s
 
 
-def az_gearbox():
-    s = nmrv030()
-    s.translate(V(0, 0, K['zf']))
+def _gb_local():
+    """Gearbox in its own frame: the bought NMRV030 envelope (default) or the LSR-WG30 housing with its internals (params.GEARBOX_SOURCE)."""
+    if P.GEARBOX_SOURCE == 'lsr_wg30':
+        import gearbox
+        return Part.makeCompound(list(gearbox.assembly().values()))
+    return nmrv030()
+
+
+def _place(s, which):
+    if which == 'az':
+        s.translate(V(0, 0, K['zf']))
+    else:
+        s.Placement = FreeCAD.Placement(FreeCAD.Matrix(1, 0, 0, 0, 0, 0, 1, K['y_c'] - G['out_width'] / 2, 0, -1, 0, K['z_el'], 0, 0, 0, 1))
     return s
+
+
+def az_gearbox():
+    return _place(_gb_local(), 'az')
 
 
 def el_gearbox():
     """Output axis along y (hub y 2..58 about the hub centre K['y_c']), foot on the +z side, worm axis forward: local (x, y, z) -> (x, y_c - 28 + z, z_el - y)."""
-    s = nmrv030()
-    s.Placement = FreeCAD.Placement(FreeCAD.Matrix(1, 0, 0, 0, 0, 0, 1, K['y_c'] - G['out_width'] / 2, 0, -1, 0, K['z_el'], 0, 0, 0, 1))
-    return s
+    return _place(_gb_local(), 'el')
+
+
+def gearbox_solids(which):
+    """{'az', 'el'}: the bought NMRV030 envelopes ('envelope') or the fused LSR-WG30 housing halves ('housing'), placed in the head frame (interference checks)."""
+    if which == 'envelope':
+        local = nmrv030
+    else:
+        import gearbox
+        local = lambda: fuse(list(gearbox.assembly().values())[:2])
+    return {k: _place(local(), k) for k in ('az', 'el')}
 
 
 def motors():

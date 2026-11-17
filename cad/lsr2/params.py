@@ -4,6 +4,7 @@ Units: mm, N, N·m, kg, deg. Values tagged VERIFY come from generic catalogues; 
 part with a caliper (or read its own datasheet) and update here before cutting or casting metal.
 No geometry here is taken from the SARCTrac Mk5 files (see docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md §2).
 """
+import os
 
 # --- Stepper motor: NEMA23, 57BYG250H class (2.8 N·m, 3 A) -------------------------------
 NEMA23 = dict(
@@ -33,6 +34,28 @@ NMRV030_GEO = dict(
 WORM_EFF_RUN = 0.45      # 80:1 worm at ~150 rpm input (low-speed efficiency, conservative)
 GEAR_PEAK_FACTOR = 2.0   # short-term/standstill torque vs rating (catalogue fs, VERIFY)
 GEAR_REF_ARM = 0.030     # m: lever from housing face to where fr2 is quoted (VERIFY)
+
+# --- Phase 7: our own worm gearbox LSR-WG30 (cad/lsr2/gearbox.py, calc/lsr2_sizing.py §14) ---------------------------------------
+# 'nmrv030' = bought gearbox envelope (default); 'lsr_wg30' = the real two-half housing and gear set in the head assembly.
+# Select with the environment variable LSR2_GEARBOX (build.py reads it through this module); build the variant into its own LSR2_OUT folder.
+GEARBOX_SOURCE = os.environ.get('LSR2_GEARBOX', 'nmrv030')
+# Gear set: single start, z2 = 80 (ratio 80:1), centre a = m (q + z2) / 2 = 30 mm = NMRV030 centre (the worm axis is fixed by the NEMA23 flange, so a cannot change).
+# m 0.5 (ISO 54 series 1) and q 40 are the ONLY standard pair giving a = 30 with a worm Ø20 that can hold the Ø11 keyed input bore; m 0.6 needs q 20 (Ø12 worm, no bore).
+# Allowables: cast CuSn12 wheel against a hardened ground worm, VERIFY with the gear maker. Bearings and seals: catalogue sizes, VERIFY C and C0.
+WG30 = dict(
+    z1=1, z2=80, m=0.5, q=40.0, alpha_n=20.0, b2=14.0, thread_len=28.0,                       # PARAMETRIC (b2 <= 0.75 d1)
+    sigma_f=50.0, rp02=140.0, k_wear=0.7, y_lewis=0.437,                                        # MPa fatigue bending, MPa static, N/mm2 wear K; Y 20 deg at ~80 teeth (Shigley table 14-2): VERIFY
+    mu_run=0.05, mu_hold=0.10, a356_yield=180.0,                                                # worm mesh friction (same as inputs.py), A356-T6 sand-cast yield MPa: VERIFY
+    wheel_brg=dict(name='61905', d=25.0, D=42.0, B=9.0, C=7.0e3, C0=4.3e3),                    # DATASHEET size, VERIFY C/C0 (maker)
+    worm_brg=dict(name='6003', d=17.0, D=35.0, B=10.0, C=6.05e3, C0=3.25e3),                    # one fixed (circlip + shim) and one floating
+    seal_out=dict(name='TC 25x42x7', d=25.0, D=42.0, B=7.0), seal_in=dict(name='TC 17x30x7', d=17.0, D=30.0, B=7.0),
+    split_z=28.0, disc_r=40.0, boss_r=27.5, fin_t=4.0, fin_xs=(-24.0, -12.0, 0.0, 12.0, 24.0),   # joint on the wheel mid-plane; Ø80 face disc; Ø55 boss; fins under the worm
+    screw='M5', screw_pos=((24.0, -21.0), (-24.0, -21.0), (10.0, -30.4), (-10.0, -30.4)),     # r 32 from the output axis, clear of the face holes (3.4 mm wall); PARAMETRIC
+    dowel_d=5.0, dowel_pos=((33.5, 4.0), (-33.5, 4.0)), dowel_depth=8.0,                        # ISO 8734 Ø5 x 16 pins
+    groove=dict(land=1.0, outer=2.5, depth=1.2),                                               # sealant / O-ring cord track around the oil volume: mm from the cavity
+    h_conv=10.0, area_m2=0.040,                                                                 # natural convection W/m2K; housing surface (the build report gives the solid's area)
+    duty=0.10, grease_g=40.0, hold_kc=3.0,                                                      # satellite duty fraction; NLGI 00 fill; seat-ring stress concentration
+)
 
 # --- AZ bearing stack ----------------------------------------------------------------------
 THRUST = dict(name='51206', d=30.0, D=52.0, H=16.0, C=25.1e3, C0=40.0e3)   # catalogue values

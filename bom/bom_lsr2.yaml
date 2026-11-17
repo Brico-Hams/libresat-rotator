@@ -59,3 +59,13 @@ budget:
   - {item: "Galvanised angle bracket 50x50x5, 100 mm (mast platform, replaces mast_bracket)", qty: 4, eur: 1.5, replaces: "mast_bracket: friction hold of the gearbox standstill torque not shown; use Tef-Gel/isolating washers against aluminium"}
   - {item: "Galvanised angle bracket 50x50x5, 100 mm + 2 U-bolts (boom, replaces saddle + boom clamps)", qty: 4, eur: 1.5, replaces: "saddle and boom clamps: no bending path for the cross boom shown"}
   - {item: "Galvanised M8 hardware set (U-bolts, nuts, washers)", qty: 1, eur: 4.0, replaces: "A4 M8 hardware: rusts within a season at the coast; mixed metals need Tef-Gel"}
+# Phase 7 variant (GEARBOX_SOURCE=lsr_wg30), NOT in the totals: replaces the 2 bought NMRV030 (55 EUR each). Prices VERIFY; cast halves are costed in calc/lsr2_materials.py
+gearbox_wg30_note: "Per LSR-WG30 unit (x2 per rotator). Not the default: see docs/LSR2_MATERIALS.md for the cost comparison and docs/ARCHITECTURE.md section 7f for the capacity shortfall."
+gearbox_wg30:
+  - {item: "Worm Ø20 steel + CuSn12 wheel z80 m0.5 pair (catalogue or small-batch quote)", qty: 1, eur: 25.0}
+  - {item: "61905-2RS bearing 25x42x9 (output wheel carrier)", qty: 2, eur: 3.0}
+  - {item: "6003-2RS bearing 17x35x10 (worm)", qty: 2, eur: 1.5}
+  - {item: "Lip seal TC 25x42x7 (output) / TC 17x30x7 (input)", qty: 3, eur: 0.55}
+  - {item: "M5 socket screw (joint) + Ø5 dowel pin", qty: 6, eur: 0.12}
+  - {item: "Circlips and shim set, grease NLGI 00, sealant, 4x4 key", qty: 1, eur: 1.4}
+  - {item: "A356 casting, lower + upper half (poured metal, see materials report)", qty: 2, eur: 4.3}

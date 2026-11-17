@@ -68,3 +68,27 @@ Cross boom 6063 40x40x3 x 1600 mm = 1.92 kg (in the bought-part total).
 | Total estimated cost (VERIFY) | 827 EUR |
 
 The phase-6 figure (3605 g fabricated, 429 EUR) belonged to the two-block layout and is no longer a reference.
+
+## NMRV030 bought vs LSR-WG30 own (phase 7, every price VERIFY)
+
+LSR-WG30 = A356 housing in two cast halves (route A, patterns and core boxes printed) + bought worm/bronze wheel + bearings and seals; drop-in for the NMRV030. Machining: stock pads from the build report plus 20 min per unit for seats, bores, joint faces, taps and dowel holes (PARAMETRIC). Batch costs (patterns, core boxes, jig, machine set-ups of both halves) are shared by the units poured together.
+
+| Item | EUR per unit |
+|---|---|
+| Metal + foundry (both halves, yield 0.55) | 13.4 |
+| Machining (4.1 min pads + 20 min finishing) | 16.1 |
+| Gear set (Worm Ø20 hardened steel + CuSn12 wheel z80 m0.5 (catalogue pair, quote)) | 25.0 |
+| Bearings, seals, screws, dowels, grease (17 pieces) | 13.1 |
+| **Variable cost per unit** | **67.6** |
+| Fixed batch cost (patterns, cores, core boxes, jig, set-ups) | 94.1 per batch |
+
+| Case | NMRV030 bought (EUR) | LSR-WG30 own (EUR) | Difference (EUR) |
+|---|---|---|---|
+| 1 unit | 55 | 162 | +107 |
+| 2 units (one rotator, batch of 2) | 110 | 229 | +119 |
+| 10 units (batch of 10) | 550 | 770 | +220 |
+| 100 units (batch of 100) | 5500 | 6849 | +1349 |
+
+Break-even batch size: **none**: even with the fixed cost spread over 1000 units the own unit costs 68 EUR, above the bought 55 EUR.
+
+**Recommendation: keep the bought NMRV030** unless the gear set or the machining get much cheaper. The own unit is not cheaper and, with a m0.5 gear set at a = 30 mm, it carries about a fifth of the NMRV030 torque (docs/LSR2_SIZING.md §14); its value is a known, repairable, drop-in design for a future larger-centre version or a batch run.

@@ -1,0 +1,156 @@
+{
+  "revision": "A0",
+  "params": {
+    "shrink": 1.013,
+    "draft_out": 2.0,
+    "draft_in": 3.0,
+    "stock": 2.5,
+    "wall": 5.0,
+    "fillet": 3.0
+  },
+  "parts": {
+    "body_finished": {
+      "volume_cm3": 2392.836,
+      "isValid": true,
+      "bbox_mm": [
+        -50.0,
+        -86.0,
+        -22.0,
+        185.5,
+        86.0,
+        314.0
+      ],
+      "mass_g": 6412.8,
+      "density_g_cm3": 2.68
+    },
+    "body_preform": {
+      "volume_cm3": 3423.517,
+      "isValid": true,
+      "bbox_mm": [
+        -52.5,
+        -86.0,
+        -24.5,
+        185.5,
+        86.0,
+        314.0
+      ],
+      "mass_g": 9175.0,
+      "density_g_cm3": 2.68
+    },
+    "body_pattern": {
+      "volume_cm3": 3584.748,
+      "isValid": true,
+      "bbox_mm": [
+        -64.379,
+        -87.678,
+        -24.819,
+        196.069,
+        87.678,
+        318.082
+      ],
+      "mass_g": 1111.3,
+      "density_g_cm3": 0.31
+    },
+    "lid_finished": {
+      "volume_cm3": 162.32,
+      "isValid": true,
+      "bbox_mm": [
+        -50.0,
+        -73.0,
+        314.0,
+        180.0,
+        73.0,
+        319.0
+      ],
+      "mass_g": 435.0,
+      "density_g_cm3": 2.68
+    },
+    "lid_preform": {
+      "volume_cm3": 354.85,
+      "isValid": true,
+      "bbox_mm": [
+        -52.5,
+        -75.5,
+        311.5,
+        182.5,
+        75.5,
+        321.5
+      ],
+      "mass_g": 951.0,
+      "density_g_cm3": 2.68
+    },
+    "lid_pattern": {
+      "volume_cm3": 369.571,
+      "isValid": true,
+      "bbox_mm": [
+        -53.359,
+        -76.658,
+        315.549,
+        185.049,
+        76.658,
+        325.68
+      ],
+      "mass_g": 114.6,
+      "density_g_cm3": 0.31
+    },
+    "body_core": {
+      "volume_cm3": 10142.88,
+      "isValid": true,
+      "bbox_mm": [
+        -45.0,
+        -68.0,
+        5.0,
+        175.0,
+        68.0,
+        344.0
+      ],
+      "mass_g": 3144.3,
+      "density_g_cm3": 0.31
+    },
+    "body_blank": {
+      "volume_cm3": 16478.621,
+      "isValid": true,
+      "bbox_mm": [
+        -59.5,
+        -95.5,
+        -23.5,
+        195.0,
+        95.5,
+        315.5
+      ],
+      "mass_g": 44492.3,
+      "density_g_cm3": 2.7
+    },
+    "lid_blank": {
+      "volume_cm3": 410.85,
+      "isValid": true,
+      "bbox_mm": [
+        -59.5,
+        -82.5,
+        312.5,
+        189.5,
+        82.5,
+        322.5
+      ],
+      "mass_g": 1109.3,
+      "density_g_cm3": 2.7
+    }
+  },
+  "checks": {
+    "body: preform contains finished": true,
+    "body: blank contains finished": true,
+    "body: pattern encloses preform x shrink (bbox)": true,
+    "body: pattern volume >= preform x shrink^3": true,
+    "body: preform bigger than finished": true,
+    "lid: preform contains finished": true,
+    "lid: blank contains finished": true,
+    "lid: pattern encloses preform x shrink (bbox)": true,
+    "lid: pattern volume >= preform x shrink^3": true,
+    "lid: preform bigger than finished": true,
+    "all bodies valid": true
+  },
+  "warnings": [
+    "scale_body: parametric scale \"shrink\" rejected (3 : invalid expression); used numeric 1.013, link to parameter lost",
+    "scale_body: parametric scale \"shrink\" rejected (3 : invalid expression); used numeric 1.013, link to parameter lost"
+  ]
+}

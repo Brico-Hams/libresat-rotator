@@ -1,0 +1,744 @@
+{
+ "model": "LSR-2 Mk5-style rotor: vertical plate, EL NMRV030 high, AZ NMRV030 low, motors on the same side, EL shaft with hubs/brackets/saddle/boom/lift arms/antennas/counterweights, AZ shaft through a 51206 thrust housing into a U-bolt mast bracket, cover, electronics enclosure",
+ "provenance": "arrangement replicated, own dimensions, no third-party CAD geometry",
+ "placement": "occurrence transforms derived from the user parameters (no joints); el_angle / az_angle rotate the EL and AZ groups",
+ "pose_deg": {
+  "el": 45.0,
+  "az": 0.0
+ },
+ "components": [
+  "antenna_L",
+  "antenna_R",
+  "az_gearbox",
+  "az_motor",
+  "az_shaft",
+  "boom",
+  "boom_clamp",
+  "bracket_L",
+  "bracket_R",
+  "cable_gland",
+  "controller_pcb",
+  "counterweight_L",
+  "counterweight_R",
+  "cover_bottom",
+  "cover_end",
+  "cover_front",
+  "cover_top",
+  "dcdc_5v",
+  "el_gearbox",
+  "el_hub_L",
+  "el_hub_R",
+  "el_motor",
+  "el_shaft",
+  "enc_screw",
+  "enclosure",
+  "enclosure_lid",
+  "heatsink_az",
+  "heatsink_el",
+  "index_disc_az",
+  "index_disc_el",
+  "lift_arm_L",
+  "lift_arm_R",
+  "mast_bracket",
+  "mast_tube",
+  "plate",
+  "saddle_plate",
+  "sensor_az",
+  "sensor_el",
+  "thrust_bearing",
+  "thrust_housing",
+  "u_bolt",
+  "wifi_antenna",
+  "wifi_bulkhead"
+ ],
+ "occurrences": 49,
+ "parts": {
+  "plate": {
+   "instances": 1,
+   "volume_cm3": 283.5,
+   "mass_kg_each": 0.7655,
+   "mass_kg_total": 0.7655,
+   "density_g_cm3": 2.7
+  },
+  "el_gearbox": {
+   "instances": 1,
+   "volume_cm3": 447.91,
+   "mass_kg_each": 1.4,
+   "mass_kg_total": 1.4,
+   "density_g_cm3": 3.126
+  },
+  "az_gearbox": {
+   "instances": 1,
+   "volume_cm3": 447.91,
+   "mass_kg_each": 1.4,
+   "mass_kg_total": 1.4,
+   "density_g_cm3": 3.126
+  },
+  "el_motor": {
+   "instances": 1,
+   "volume_cm3": 332.008,
+   "mass_kg_each": 1.4,
+   "mass_kg_total": 1.4,
+   "density_g_cm3": 4.217
+  },
+  "az_motor": {
+   "instances": 1,
+   "volume_cm3": 332.008,
+   "mass_kg_each": 1.4,
+   "mass_kg_total": 1.4,
+   "density_g_cm3": 4.217
+  },
+  "cover_end": {
+   "instances": 2,
+   "volume_cm3": 94.312,
+   "mass_kg_each": 0.1122,
+   "mass_kg_total": 0.2245,
+   "density_g_cm3": 1.19
+  },
+  "cover_top": {
+   "instances": 1,
+   "volume_cm3": 56.56,
+   "mass_kg_each": 0.0673,
+   "mass_kg_total": 0.0673,
+   "density_g_cm3": 1.19
+  },
+  "cover_bottom": {
+   "instances": 1,
+   "volume_cm3": 54.744,
+   "mass_kg_each": 0.0651,
+   "mass_kg_total": 0.0651,
+   "density_g_cm3": 1.19
+  },
+  "cover_front": {
+   "instances": 1,
+   "volume_cm3": 64.68,
+   "mass_kg_each": 0.077,
+   "mass_kg_total": 0.077,
+   "density_g_cm3": 1.19
+  },
+  "el_shaft": {
+   "instances": 1,
+   "volume_cm3": 33.251,
+   "mass_kg_each": 0.261,
+   "mass_kg_total": 0.261,
+   "density_g_cm3": 7.85
+  },
+  "index_disc_el": {
+   "instances": 1,
+   "volume_cm3": 6.594,
+   "mass_kg_each": 0.0178,
+   "mass_kg_total": 0.0178,
+   "density_g_cm3": 2.7
+  },
+  "sensor_el": {
+   "instances": 1,
+   "volume_cm3": 1.68,
+   "mass_kg_each": 0.0045,
+   "mass_kg_total": 0.0045,
+   "density_g_cm3": 2.7
+  },
+  "el_hub_L": {
+   "instances": 1,
+   "volume_cm3": 42.4,
+   "mass_kg_each": 0.1145,
+   "mass_kg_total": 0.1145,
+   "density_g_cm3": 2.7
+  },
+  "bracket_L": {
+   "instances": 1,
+   "volume_cm3": 74.113,
+   "mass_kg_each": 0.2001,
+   "mass_kg_total": 0.2001,
+   "density_g_cm3": 2.7
+  },
+  "el_hub_R": {
+   "instances": 1,
+   "volume_cm3": 42.4,
+   "mass_kg_each": 0.1145,
+   "mass_kg_total": 0.1145,
+   "density_g_cm3": 2.7
+  },
+  "bracket_R": {
+   "instances": 1,
+   "volume_cm3": 74.113,
+   "mass_kg_each": 0.2001,
+   "mass_kg_total": 0.2001,
+   "density_g_cm3": 2.7
+  },
+  "saddle_plate": {
+   "instances": 1,
+   "volume_cm3": 125.44,
+   "mass_kg_each": 0.3387,
+   "mass_kg_total": 0.3387,
+   "density_g_cm3": 2.7
+  },
+  "boom_clamp": {
+   "instances": 2,
+   "volume_cm3": 17.664,
+   "mass_kg_each": 0.0477,
+   "mass_kg_total": 0.0954,
+   "density_g_cm3": 2.7
+  },
+  "boom": {
+   "instances": 1,
+   "volume_cm3": 1849.6,
+   "mass_kg_each": 4.9939,
+   "mass_kg_total": 4.9939,
+   "density_g_cm3": 2.7
+  },
+  "lift_arm_L": {
+   "instances": 1,
+   "volume_cm3": 103.2,
+   "mass_kg_each": 0.2786,
+   "mass_kg_total": 0.2786,
+   "density_g_cm3": 2.7
+  },
+  "counterweight_L": {
+   "instances": 1,
+   "volume_cm3": 490.0,
+   "mass_kg_each": 3.8465,
+   "mass_kg_total": 3.8465,
+   "density_g_cm3": 7.85
+  },
+  "antenna_L": {
+   "instances": 1,
+   "volume_cm3": 1082.24,
+   "mass_kg_each": 3.5,
+   "mass_kg_total": 3.5,
+   "density_g_cm3": 3.234
+  },
+  "lift_arm_R": {
+   "instances": 1,
+   "volume_cm3": 103.2,
+   "mass_kg_each": 0.2786,
+   "mass_kg_total": 0.2786,
+   "density_g_cm3": 2.7
+  },
+  "counterweight_R": {
+   "instances": 1,
+   "volume_cm3": 490.0,
+   "mass_kg_each": 3.8465,
+   "mass_kg_total": 3.8465,
+   "density_g_cm3": 7.85
+  },
+  "antenna_R": {
+   "instances": 1,
+   "volume_cm3": 895.04,
+   "mass_kg_each": 2.5,
+   "mass_kg_total": 2.5,
+   "density_g_cm3": 2.793
+  },
+  "az_shaft": {
+   "instances": 1,
+   "volume_cm3": 18.033,
+   "mass_kg_each": 0.1416,
+   "mass_kg_total": 0.1416,
+   "density_g_cm3": 7.85
+  },
+  "index_disc_az": {
+   "instances": 1,
+   "volume_cm3": 6.63,
+   "mass_kg_each": 0.0179,
+   "mass_kg_total": 0.0179,
+   "density_g_cm3": 2.7
+  },
+  "sensor_az": {
+   "instances": 1,
+   "volume_cm3": 1.68,
+   "mass_kg_each": 0.0045,
+   "mass_kg_total": 0.0045,
+   "density_g_cm3": 2.7
+  },
+  "thrust_housing": {
+   "instances": 1,
+   "volume_cm3": 113.161,
+   "mass_kg_each": 0.3055,
+   "mass_kg_total": 0.3055,
+   "density_g_cm3": 2.7
+  },
+  "thrust_bearing": {
+   "instances": 1,
+   "volume_cm3": 22.67,
+   "mass_kg_each": 0.0612,
+   "mass_kg_total": 0.0612,
+   "density_g_cm3": 2.7
+  },
+  "mast_bracket": {
+   "instances": 1,
+   "volume_cm3": 507.588,
+   "mass_kg_each": 1.3705,
+   "mass_kg_total": 1.3705,
+   "density_g_cm3": 2.7
+  },
+  "mast_tube": {
+   "instances": 1,
+   "volume_cm3": 256.505,
+   "mass_kg_each": 2.0136,
+   "mass_kg_total": 2.0136,
+   "density_g_cm3": 7.85
+  },
+  "u_bolt": {
+   "instances": 2,
+   "volume_cm3": 21.237,
+   "mass_kg_each": 0.1667,
+   "mass_kg_total": 0.3334,
+   "density_g_cm3": 7.85
+  },
+  "enclosure": {
+   "instances": 1,
+   "volume_cm3": 146.823,
+   "mass_kg_each": 0.3964,
+   "mass_kg_total": 0.3964,
+   "density_g_cm3": 2.7
+  },
+  "enclosure_lid": {
+   "instances": 1,
+   "volume_cm3": 36.935,
+   "mass_kg_each": 0.044,
+   "mass_kg_total": 0.044,
+   "density_g_cm3": 1.19
+  },
+  "enc_screw": {
+   "instances": 4,
+   "volume_cm3": 0.077,
+   "mass_kg_each": 0.0006,
+   "mass_kg_total": 0.0024,
+   "density_g_cm3": 7.85
+  },
+  "cable_gland": {
+   "instances": 1,
+   "volume_cm3": 5.41,
+   "mass_kg_each": 0.006,
+   "mass_kg_total": 0.006,
+   "density_g_cm3": 1.1
+  },
+  "wifi_bulkhead": {
+   "instances": 1,
+   "volume_cm3": 0.572,
+   "mass_kg_each": 0.0049,
+   "mass_kg_total": 0.0049,
+   "density_g_cm3": 8.5
+  },
+  "wifi_antenna": {
+   "instances": 1,
+   "volume_cm3": 5.529,
+   "mass_kg_each": 0.0055,
+   "mass_kg_total": 0.0055,
+   "density_g_cm3": 1.0
+  },
+  "heatsink_el": {
+   "instances": 1,
+   "volume_cm3": 27.18,
+   "mass_kg_each": 0.0734,
+   "mass_kg_total": 0.0734,
+   "density_g_cm3": 2.7
+  },
+  "heatsink_az": {
+   "instances": 1,
+   "volume_cm3": 27.18,
+   "mass_kg_each": 0.0734,
+   "mass_kg_total": 0.0734,
+   "density_g_cm3": 2.7
+  },
+  "controller_pcb": {
+   "instances": 1,
+   "volume_cm3": 4.4,
+   "mass_kg_each": 0.0084,
+   "mass_kg_total": 0.0084,
+   "density_g_cm3": 1.9
+  },
+  "dcdc_5v": {
+   "instances": 1,
+   "volume_cm3": 24.75,
+   "mass_kg_each": 0.0371,
+   "mass_kg_total": 0.0371,
+   "density_g_cm3": 1.5
+  }
+ },
+ "total_mass_kg": 32.29,
+ "moving_groups": {
+  "el_group": {
+   "mass_kg": 20.586,
+   "cg_mm": [
+    -31.54,
+    5.14,
+    199.07
+   ],
+   "cg_rel_axis_mm": [
+    -31.54,
+    -34.86,
+    69.07
+   ],
+   "gravity_torque_about_axis_Nm": -7.04
+  },
+  "az_group": {
+   "mass_kg": 28.413,
+   "cg_mm": [
+    -21.5,
+    24.62,
+    156.84
+   ],
+   "cg_rel_axis_mm": [
+    -21.5,
+    -15.38,
+    156.84
+   ],
+   "gravity_torque_about_axis_Nm": 7.368
+  }
+ },
+ "bbox_mm": {
+  "min": [
+   -1150.02,
+   -843.9,
+   -486.02
+  ],
+  "max": [
+   825.02,
+   584.49,
+   1084.61
+  ]
+ },
+ "interference": {
+  "method": "design.analyzeInterference (coincident faces excluded)",
+  "poses": [
+   {
+    "el_deg": -30,
+    "az_deg": 0,
+    "interference_count": 0,
+    "interferences": [],
+    "interfering_pairs": [],
+    "groups": {
+     "el_group": {
+      "mass_kg": 20.586,
+      "cg_mm": [
+       -31.54,
+       97.7,
+       181.55
+      ],
+      "cg_rel_axis_mm": [
+       -31.54,
+       57.7,
+       51.55
+      ],
+      "gravity_torque_about_axis_Nm": 11.653
+     },
+     "az_group": {
+      "mass_kg": 28.413,
+      "cg_mm": [
+       -21.5,
+       91.69,
+       144.15
+      ],
+      "cg_rel_axis_mm": [
+       -21.5,
+       51.69,
+       144.15
+      ],
+      "gravity_torque_about_axis_Nm": 15.604
+     }
+    }
+   },
+   {
+    "el_deg": 0,
+    "az_deg": 0,
+    "interference_count": 0,
+    "interferences": [],
+    "interfering_pairs": [],
+    "groups": {
+     "el_group": {
+      "mass_kg": 20.586,
+      "cg_mm": [
+       -31.54,
+       64.19,
+       203.5
+      ],
+      "cg_rel_axis_mm": [
+       -31.54,
+       24.19,
+       73.5
+      ],
+      "gravity_torque_about_axis_Nm": 4.885
+     },
+     "az_group": {
+      "mass_kg": 28.413,
+      "cg_mm": [
+       -21.5,
+       67.41,
+       160.04
+      ],
+      "cg_rel_axis_mm": [
+       -21.5,
+       27.41,
+       160.04
+      ],
+      "gravity_torque_about_axis_Nm": 9.71
+     }
+    }
+   },
+   {
+    "el_deg": 45,
+    "az_deg": 0,
+    "interference_count": 0,
+    "interferences": [],
+    "interfering_pairs": [],
+    "groups": {
+     "el_group": {
+      "mass_kg": 20.586,
+      "cg_mm": [
+       -31.54,
+       5.14,
+       199.07
+      ],
+      "cg_rel_axis_mm": [
+       -31.54,
+       -34.86,
+       69.07
+      ],
+      "gravity_torque_about_axis_Nm": -7.04
+     },
+     "az_group": {
+      "mass_kg": 28.413,
+      "cg_mm": [
+       -21.5,
+       24.62,
+       156.84
+      ],
+      "cg_rel_axis_mm": [
+       -21.5,
+       -15.38,
+       156.84
+      ],
+      "gravity_torque_about_axis_Nm": 7.368
+     }
+    }
+   },
+   {
+    "el_deg": 90,
+    "az_deg": 0,
+    "interference_count": 0,
+    "interferences": [],
+    "interfering_pairs": [],
+    "groups": {
+     "el_group": {
+      "mass_kg": 20.586,
+      "cg_mm": [
+       -31.54,
+       -33.5,
+       154.19
+      ],
+      "cg_rel_axis_mm": [
+       -31.54,
+       -73.5,
+       24.19
+      ],
+      "gravity_torque_about_axis_Nm": -14.843
+     },
+     "az_group": {
+      "mass_kg": 28.413,
+      "cg_mm": [
+       -21.5,
+       -3.37,
+       124.32
+      ],
+      "cg_rel_axis_mm": [
+       -21.5,
+       -43.37,
+       124.32
+      ],
+      "gravity_torque_about_axis_Nm": 13.492
+     }
+    }
+   },
+   {
+    "el_deg": 150,
+    "az_deg": 0,
+    "interference_count": 0,
+    "interferences": [],
+    "interfering_pairs": [],
+    "groups": {
+     "el_group": {
+      "mass_kg": 20.586,
+      "cg_mm": [
+       -31.54,
+       -17.7,
+       78.45
+      ],
+      "cg_rel_axis_mm": [
+       -31.54,
+       -57.7,
+       -51.55
+      ],
+      "gravity_torque_about_axis_Nm": -11.653
+     },
+     "az_group": {
+      "mass_kg": 28.413,
+      "cg_mm": [
+       -21.5,
+       8.08,
+       69.44
+      ],
+      "cg_rel_axis_mm": [
+       -21.5,
+       -31.92,
+       69.44
+      ],
+      "gravity_torque_about_axis_Nm": 10.727
+     }
+    }
+   }
+  ]
+ },
+ "sketches_checked_not_fully_constrained": [],
+ "appearance_warnings": [
+  "appearance lsr2_aluminium not found in the Fusion Appearance Library; colour only",
+  "appearance lsr2_black not found in the Fusion Appearance Library; colour only",
+  "appearance lsr2_glass not found in the Fusion Appearance Library; colour only",
+  "appearance lsr2_steel not found in the Fusion Appearance Library; colour only"
+ ],
+ "user_parameters": [
+  "plate_t",
+  "plate_margin",
+  "el_angle",
+  "az_angle",
+  "gb_dz",
+  "gb_w",
+  "gb_n",
+  "gb_out",
+  "gb_x_free",
+  "gb_foot",
+  "gb_worm_off",
+  "gb_pcd",
+  "gb_screw_d",
+  "gb_hole_depth",
+  "hub_bore",
+  "hub_len",
+  "boss_d",
+  "boss_h",
+  "fin_n",
+  "fin_pitch",
+  "fin_t",
+  "fin_h",
+  "motor_face",
+  "motor_bolt_sq",
+  "motor_len",
+  "motor_flange_t",
+  "motor_hole_d",
+  "motor_cb_d",
+  "el_shaft_d",
+  "plate_bot",
+  "plate_top",
+  "plate_W",
+  "plate_H",
+  "cov_t",
+  "cov_hw",
+  "cov_d",
+  "cov_zt",
+  "shaft_hole_d",
+  "az_hole_d",
+  "hub_x",
+  "flange_d",
+  "flange_t",
+  "flange_bc",
+  "flange_bolt_d",
+  "bracket_t",
+  "br_w",
+  "shaft_stick",
+  "el_shaft_len",
+  "arm_h",
+  "boom_w",
+  "boom_t",
+  "boom_len",
+  "saddle_t",
+  "saddle_w",
+  "saddle_L",
+  "cl_t",
+  "cl_w",
+  "cl_x",
+  "sad_r0",
+  "la_x",
+  "la_w",
+  "la_t",
+  "la_off",
+  "cw_r",
+  "cw_a",
+  "cw_h",
+  "ant_r",
+  "ant_bw",
+  "ant_fwd",
+  "a145_len",
+  "a145_el",
+  "a435_len",
+  "a435_el",
+  "yagi_n",
+  "yagi_pitch",
+  "yagi_rod",
+  "idx_t",
+  "idx_x0",
+  "idz0",
+  "notch_w",
+  "notch_d",
+  "sens_w",
+  "sens_d",
+  "sens_h",
+  "sens_slit",
+  "sens_depth",
+  "azs_top",
+  "az_d",
+  "thr_D",
+  "thr_H",
+  "hous_h",
+  "hous_w",
+  "hous_bore",
+  "mb_gap",
+  "mb_top",
+  "mb_w",
+  "mb_d",
+  "mb_h",
+  "mb_bore",
+  "mast_d",
+  "mast_t",
+  "mast_len",
+  "ub_t",
+  "ub_h",
+  "ub_lug_w",
+  "ub_z1",
+  "ub_z2",
+  "mast_y",
+  "enc_w",
+  "enc_d",
+  "enc_h",
+  "enc_t",
+  "enc_x0",
+  "enc_y0",
+  "enc_gx",
+  "enc_gy",
+  "enc_wx",
+  "enc_wy",
+  "enc_screw_d",
+  "enc_screw_h",
+  "enc_screw_in",
+  "gland_d",
+  "gland_thread",
+  "gland_h",
+  "gland_in",
+  "wifi_hole",
+  "wifi_flange",
+  "wifi_thread",
+  "wifi_up",
+  "wifi_ant_d",
+  "wifi_ant_len",
+  "hs_l",
+  "hs_h",
+  "hs_base",
+  "hs_fin_n",
+  "hs_fin_pitch",
+  "hs_fin_t",
+  "hs_fin_h",
+  "pcb_w",
+  "pcb_d",
+  "pcb_t",
+  "dc_w",
+  "dc_d",
+  "dc_h"
+ ]
+}

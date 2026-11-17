@@ -68,7 +68,6 @@ def build(out, models, pattern_dir, scene_extra):
     cad = os.path.join(out, 'cad', 'lsr2')
     doc.saveAs(os.path.join(cad, 'LSR2_assembly.FCStd'))
     Part.makeCompound(list(models.values())).exportStep(os.path.join(cad, 'LSR2_assembly.step'))
-    App.closeDocument(doc.Name)
     scene = dict(rev=P.REV, el_axis=dict(point=[0, 0, AX.K['z_el']], dir=[0, 1, 0]), el_sign=-1, el_range=list(P.EL_RANGE), el_group=[n for n in EL_MOVING if n in models],
                  category={n: PT.BY_MODEL[n]['cat'] for n in models}, explode=PT.EXPLODE, **scene_extra)
     return scene

@@ -10,8 +10,8 @@
         "finished_cm3": 2395.976060561063,
         "preform_cm3": 2639.062020375429,
         "cast_cm3": 2639.062020375429,
-        "pattern_cm3": 12823.068341668773,
-        "pla_cm3": 3205.7670854171934,
+        "pattern_cm3": 12823.068341668379,
+        "pla_cm3": 3205.7670854170947,
         "core_cm3": 9336.599823016239,
         "machined_cm2": 371.01556645003234,
         "pattern_pieces": 5,
@@ -70,7 +70,7 @@
         "lost_pla": {
           "stock_mm": 3.0,
           "cast_cm3": 2666.375274175475,
-          "pla_cm3": 1451.2781832429473,
+          "pla_cm3": 1450.3626354668277,
           "watertight": true
         },
         "dowels": [
@@ -133,7 +133,7 @@
         "lost_pla": {
           "stock_mm": 3.0,
           "cast_cm3": 268.64,
-          "pla_cm3": 150.18188548800003,
+          "pla_cm3": 150.18188548799998,
           "watertight": true
         },
         "dowels": [
@@ -208,7 +208,7 @@
         "lost_pla": {
           "stock_mm": 3.0,
           "cast_cm3": 508.56375562492263,
-          "pla_cm3": 184.62822392309423,
+          "pla_cm3": 184.39060743368827,
           "watertight": true
         },
         "dowels": [
@@ -276,7 +276,7 @@
         "lost_pla": {
           "stock_mm": 3.0,
           "cast_cm3": 88.95463033995416,
-          "pla_cm3": 44.04096731695063,
+          "pla_cm3": 44.02102639360795,
           "watertight": true
         },
         "dowels": [
@@ -335,7 +335,7 @@
         "lost_pla": {
           "stock_mm": 3.0,
           "cast_cm3": 176.00799999999995,
-          "pla_cm3": 73.67072484800002,
+          "pla_cm3": 73.67072484799999,
           "watertight": true
         },
         "dowels": [
@@ -394,7 +394,7 @@
         "lost_pla": {
           "stock_mm": 3.0,
           "cast_cm3": 33.6,
-          "pla_cm3": 15.187301199999984,
+          "pla_cm3": 15.187301199999999,
           "watertight": true
         },
         "dowels": [
@@ -525,6 +525,185 @@
       "inputs_kg": 1.3,
       "differs_over_10pct": true
     }
+  },
+  "gearbox": {
+    "source": "nmrv030",
+    "halves": {
+      "gearbox_half_low": {
+        "rev": "A0",
+        "qty": 2,
+        "finished_cm3": 117.78110873722852,
+        "preform_cm3": 154.14010129310714,
+        "cast_cm3": 154.14010129310714,
+        "pattern_cm3": 254.48608329547585,
+        "pla_cm3": 63.62152082386896,
+        "core_cm3": 183.7913071331397,
+        "machined_cm2": 123.63548412343586,
+        "pattern_pieces": 1,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "face disc around the wheel pocket (r40, pocket r24)",
+            "d": 16.0,
+            "wall": 5.0,
+            "ratio": 3.2,
+            "ok": false,
+            "mitigation": "riser on the disc face and chill ring around the pocket; foundry to confirm"
+          },
+          {
+            "name": "output boss ring (r27.5, cast hole r18.5)",
+            "d": 9.0,
+            "wall": 5.0,
+            "ratio": 1.8,
+            "ok": true,
+            "mitigation": "riser on the boss face; foundry to confirm"
+          },
+          {
+            "name": "worm tube wall (r22, seat r17.5)",
+            "d": 4.5,
+            "wall": 4.5,
+            "ratio": 1.0,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "fin-tube tee",
+            "d": 6.5,
+            "wall": 4.0,
+            "ratio": 1.62,
+            "ok": true,
+            "mitigation": ""
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 160.9146603282813,
+          "pla_cm3": 70.3396698817335,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -65.0,
+            -65.0
+          ],
+          [
+            82.5,
+            83.5
+          ]
+        ],
+        "corebox_ok": true
+      },
+      "gearbox_half_up": {
+        "rev": "A0",
+        "qty": 2,
+        "finished_cm3": 115.22842362166439,
+        "preform_cm3": 154.14033125932494,
+        "cast_cm3": 154.14033125932494,
+        "pattern_cm3": 254.48609113271092,
+        "pla_cm3": 63.62152278317773,
+        "core_cm3": 183.79130758368424,
+        "machined_cm2": 123.63548414572375,
+        "pattern_pieces": 1,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "face disc around the wheel pocket (r40, pocket r24)",
+            "d": 16.0,
+            "wall": 5.0,
+            "ratio": 3.2,
+            "ok": false,
+            "mitigation": "riser on the disc face and chill ring around the pocket; foundry to confirm"
+          },
+          {
+            "name": "output boss ring (r27.5, cast hole r18.5)",
+            "d": 9.0,
+            "wall": 5.0,
+            "ratio": 1.8,
+            "ok": true,
+            "mitigation": "riser on the boss face; foundry to confirm"
+          },
+          {
+            "name": "worm tube wall (r22, seat r17.5)",
+            "d": 4.5,
+            "wall": 4.5,
+            "ratio": 1.0,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "fin-tube tee",
+            "d": 6.5,
+            "wall": 4.0,
+            "ratio": 1.62,
+            "ok": true,
+            "mitigation": ""
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 160.9148931954102,
+          "pla_cm3": 70.33969430746048,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -65.0,
+            -65.0
+          ],
+          [
+            82.5,
+            83.5
+          ]
+        ],
+        "corebox_ok": true
+      }
+    },
+    "wg30": {
+      "gear": {
+        "d1": 20.0,
+        "d2": 40.0,
+        "a": 30.0,
+        "ratio": 80.0,
+        "gamma": 1.4320961841646465,
+        "lead": 1.5707963267948966,
+        "tip1": 21.0,
+        "root1": 18.8,
+        "tip2": 41.0,
+        "root2": 38.8,
+        "q_for_a": 40.0
+      },
+      "eta_run": 0.3192315462339126,
+      "eta_hold": 0.18972691070741168
+    },
+    "housing_area_cm2": 677.5866547071832,
+    "internals_cm3": {
+      "wheel": 30.135584155420787,
+      "worm": 22.250769792021213,
+      "bearings": 46.6879938231613
+    },
+    "interference_mm3": {
+      "az/body": {
+        "envelope": 6021.539
+      },
+      "az/lid": {
+        "envelope": 0.0
+      },
+      "az/mast_bracket": {
+        "envelope": 0.0
+      },
+      "el/body": {
+        "envelope": 5614.519
+      },
+      "el/lid": {
+        "envelope": 0.0
+      },
+      "el/mast_bracket": {
+        "envelope": 0.0
+      }
+    },
+    "el_sweep_extra_mm3": 0.0
   },
   "checks": {
     "limit_mm3": 1.0,

@@ -54,6 +54,15 @@ Boom clamp legs: 3000 N preload each. Re-torque after the first week.
 
 Gearboxes only transmit torque: the external loads go through the dedicated bearings. Slide the gearbox hollow output on the keyed shaft with Tef-Gel (push fit, no rocking), bolt the flange with the torque above, and fit the motor with M5 screws. Do not force the shaft against the worm wheel; the shaft must be free axially in the gearbox hub (the bearings locate it).
 
+## 5b. Own gearbox LSR-WG30 assembly (only with `GEARBOX_SOURCE = 'lsr_wg30'`)
+
+1. Machine both halves (seats, bores, joint faces, taps, dowel holes, see the cast spec) and deburr; check the dowel holes and the bearing seats with the inspection sheet. Clean all cast cavities of sand.
+2. Press the 2 × 61905 (DATASHEET 25×42×9, VERIFY) onto the wheel carrier seats with the wheel on the carrier (CuSn12 rim, keyed or pressed, VERIFY), and the 2 × 6003 on the worm; circlip plus a shim set (0.1 and 0.2 mm) locate the worm axially.
+3. Lay the lower half on the bench, fit the output seal (lip towards the oil), place the wheel assembly and then the worm; check the mesh pattern with marking blue and shim the worm axially until the backlash is 0.05-0.15 mm at the output (dial gauge on a lever arm, MEASURE).
+4. Gasket: liquid gasket (anaerobic or RTV, VERIFY) as a thin bead around the joint groove, or a Ø2 O-ring cord in it. Fit the 2 dowels, close the upper half, tighten the 4 M5 screws in a cross pattern to 5 N·m (PARAMETRIC) and re-check the backlash and the free rotation by hand (no tight spot).
+5. Fill with about 40 g of NLGI 00 grease (VERIFY) through the open upper half before closing, or through the worm tunnel; fit the input seal and the NEMA23 motor.
+6. Run-in: 10 minutes at low speed both directions, then check the housing temperature (hand-warm) and re-tighten the screws.
+
 ## 6. Yoke, saddle, boom, counterweights and balance
 
 1. Yoke arms on the shaft ends with keys and axial retainers; saddle bolted between the arms.
