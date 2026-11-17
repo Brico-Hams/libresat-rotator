@@ -1,274 +1,171 @@
 #!/usr/bin/env python3
-"""LSR-2 material and cost budget: CNC plate nesting, sand-casting stock, PLA patterns/prototype.
+"""LSR-2 phase 11 material and cost budget: per-route (A cast / B CNC) metal, waste, PLA, machining time and cost per structural part,
+the route comparison with the cheaper default route per part, turned shafts and bought parts.
 
-Writes docs/LSR2_MATERIALS.md. Geometry comes from cad/lsr2/plates.py, process data from params.py.
-`python calc/lsr2_materials.py --check` runs the self-test only.
+Writes docs/LSR2_MATERIALS.md. Geometry comes from build/lsr2_build_report.json (key `parts`), process data from cad/lsr2/params.py.
+`python calc/lsr2_materials.py --check` runs the self-test only. Every price and rate is PARAMETRIC / VERIFY with a quote.
 """
 import json, math, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
 import params as P  # noqa: E402
-import plates as PL  # noqa: E402
-import cast_parts as CP  # noqa: E402
+import axes as AX  # noqa: E402
 
-PRICE_PLATE_EUR_KG = 9.0    # 6061-T6 plate, full sheet: VERIFY with a quote
-PRICE_PLATE_CUT_EUR_KG = 14.0   # same, cut to size (blank + margin per side): VERIFY with a quote
-CUT_EUR_PER_M = 1.5         # CNC cutting estimate per metre of cut path: VERIFY
-PRICE_A356_EUR_KG = 4.5     # A356 ingot: VERIFY
-FOUNDRY_EUR_KG = 8.0        # outsourced sand casting, per kg of casting: VERIFY
-OUTSOURCED = True
-YIELD = 0.55                # casting mass / poured metal (gating and risers): VERIFY with the foundry
-SHEET = (1000.0, 500.0)     # standard sheet, mm: VERIFY
-MARGIN, KERF = 10.0, 3.0    # blank margin per side, nesting kerf (mm)
-PLA_INFILL, PLA_WALL_CM = 0.30, 0.12
-ESTIMATES = {'az_housing': (350.0, 120.0), 'el_bearing_housing': (117.0, 129.0), 'boom_socket': (131.0, 39.0)}   # (finished cm3, machined cm2): ESTIMATE
-PRICE_SS_EUR_KG = 6.0       # 1.4404 round bar: VERIFY
-SS_G_CM3 = CP.SS_G_CM3
-PRICE_PLA_EUR_KG = 20.0     # VERIFY
-PRICE_TUBE_EUR_KG = 8.0     # 6063 square tube 40x40x3: VERIFY
+C = P.CNC
+PRICE_A356_EUR_KG = 4.5     # PARAMETRIC (VERIFY): A356 ingot
+FOUNDRY_EUR_KG = 8.0        # PARAMETRIC (VERIFY): outsourced sand casting, per kg of casting
+YIELD = 0.55                # PARAMETRIC: casting mass / poured metal (gating and risers), to agree with the foundry
+PRICE_SS_EUR_KG = 6.0       # PARAMETRIC (VERIFY): 1.4404 round bar
+PRICE_PLA_EUR_KG = 20.0     # PARAMETRIC (VERIFY)
+PRICE_TUBE_EUR_KG = 8.0     # PARAMETRIC (VERIFY): 6063 square tube 40x40x3
+A_SETUPS = 2                # PARAMETRIC: machining set-ups of a cast part (datums + faces, then seats and threads)
+TIE = 0.05                  # costs within 5 % count as equal: the lighter route wins (light and cheap)
 BOUGHT = [                  # (item, qty, unit EUR): every price VERIFY with a quote
-    ('NMRV030 worm gearbox 80:1, Ø14 hollow', 2, 55.0), ('NEMA23 stepper 57BYG250H-8 2.8 N·m', 2, 18.0), ('6206-2RS bearing (AZ pair + EL pair)', 4, 3.5),
-    ('51206 thrust bearing', 1, 6.0), ('Keys DIN 6885 (2x 5x5, 1x 8x7)', 3, 0.5),
-    ('M6 U-bolts for the Yagi boom', 4, 1.5), ('M8 U-bolts for the mast', 2, 2.5), ('V-ring seals (AZ + EL VA15/20) + Ø6 cross pin', 1, 3.0),
-    ('DIN 471 Ø30 circlip + M30x56x3 stainless washer shim(s) under the 51206 (Mk5 shim; cheaper than a DIN 705 Ø30 set collar, ~4 EUR)', 2, 0.7),
-    ('AZ top retaining collar: DIN 705 Ø14 flanged set collar + M6 screw (cheaper than a turned disc)', 1, 2.5),
-    ('M8 through-bolts + nuts + washers, boom in the socket (2 sets)', 1, 1.0), ('M6 screws, motors/gearboxes/bracket/hub/housing (about 40)', 1, 4.0),
-    ('EL bearing circlips: 2x DIN 471 Ø30 + 2x DIN 472 Ø62', 1, 1.2),
-    ('2x slotted photo-interrupter (EE-SX1103 class) + printed ASA index discs/brackets + M3 hardware', 1, 5.0)]
+    ('NMRV030 worm gearbox 80:1, Ø14 hollow', 2, 55.0), ('NEMA23 stepper 57BYG250H-8 2.8 N·m', 2, 18.0),
+    ('6206-2RS bearing (AZ pair)', 2, 3.5), ('6004-2RS bearing (EL pair, one each side of the body)', 2, 2.5),
+    ('51206 thrust bearing', 1, 6.0), ('Keys DIN 6885 (2x 5x5, 1x 6x6)', 3, 0.5),
+    ('M6 U-bolts for the Yagi boom', 4, 1.5), ('M8 U-bolts for the mast', 2, 2.5), ('V-ring seals (AZ + EL) + Ø6 cross pin', 1, 3.0),
+    ('DIN 471 Ø30 circlip + M30x56x3 stainless washer shim(s) under the 51206 (Mk5 shim)', 2, 0.7),
+    ('AZ top retaining collar: DIN 705 Ø14 flanged set collar + M6 screw', 1, 2.5),
+    ('M6 screws, motors/gearboxes/yoke/lid (about 60)', 1, 6.0),
+    ('EL bearing circlips: 2x DIN 472 Ø42 + AZ seat circlips', 1, 1.2),
+    ('Lid gasket cord + 2x slotted photo-interrupter (EE-SX1103 class, index; actuator design open)', 1, 7.0)]
 REPORT = os.path.join(ROOT, 'build', 'lsr2_build_report.json')
+PARTS = ('body', 'lid', 'mast_bracket', 'yoke_arm', 'saddle', 'boom_clamp')
 
 
 def load_report():
-    if os.path.exists(REPORT):
-        with open(REPORT, encoding='utf-8') as fh:
-            r = json.load(fh)
-        if 'cast' in r and 'shafts' in r:
-            return r
-    return None
+    if not os.path.exists(REPORT):
+        sys.exit('build/lsr2_build_report.json missing: run `make lsr2` (FreeCAD build) first')
+    with open(REPORT, encoding='utf-8') as fh:
+        r = json.load(fh)
+    if 'parts' not in r:
+        sys.exit('build/lsr2_build_report.json is a phase-6 report: rebuild with the phase-11 cad/lsr2/build.py')
+    return r
 
 
-def finished_area_mm2(size, holes):
-    return size[0] * size[1] - sum(math.pi * d * d / 4 for _, _, d in holes)
+def pla_g(cm3):
+    return cm3 * P.PLA_G_CM3
 
 
-def cut_length_mm(size, holes):
-    return 2 * (size[0] + size[1]) + sum(math.pi * d for _, _, d in holes)
+def route_a(v, qty):
+    """Route A cost of one part from its build-report entry: poured A356, foundry, PLA pattern + cores, machining of the stock pads."""
+    cast_g = v['cast_cm3'] * P.ALU_CAST_G_CM3
+    poured_g = cast_g / YIELD
+    metal = poured_g / 1000 * PRICE_A356_EUR_KG + cast_g / 1000 * FOUNDRY_EUR_KG
+    minutes = v['machined_cm2'] * v['stock_mm'] / 10 / C['mrr_cm3_min'] + A_SETUPS * C['setup_min']
+    machine = minutes / 60 * C['rate_eur_h']
+    pla = pla_g(v['pla_cm3'] + v['core_cm3'] * P.CAST['pla_fill']) / P.CAST['series']
+    fin_g = v['finished_cm3'] * P.ALU_CAST_G_CM3
+    return dict(route='A', alloy='A356-T6', fin_g=fin_g, stock_g=poured_g, waste=100 * (1 - fin_g / poured_g), pla_g=pla, minutes=minutes,
+                metal_eur=qty * metal, machine_eur=qty * machine, pla_eur=pla / 1000 * PRICE_PLA_EUR_KG, eur=qty * (metal + machine) + pla / 1000 * PRICE_PLA_EUR_KG)
 
 
-def nest(items, sheet=SHEET, kerf=KERF):
-    """Shelf packing of rectangles [(w, h)] on identical sheets; returns the number of sheets."""
-    pieces = sorted(((max(w, h) + kerf, min(w, h) + kerf) for w, h in items), key=lambda r: -r[1])
-    sheets = []                                  # each sheet: list of shelves [height, used width]
-    for w, h in pieces:
-        assert w <= sheet[0] and h <= sheet[1], 'blank larger than the sheet'
-        for shelves in sheets:
-            hit = next((s for s in shelves if h <= s[0] and s[1] + w <= sheet[0]), None)
-            if hit:
-                hit[1] += w
-                break
-            if sum(s[0] for s in shelves) + h <= sheet[1]:
-                shelves.append([h, w])
-                break
-        else:
-            sheets.append([[h, w]])
-    return len(sheets)
+def route_b(v, qty):
+    """Route B cost of one part from its build-report entry (cad/lsr2/route_b.cost: block stock + machining minutes at the PARAMETRIC removal rate)."""
+    fin_g = v['finished_cm3'] * C['density']
+    stock_g = v['blank_kg'] * 1000
+    return dict(route='B', alloy=v['alloy'], fin_g=fin_g, stock_g=stock_g, waste=100 * (1 - fin_g / stock_g), pla_g=0.0, minutes=v['minutes'],
+                metal_eur=qty * v['stock_eur'], machine_eur=qty * v['machine_eur'], pla_eur=0.0, eur=qty * (v['stock_eur'] + v['machine_eur']))
 
 
-def tube_kg():
-    w, h, t = P.CROSS_BOOM
-    return (w * h - (w - 2 * t) * (h - 2 * t)) * P.CROSS_BOOM_L * 2.70e-6   # 6063, 2.70 g/cm3
+def pick(a, b):
+    """Default route: the cheaper; within TIE the lighter."""
+    if abs(a['eur'] - b['eur']) <= TIE * min(a['eur'], b['eur']):
+        return 'A' if a['fin_g'] <= b['fin_g'] else 'B'
+    return 'A' if a['eur'] < b['eur'] else 'B'
 
 
-def plate_rows():
+def compare(parts):
+    out = {}
+    for n in PARTS:
+        v = parts[n]
+        q = v['qty']
+        a, b = route_a(v['route_a'], q), route_b(v['route_b'], q)
+        out[n] = dict(qty=q, A=a, B=b, default=pick(a, b))
+    return out
+
+
+def tube_kg(rep=None):
+    return rep['items']['cross_boom']['mass_g'] / 1000 if rep else AX.K['boom_len'] * (AX.K['boom_w'] ** 2 - (AX.K['boom_w'] - 2 * AX.K['boom_t']) ** 2) * 2.70e-6
+
+
+def shaft_rows(rep):
     rows = []
-    for name, p in PL.PLATES.items():
-        size = (p['u'][1] - p['u'][0], p['v'][1] - p['v'][0])
-        cuts = p['holes']
-        area = finished_area_mm2(size, cuts)
-        cut = cut_length_mm(size, cuts)
-        blank = (size[0] + 2 * MARGIN, size[1] + 2 * MARGIN)
-        fin_g = area * p['t'] * P.ALU_PLATE_G_CM3 * 1e-3
-        blank_g = blank[0] * blank[1] * p['t'] * P.ALU_PLATE_G_CM3 * 1e-3
-        rows.append(dict(name=name, t=p['t'], area_cm2=area / 100, fin_g=fin_g, blank=blank, blank_g=blank_g,
-                         waste=100 * (1 - fin_g / blank_g), cut_m=cut / 1000,
-                         vol_cm3=area * p['t'] / 1000, surf_cm2=(2 * area + cut * p['t']) / 100))
+    for n, segs in AX.SHAFTS.items():
+        d, ln = AX.shaft_stock(segs)
+        stock = math.pi * d * d / 4 * ln / 1000 * AX.SS_G_CM3
+        rows.append(dict(name=n, d=d, l=ln, stock_g=stock, fin_g=rep['shafts'][n]['mass_g'], cost=stock / 1000 * PRICE_SS_EUR_KG))
     return rows
 
 
-def plate_totals():
-    """Per thickness: the cheaper of full sheets (PRICE_PLATE_EUR_KG) and cut-to-size blanks (PRICE_PLATE_CUT_EUR_KG)."""
-    rows = plate_rows()
-    sheets = {}
-    for t in sorted({r['t'] for r in rows}):
-        n = nest([r['blank'] for r in rows if r['t'] == t])
-        full_kg = n * SHEET[0] * SHEET[1] * t * P.ALU_PLATE_G_CM3 * 1e-6
-        cut_kg = sum(r['blank_g'] for r in rows if r['t'] == t) / 1000
-        full_eur, cut_eur = full_kg * PRICE_PLATE_EUR_KG, cut_kg * PRICE_PLATE_CUT_EUR_KG
-        choice = 'cut-to-size' if cut_eur < full_eur else 'full sheet'
-        sheets[t] = dict(n=n, full_kg=full_kg, full_eur=full_eur, cut_kg=cut_kg, cut_eur=cut_eur, choice=choice,
-                         kg=cut_kg if choice == 'cut-to-size' else full_kg, eur=min(full_eur, cut_eur))
-    stock_kg = sum(s['kg'] for s in sheets.values())
-    fin_kg = sum(r['fin_g'] for r in rows) / 1000
-    cut_m = sum(r['cut_m'] for r in rows)
-    return dict(rows=rows, sheets=sheets, stock_kg=stock_kg, fin_kg=fin_kg, waste=100 * (1 - fin_kg / stock_kg), cut_m=cut_m,
-                stock_eur=sum(s['eur'] for s in sheets.values()), cost=sum(s['eur'] for s in sheets.values()) + cut_m * CUT_EUR_PER_M)
-
-
-def pla_g(volume_cm3, surface_cm2):
-    """PLA mass: solid walls plus 30 % infill inside (approximation)."""
-    shell = min(volume_cm3, surface_cm2 * PLA_WALL_CM)
-    return (shell + PLA_INFILL * (volume_cm3 - shell)) * P.PLA_G_CM3
-
-
-def casting_budget(name, finished_volume_cm3, machined_area_cm2, yield_=YIELD, outsourced=OUTSOURCED, extra_cm3=0.0):
-    """extra_cm3: metal in bores that are cast solid and bored out later."""
-    c = P.CAST
-    pattern = (finished_volume_cm3 + extra_cm3 + machined_area_cm2 * c['machining'] / 10) * c['shrink'] ** 3
-    mass_g = pattern * P.ALU_CAST_G_CM3
-    poured_g = mass_g / yield_
-    surf = 6 * pattern ** (2 / 3)               # cube-equivalent surface of the pattern
-    cost = poured_g / 1000 * PRICE_A356_EUR_KG + (mass_g / 1000 * FOUNDRY_EUR_KG if outsourced else 0.0)
-    return dict(name=name, finished=finished_volume_cm3, pattern_cm3=pattern, mass_g=mass_g, poured_g=poured_g,
-                pla_g=pla_g(pattern, surf), cost=cost, machined=machined_area_cm2, estimate=True)
-
-
-def cast_rows():
-    """One casting budget per cast part: real CAD values from the build report, else the ESTIMATE rows."""
-    rep = load_report()
-    if not rep:
-        return [casting_budget(n, *v) for n, v in ESTIMATES.items()], [], None
-    rows, pats = [], {}
-    for n, v in rep['cast'].items():
-        c = casting_budget(n, v['volume_cm3'], v['machined_area_cm2'], extra_cm3=v['bore_solid_cm3'])
-        c.update(estimate=False, cad_mass_g=v['mass_g'])
-        rows.append(c)
-        pats[v['pattern']] = (v['pattern_volume_cm3'], v['pattern_area_cm2'])
-    cb = rep.get('core_box', {}).get('volume_cm3', 0.0)
-    pats['az_housing_corebox'] = (cb, 6 * cb ** (2 / 3))
-    return rows, [(n, v, a, pla_g(v, a)) for n, (v, a) in pats.items()], rep
-
-
-def shaft_rows():
-    rep = load_report()
-    rows = []
-    for n, segs in CP.SHAFTS.items():
-        d, ln = CP.shaft_stock(segs)
-        fin = rep['shafts'][n]['mass_g'] if rep else CP.shaft_volume_cm3(segs, CP.SHAFT_BORES[n]) * SS_G_CM3
-        stock = math.pi * d * d / 4 * ln / 1000 * SS_G_CM3
-        rows.append(dict(name=n, d=d, l=ln, stock_g=stock, fin_g=fin, cost=stock / 1000 * PRICE_SS_EUR_KG))
-    return rows
-
-
-def totals():
-    pt = plate_totals()
-    cast, pats, rep = cast_rows()
-    shafts = shaft_rows()
-    proto = sum(pla_g(r['vol_cm3'], r['surf_cm2']) for r in pt['rows'])
-    pat_g = sum(p[3] for p in pats) if pats else sum(c['pla_g'] for c in cast)
-    bought = sum(q * u for _, q, u in BOUGHT) + tube_kg() * PRICE_TUBE_EUR_KG
-    al_kg = pt['stock_kg'] + sum(c['poured_g'] for c in cast) / 1000
-    fin_kg = pt['fin_kg'] + sum(c['finished'] * P.ALU_CAST_G_CM3 for c in cast) / 1000
-    ss_kg = sum(s['stock_g'] for s in shafts) / 1000
-    pla_kg = (pat_g + proto) / 1000
-    cost = (pt['cost'] + sum(c['cost'] for c in cast) + ss_kg * PRICE_SS_EUR_KG + pla_kg * PRICE_PLA_EUR_KG)
-    return dict(plates=pt, cast=cast, patterns=pats, shafts=shafts, proto_g=proto, pat_g=pat_g, al_kg=al_kg, fin_kg=fin_kg,
-                ss_kg=ss_kg, pla_kg=pla_kg, cost=cost, bought=bought, total=cost + bought, real=rep is not None)
+def totals(rep=None):
+    rep = rep or load_report()
+    cmp_ = compare(rep['parts'])
+    shafts = shaft_rows(rep)
+    chosen = {n: c[c['default']] for n, c in cmp_.items()}
+    bought = sum(q * u for _, q, u in BOUGHT) + tube_kg(rep) * PRICE_TUBE_EUR_KG
+    fab_eur = sum(c['eur'] - c['pla_eur'] for c in chosen.values()) + sum(s['cost'] for s in shafts)
+    pla_kg = sum(c['pla_g'] for c in chosen.values()) / 1000
+    fab_g = sum(cmp_[n]['qty'] * chosen[n]['fin_g'] for n in PARTS) + sum(s['fin_g'] for s in shafts)
+    return dict(cmp=cmp_, shafts=shafts, chosen=chosen, fab_g=fab_g, fab_eur=fab_eur, pla_kg=pla_kg, pla_eur=pla_kg * PRICE_PLA_EUR_KG,
+                bought=bought, total=fab_eur + pla_kg * PRICE_PLA_EUR_KG + bought, rep=rep)
 
 
 def report():
     t = totals()
-    pt = t['plates']
-    o = ['# BricoHams · LibreSat LSR-2: materials and cost budget (generated by calc/lsr2_materials.py)', '',
+    o = ['# BricoHams · LibreSat LSR-2: materials and cost budget, both routes (generated by calc/lsr2_materials.py)', '',
          '<!-- palette: blue #12263f, orange #e8871e -->',
          'Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina.', '',
-         'Goal: light and cheap. All plates are 8 mm, no lightening holes (cad/lsr2/plates.py). '
-         'Prices, yield and sheet size are generic: **VERIFY** with local quotes.', '',
-         f'Parameters (VERIFY): full sheet {PRICE_PLATE_EUR_KG} EUR/kg ({P.PLATE["alloy"]}), cut-to-size {PRICE_PLATE_CUT_EUR_KG} EUR/kg '
-         f'(blank + margin), cutting {CUT_EUR_PER_M} EUR/m, '
-         f'A356 ingot {PRICE_A356_EUR_KG} EUR/kg, foundry {FOUNDRY_EUR_KG} EUR/kg, yield {YIELD}, sheet {SHEET[0]:g}x{SHEET[1]:g} mm, '
-         f'blank margin {MARGIN:g} mm, kerf {KERF:g} mm.', '',
-         '## CNC plates (one head)', '',
-         '| Plate | t (mm) | Finished area (cm²) | Finished mass (g) | Blank (mm) | Blank mass (g) | Waste (%) | Cut path (m) |',
-         '|---|---|---|---|---|---|---|---|']
-    for r in pt['rows']:
-        o.append(f"| {r['name']} | {r['t']:g} | {r['area_cm2']:.0f} | {r['fin_g']:.0f} | {r['blank'][0]:.0f}x{r['blank'][1]:.0f} | "
-                 f"{r['blank_g']:.0f} | {r['waste']:.0f} | {r['cut_m']:.2f} |")
-    o += ['', '| Thickness (mm) | Full sheets | Full sheet kg / EUR | Cut-to-size kg / EUR | Choice |', '|---|---|---|---|---|']
-    o += [f"| {k:g} | {s['n']} | {s['full_kg']:.2f} / {s['full_eur']:.0f} | {s['cut_kg']:.2f} / {s['cut_eur']:.0f} | **{s['choice']}** |"
-          for k, s in pt['sheets'].items()]
-    o += ['', f"Plate stock {pt['stock_kg']:.2f} kg for {pt['fin_kg']:.2f} kg finished: total waste {pt['waste']:.0f} %. "
-          f"Cost: stock {pt['stock_eur']:.0f} EUR + cutting {pt['cut_m'] * CUT_EUR_PER_M:.0f} EUR "
-          f"= **{pt['cost']:.0f} EUR** (the cheaper option per thickness; the choice follows automatically from the prices above).", '',
-          '## Sand casting, phase 3 parts' + ('' if t['real'] else ': ESTIMATE (no build report yet, run `make lsr2`)'), '',
-          f"Casting metal = (finished + metal in bores cast solid + machined area x {P.CAST['machining']} mm) x shrink^3 "
-          f"({P.CAST['shrink']}) at {P.ALU_CAST_G_CM3} g/cm³ (A356); poured metal = casting / {YIELD}. "
-          f"Volumes and machined areas come from build/lsr2_build_report.json. "
-          f"PLA at {P.PLA_G_CM3} g/cm³, {PLA_INFILL * 100:.0f} % infill, {PLA_WALL_CM * 10:.1f} mm walls.", '',
-          '| Part | Finished (cm³) | Machined (cm²) | Casting (g) | Poured (g) | Cost (EUR) |', '|---|---|---|---|---|---|']
-    tag = '' if t['real'] else ' (ESTIMATE)'
-    for c in t['cast']:
-        o.append(f"| {c['name']}{tag} | {c['finished']:.0f} | {c['machined']:.0f} | {c['mass_g']:.0f} | {c['poured_g']:.0f} | {c['cost']:.1f} |")
-    o += ['', '| PLA pattern / core box (printed once) | Volume (cm³) | Surface (cm²) | PLA (g) |', '|---|---|---|---|']
-    o += [f'| {n} | {v:.0f} | {a:.0f} | {g:.0f} |' for n, v, a, g in t['patterns']]
-    if not t['patterns']:
-        o.append(f"| patterns (ESTIMATE) | | | {t['pat_g']:.0f} |")
-    o += ['', '## Turned shafts (stainless 1.4404)', '',
-          f'Stock = finished length + 10 mm, diameter = largest step + 3 mm; {SS_G_CM3} g/cm³; {PRICE_SS_EUR_KG} EUR/kg (VERIFY).', '',
+         'Goal: light and cheap. Geometry from `build/lsr2_build_report.json` (phase-11 build); every price, rate and yield is PARAMETRIC and '
+         '**VERIFY** with local quotes. Route A = printed pattern, sand-cast A356-T6, machining of the stock pads; route B = 3-axis CNC from 6082/6061 block.', '',
+         f'Parameters: A356 ingot {PRICE_A356_EUR_KG} EUR/kg, foundry {FOUNDRY_EUR_KG} EUR/kg of casting, yield {YIELD}, shrink {P.CAST["shrink"]}, '
+         f'PLA {PRICE_PLA_EUR_KG:g} EUR/kg at {P.PLA_G_CM3} g/cm³ with {P.CAST["pla_fill"] * 100:.0f} % fill, series {P.CAST["series"]} '
+         f'(pattern shared by that many rotators), CNC block {C["price_eur_kg"]} EUR/kg, removal rate {C["mrr_cm3_min"]} cm³/min, '
+         f'set-up {C["setup_min"]} min, machine {C["rate_eur_h"]} EUR/h, cast machining {A_SETUPS} set-ups.', '',
+         '## Route comparison per part (all quantities of one rotator)', '',
+         '| Part | Qty | Route | Alloy | Finished (g each) | Stock (g each) | Waste (%) | PLA (g) | Machining (min each) | Cost (EUR) | Default |',
+         '|---|---|---|---|---|---|---|---|---|---|---|']
+    for n, c in t['cmp'].items():
+        for r in 'AB':
+            x = c[r]
+            o.append(f"| {n} | {c['qty']} | {r} | {x['alloy']} | {x['fin_g']:.0f} | {x['stock_g']:.0f} | {x['waste']:.0f} | {x['pla_g']:.0f} | "
+                     f"{x['minutes']:.0f} | {x['eur']:.1f} | {'**yes**' if c['default'] == r else ''} |")
+    o += ['', 'Route B cost counts the number of set-ups of docs/LSR2_ROUTE_B_CNC.md; the body is machined as bolted slabs (joint sealing is an open decision) '
+          'and some of its horizontal features need a 4th axis or an angle plate (also open), so its route-B number is optimistic. '
+          'Default route per part = cheaper; within 5 % the lighter.', '',
+          '## Turned shafts (stainless 1.4404)', '',
+          f'Stock = finished length + 10 mm, diameter = largest step + 3 mm; {AX.SS_G_CM3} g/cm³; {PRICE_SS_EUR_KG} EUR/kg (VERIFY).', '',
           '| Shaft | Stock Ø x L (mm) | Stock (g) | Finished (g) | Cost (EUR) |', '|---|---|---|---|---|']
     o += [f"| {s['name']} | {s['d']:g} x {s['l']:g} | {s['stock_g']:.0f} | {s['fin_g']:.0f} | {s['cost']:.1f} |" for s in t['shafts']]
-    o += ['', 'Dimension tables (axis coordinate from the head frame: z for az_shaft, y for el_shaft):', '',
-          '| Shaft | From (mm) | To (mm) | Ø (mm) |', '|---|---|---|---|']
-    o += [f'| {n} | {lo:g} | {hi:g} | {d:g} |' for n, segs in CP.SHAFTS.items() for lo, hi, d in segs]
-    o += ['', 'az_shaft: HOLLOW, Ø16 bore from the bottom end to z=-1 (stops below the Ø14 step, which stays solid), Ø6 radial cable exit '
-          'at z=-4; cables run up the AZ axis, no wrap round the mast. Ø14 h7 x 80 keyed top (key 5x5, slot 40 long) into the gearbox '
-          'hollow output and up to the flanged retaining collar (DIN 705 Ø14, M6 set screw), Ø30 bearing seats, no integral collar (the 51206 shaft '
-          'washer rests on a DIN 471 circlip + M30x56x3 stainless washer shim(s), see bought '
-          'parts), Ø30 bottom in the mast clamp with a Ø6 cross-pin hole. Stock is solid bar drilled from the bottom end (gun drill, '
-          'VERIFY with the machinist); stock mass above is the full bar. el_shaft: Ø14 h7 through the EL gearbox hub (key 5, torque only) and 37 mm '
-          'beyond it, Ø30 through the two 6206 of the el_bearing_housing (DIN 471 circlips) to the boom_socket hub (key 8x7). Cross-boom tube 6063 '
-          f'{P.CROSS_BOOM[0]}x{P.CROSS_BOOM[1]}x{P.CROSS_BOOM[2]} x {P.CROSS_BOOM_L} mm = {tube_kg():.2f} kg (included in the bought-part total). '
-          'Files: cnc/lsr2/az_shaft.step, cnc/lsr2/el_shaft.step.', '',
+    o += ['', f'Cross boom 6063 {AX.K["boom_w"]:g}x{AX.K["boom_w"]:g}x{AX.K["boom_t"]:g} x {AX.K["boom_len"]:g} mm = {tube_kg(t["rep"]):.2f} kg (in the bought-part total).', '',
           '## Bought parts (every price VERIFY)', '', '| Item | Qty | Unit (EUR) | Total (EUR) |', '|---|---|---|---|']
     o += [f'| {n} | {q} | {u:.2f} VERIFY | {q * u:.2f} |' for n, q, u in BOUGHT]
-    o += ['', f"Full 1:1 PLA prototype of all plates: {t['proto_g'] / 1000:.2f} kg.", '', '## Totals', '',
-          '| Item | Value |', '|---|---|',
-          f"| Aluminium bought (plate + poured ingot) | {t['al_kg']:.2f} kg |",
-          f"| Stainless bar (shafts) | {t['ss_kg']:.2f} kg |",
-          f"| PLA (patterns + prototype) at {PRICE_PLA_EUR_KG:g} EUR/kg VERIFY | {t['pla_kg']:.2f} kg |",
-          f"| Material + cutting + foundry + PLA cost (VERIFY) | {t['cost']:.0f} EUR |",
-          f"| Bought parts (VERIFY) | {t['bought']:.0f} EUR |",
-          f"| Total estimated cost (VERIFY) | {t['total']:.0f} EUR |",
-          f"| Finished head mass (plates + cast parts, without shafts and bought parts) | {t['fin_kg']:.2f} kg |",
-          f"| Finished / bought aluminium | {100 * t['fin_kg'] / t['al_kg']:.0f} % |", '']
+    o += ['', '## Totals (default routes)', '', '| Item | Value |', '|---|---|',
+          f"| Fabricated finished mass (structural parts + shafts) | {t['fab_g']:.0f} g |",
+          f"| Fabricated cost, metal + foundry/blank + machining + shafts (VERIFY) | {t['fab_eur']:.0f} EUR |",
+          f"| PLA patterns and cores at {PRICE_PLA_EUR_KG:g} EUR/kg (VERIFY) | {t['pla_kg']:.2f} kg / {t['pla_eur']:.0f} EUR |",
+          f"| Bought parts incl. cross boom (VERIFY) | {t['bought']:.0f} EUR |",
+          f"| Total estimated cost (VERIFY) | {t['total']:.0f} EUR |", '',
+          'The phase-6 figure (3605 g fabricated, 429 EUR) belonged to the two-block layout and is no longer a reference.', '']
     return '\n'.join(o)
 
 
 def self_test():
-    # hand check: 100x50 plate with one 10 mm hole: 5000 - pi*25 = 4921.46 mm2; cut path 300 + 31.416 mm
-    assert abs(finished_area_mm2((100, 50), [(0, 0, 10)]) - 4921.46) < 0.01
-    assert abs(cut_length_mm((100, 50), [(0, 0, 10)]) - 331.416) < 0.01
-    # hand check: 100 cm3 finished, no machining: 100 * 1.013^3 = 103.951 cm3 pattern; * 2.68 = 278.59 g; / 0.55 = 506.52 g
-    c = casting_budget('t', 100.0, 0.0)
-    assert abs(c['pattern_cm3'] - 103.951) < 0.01 and abs(c['mass_g'] - 278.59) < 0.05 and abs(c['poured_g'] - 506.52) < 0.1
-    # with 100 cm2 machined at 2.5 mm: 125 cm3 before shrink
-    assert abs(casting_budget('t', 100.0, 100.0)['pattern_cm3'] - 125 * 1.013 ** 3) < 1e-6
-    assert nest([(390, 200)] * 2) == 1 and nest([(990, 490)] * 2) == 2
-    # hand check, shaft Ø30 x 100: bar Ø33 x 110 = pi*16.5^2*110 = 94.083 cm3 -> 747.96 g at 7.95; finished 70.686 cm3 -> 561.95 g
-    d, ln = CP.shaft_stock([(0, 100, 30)])
-    assert abs(math.pi * d * d / 4 * ln / 1000 * SS_G_CM3 - 747.96) < 0.05
-    assert abs(CP.shaft_volume_cm3([(0, 100, 30)]) * SS_G_CM3 - 561.95) < 0.05
-    # hand check, tube Ø30/Ø16 x 100: pi*(225-64)*100 = 50.580 cm3 -> 402.1 g finished (the bar stock above stays solid)
-    assert abs(CP.shaft_volume_cm3([(0, 100, 30)], [(0, 100, 16)]) * SS_G_CM3 - 402.1) < 0.05
-    assert CP.shaft_stock(CP.AZ_SHAFT) == (33.0, 316.0) and 'az_shaft' in CP.SHAFT_BORES
-    assert abs(tube_kg() - 1.319) < 0.002      # hand check: (1600 - 1156) mm2 x 1100 mm x 2.70 g/cm3
-    assert abs(casting_budget('t', 100.0, 0.0, extra_cm3=10.0)['pattern_cm3'] - 110 * 1.013 ** 3) < 1e-6
-    pt = plate_totals()
-    for r in pt['rows']:
-        assert abs(r['fin_g'] - PL.mass_g(r['name'])) < 0.01, r['name']
-    assert pt['stock_kg'] > pt['fin_kg'] and pt['cost'] > 0
-    for s in pt['sheets'].values():
-        assert s['eur'] == min(s['full_eur'], s['cut_eur']) and s['kg'] == (s['cut_kg'] if s['choice'] == 'cut-to-size' else s['full_kg'])
+    # hand check, route A: 100 cm3 cast -> 268 g casting, 487.27 g poured; pads 10 cm2 x 3 mm = 3 cm3 at the removal rate + 2 set-ups
+    v = dict(cast_cm3=100.0, finished_cm3=90.0, machined_cm2=10.0, stock_mm=3.0, pla_cm3=20.0, core_cm3=0.0)
+    a = route_a(v, 2)
+    assert abs(a['stock_g'] - 487.27) < 0.01 and abs(a['minutes'] - (3.0 / C['mrr_cm3_min'] + A_SETUPS * C['setup_min'])) < 1e-9
+    assert abs(a['eur'] - (a['metal_eur'] + a['machine_eur'] + a['pla_eur'])) < 1e-9
+    # hand check, route B: 500 cm3 finished in a 2.7 kg (1000 cm3) blank: 50 % waste, 29.7 + 40 EUR
+    b = route_b(dict(finished_cm3=500.0, blank_kg=2.7, alloy='6082-T6', minutes=60.0, stock_eur=29.7, machine_eur=40.0), 1)
+    assert abs(b['waste'] - 50.0) < 1e-6 and abs(b['eur'] - 69.7) < 1e-9
+    assert pick(dict(eur=100.0, fin_g=500), dict(eur=102.0, fin_g=450)) == 'B'      # within 5 %: the lighter
+    assert pick(dict(eur=100.0, fin_g=500), dict(eur=150.0, fin_g=400)) == 'A'      # clearly cheaper
+    assert abs(tube_kg() - 1.6 * 1000 * 0.444 * 2.70e-3 * 1.0) < 0.01                  # hand check: (1600 - 1156) mm2 x 1600 mm x 2.70 g/cm3 = 1.918 kg
+    d, ln = AX.shaft_stock([(0, 100, 30)])
+    assert abs(math.pi * d * d / 4 * ln / 1000 * AX.SS_G_CM3 - 747.96) < 0.05           # hand check: Ø33 x 110 bar at 7.95 g/cm3
 
 
 if __name__ == '__main__':

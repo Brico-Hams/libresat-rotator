@@ -81,7 +81,7 @@ def self_test():
 
 # ---- builders (FreeCAD) ---------------------------------------------------------------------------------------------------------
 def _vp():
-    import visual_parts as VP
+    import geom as VP
     return VP
 
 
@@ -138,7 +138,7 @@ def el_bearings():
             'brg_el_neg': bearing('6004', (0, -K['el_brg_y'], K['z_el']), (0, 1, 0))}
 
 
-def mast_bracket():
+def mast_bracket(blank=False):
     """Split-clamp mast bracket: tube OD76 / bore Ø60.5 (mast bore z -160..-60), slit + 2 M8 pinch lugs, core with the Ø30 shaft pocket,
     top disc and the labyrinth cup ring (R47..55) that overlaps the body skirt (R40..45). One finished solid (cast or CNC)."""
     VP = _vp()
@@ -153,10 +153,10 @@ def mast_bracket():
             VP.box(30, 70, -2, 2, -161, -59),                                    # slit
             VP.cyl(3.0, 80.0, (0, -40, -36.0), (0, 1, 0))]                       # Ø6 cross pin
     cuts += [VP.cyl(4.2, 40.0, (44, -20, z), (0, 1, 0)) for z in (-80.0, -140.0)]     # M8 pinch bolts across the slit
-    return VP.cut(s, cuts)
+    return s if blank else VP.cut(s, cuts)                                           # blank: the solid before every cut (route A/B stock)
 
 
-def yoke_arm(side):
+def yoke_arm(side, blank=False):
     """One U-yoke arm (side = +1 / -1 along y): plate, rounded foot around the axis, outboard keyed boss and the top flange to the saddle."""
     VP = _vp()
     ze = K['z_el']
@@ -177,10 +177,10 @@ def yoke_arm(side):
     cuts = [VP.cyl(10.0, abs(yb1 - (ya if side > 0 else yb)) + 2, (0, ylo - 1, ze), (0, 1, 0)),     # Ø20 bore
             VP.box(-3.0, 3.0, ylo - 1, ylo + 27.0, ze + 9.0, ze + 10.5)]                           # 6x6x25 key way
     cuts += [VP.cyl(3.2, 12.0, (x, yc, ze + K['arm_h'] - 3.0), (0, 0, 1)) for x in (10.0, 40.0) for yc in (side * 93.0, side * 107.0)]
-    return VP.cut(s, cuts)
+    return s if blank else VP.cut(s, cuts)
 
 
-def saddle():
+def saddle(blank=False):
     VP = _vp()
     ze = K['z_el']
     a0, a1 = K['saddle_a']
@@ -189,7 +189,7 @@ def saddle():
     cuts = [VP.box(K['boom_a'] - 14.0, K['boom_a'] + 14.0, -38.0, 38.0, z0 - 1, z0 + K['saddle_t'] + 1)]
     cuts += [VP.cyl(3.2, 12.0, (x, sg * yc, z0 - 2.0), (0, 0, 1)) for x in (10.0, 40.0) for sg in (-1, 1) for yc in (93.0, 107.0)]
     cuts += [VP.cyl(3.2, 12.0, (x, sg * K['block_y'] + dy, z0 - 2.0), (0, 0, 1)) for x in (0.0, 50.0) for sg in (-1, 1) for dy in (-9.0, 9.0)]
-    return VP.cut(s, cuts)
+    return s if blank else VP.cut(s, cuts)
 
 
 def boom():
@@ -201,7 +201,7 @@ def boom():
     return VP.cut(o, [VP.box(a0 + t, a0 + w - t, -K['boom_len'] / 2 - 1, K['boom_len'] / 2 + 1, z0 + t, z0 + w - t)])
 
 
-def boom_clamp(side):
+def boom_clamp(side, blank=False):
     """Interchangeable top clamp block (the 40 x 40 square seat); a round-boom variant swaps it for a V-groove block."""
     VP = _vp()
     ze = K['z_el']
@@ -209,7 +209,7 @@ def boom_clamp(side):
     z0 = ze + K['saddle_h'] + K['saddle_t'] + K['boom_w']
     yc = side * K['block_y']
     s = VP.box(a0, a1, yc - K['block_w'] / 2, yc + K['block_w'] / 2, z0, z0 + K['block_t'])
-    return VP.cut(s, [VP.cyl(3.2, K['block_t'] + 2, (x, yc + dy, z0 - 1), (0, 0, 1)) for x in (0.0, 50.0) for dy in (-9.0, 9.0)])
+    return s if blank else VP.cut(s, [VP.cyl(3.2, K['block_t'] + 2, (x, yc + dy, z0 - 1), (0, 0, 1)) for x in (0.0, 50.0) for dy in (-9.0, 9.0)])
 
 
 def clamp_bolts():

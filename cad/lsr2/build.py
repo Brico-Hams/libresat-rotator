@@ -1,10 +1,11 @@
-"""LSR-2 head build for FreeCAD 1.1 headless (run from the repo root, or set REPO):
+"""LSR-2 phase 11 head build for FreeCAD 1.1 headless (run from the repo root, or set REPO):
 
     freecadcmd -c "exec(open(r'<repo>/cad/lsr2/build.py').read())"
 
-Builds every plate of plates.PLATES as a Part solid in the head frame, exports DXF/STEP/STL per plate,
-the assembly STEP with the bought-part envelopes and the cross-boom tube, the EL sweep check, and
-build/lsr2_build_report.json. Raises on failure. Stale files of removed parts are not deleted here.
+Builds the Mk5-schematic head (body, lid, mast bracket, yoke arms, saddle, boom, clamps, lift arms, counterweights, shafts), runs the EL sweep,
+then both manufacturing routes of every structural part: Route A (cast/lsr2/<part>_{finished,preform,pattern}.step|stl|3mf, cores, lost-PLA)
+and Route B (cnc/lsr2/<part>_{finished,blank}.step + cam/lsr2/<part>_setups.csv), with their checks. Writes build/lsr2_build_report.json
+(key `parts` feeds calc/lsr2_materials.py and scripts/bom.py). Raises on failure. Stale phase-6 files are not deleted here.
 """
 import json, math, os, sys
 import Part
@@ -14,257 +15,85 @@ ROOT = os.environ.get('REPO') or os.getcwd()
 OUT = os.environ.get('LSR2_OUT') or ROOT   # Windows Controlled Folder Access may block freecadcmd writes: build elsewhere, copy back
 sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
 import params as P
-import plates as PL
+import body as BD
+import axes as AX
+import route_a as RA
+import route_b as RB
 
 MAX_INTERFERENCE_MM3 = 1.0
-for d in ('cnc/lsr2', 'stl/lsr2', 'cast/lsr2', 'build'):
+CW_KG = 1.02                                  # PARAMETRIC counterweight mass per side
+for d in ('cnc/lsr2', 'stl/lsr2', 'cast/lsr2', 'cam/lsr2', 'build'):
     os.makedirs(os.path.join(OUT, d), exist_ok=True)
+for m in (BD, AX, RA, RB):
+    m.self_test()
 
-
-def plate_solid(name):
-    p = PL.PLATES[name]
-    (u0, u1), (v0, v1) = p['u'], p['v']
-    t = p['t']
-    if p['frame'] == 'xy':
-        solid = Part.makeBox(u1 - u0, v1 - v0, t, V(u0, v0, p['w']))
-        cyls = [Part.makeCylinder(d / 2, t + 2, V(hu, hv, p['w'] - 1), V(0, 0, 1)) for hu, hv, d in p['holes']]
-    else:
-        solid = Part.makeBox(u1 - u0, t, v1 - v0, V(u0, p['w'], v0))
-        cyls = [Part.makeCylinder(d / 2, t + 2, V(hu, p['w'] - 1, hv), V(0, 1, 0)) for hu, hv, d in p['holes']]
-    for c in cyls:
-        solid = solid.cut(c)
-    return solid
-
-
-def envelope_solid(b):
-    return Part.makeBox(b[1] - b[0], b[3] - b[2], b[5] - b[4], V(b[0], b[2], b[4]))
-
-
-shapes = {n: plate_solid(n) for n in PL.PLATES}
-envs = {n: envelope_solid(b) for n, b in PL.ENVELOPES.items()}
-# cross-boom tube (6063, hollow square) along +Y, coaxial with the EL axis, 80 mm in the boom_socket (cast_parts.SOCK)
-import cast_parts as CP
-_bw, _bh, _bt = PL.BOOM_W, PL.BOOM_H, PL.BOOM_T
-_bl = P.CROSS_BOOM_L
-_y0 = CP.SOCK_Y1 - CP.SOCK['depth']
-boom = Part.makeBox(_bw, _bl, _bh, V(-_bw / 2, _y0, PL.EL_Z - _bh / 2)).cut(
-    Part.makeBox(_bw - 2 * _bt, _bl + 2, _bh - 2 * _bt, V(-_bw / 2 + _bt, _y0 - 1, PL.EL_Z - _bh / 2 + _bt)))
-envs['cross_boom'] = boom
-# antenna envelopes (thin boxes) at the two stations: 2 m boom along the pointing direction (x at el 0), 1 m elements across (y)
-for _i, _pos in enumerate(P.ANT_POS_Y, 1):
-    _yc = CP.SOCK_Y1 + _pos * 1000.0
-    _b = Part.makeBox(P.ANT_BOOM_L, 30, 30, V(-P.ANT_BOOM_L / 2, _yc - 15, PL.EL_Z + 20))
-    _e = Part.makeBox(100, P.ANT_ELEM_L, 10, V(-50, _yc - P.ANT_ELEM_L / 2, PL.EL_Z + 50))
-    envs[f'ant_{_i}'] = _b.fuse(_e)
-# mast envelope: vertical Ø60 cylinder from the mast clamp down 1.5 m at the mast position (V vertex x = CL_VERTEX, arms open to -x); sweep only
-mast = Part.makeCylinder(P.MAST_D[1] / 2, 1500.0, V(CP.CL_VERTEX - P.MAST_D[1] / 2 * math.sqrt(2), 0, CP.Z_CL_TOP - 1500.0), V(0, 0, 1))
+K = AX.K
 failures = []
-report = {'plates': {}, 'envelopes': list(envs), 'checks': {}}
-
-for name, s in shapes.items():
-    PL.write_dxf(name, os.path.join(OUT, 'cnc', 'lsr2', name + '.dxf'))
-    s.exportStep(os.path.join(OUT, 'cnc', 'lsr2', name + '.step'))
-    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', name + '.stl'))
-    bb = s.BoundBox
-    cm3 = s.Volume / 1000.0
-    valid = bool(s.isValid())
-    if not valid:
-        failures.append(f'{name}: invalid shape')
-    if abs(cm3 * P.ALU_PLATE_G_CM3 - PL.mass_g(name)) > 0.5:
-        failures.append(f'{name}: solid mass differs from plates.mass_g')
-    report['plates'][name] = dict(volume_cm3=round(cm3, 3), mass_g=round(cm3 * P.ALU_PLATE_G_CM3, 1), valid=valid,
-                                  bbox=[round(x, 2) for x in (bb.XMin, bb.XMax, bb.YMin, bb.YMax, bb.ZMin, bb.ZMax)])
-
-worst = {}
-for pn, ps in shapes.items():
-    for en, es in envs.items():
-        vol = ps.common(es).Volume
-        worst[f'{pn}/{en}'] = round(vol, 4)
-        if vol > MAX_INTERFERENCE_MM3:
-            failures.append(f'interference {pn}/{en}: {vol:.2f} mm3')
-for en, es in envs.items():
-    if not es.isValid():
-        failures.append(f'{en}: invalid envelope')
-
-# --- phase 3: cast parts, patterns, core box, shafts ------------------------------------------
-import cast_parts as CP   # already imported above; kept for the phase split
-SHRINK = P.CAST['shrink']
-CP.self_test()
-cast = {'az_housing': CP.az_housing(), 'mast_clamp': CP.mast_clamp(), 'el_bearing_housing': CP.el_bearing_housing(),
-        'boom_socket': CP.boom_socket()}
-shafts = {'az_shaft': CP.az_shaft(), 'el_shaft': CP.el_shaft()}
-import index_parts as IX   # Mk5-style photo-interrupter index: printed ASA notch discs + sensor bracket (own geometry)
-IX.self_test()
-index = {'az_index_disc': IX.disc(IX.AZ_DISC, 'z'), 'el_index_disc': IX.disc(IX.EL_DISC, 'y').cut(cast['boom_socket'])}   # EL disc is cut to the hub + pinch lug profile
-index_bracket = IX.bracket(IX.I['az_post'])
-pre = {'az_housing': CP.az_housing_pattern(), 'mast_clamp': CP.mast_clamp(True), 'el_bearing_housing': CP.el_bearing_housing(True),
-       'boom_socket': CP.boom_socket(True)}
-cores = Part.makeCompound(list(CP.az_cores()))
-corebox = CP.az_core_box()
-
-
-def scaled(s, origin):
-    s = s.copy()
-    r = s.scale(SHRINK, V(*origin))
-    return r if r is not None else s
-
-
-def dims(s):
-    return (s.BoundBox.XLength, s.BoundBox.YLength, s.BoundBox.ZLength)
-
-
-def bbox(s):
-    bb = s.BoundBox
-    return [round(x, 2) for x in (bb.XMin, bb.XMax, bb.YMin, bb.YMax, bb.ZMin, bb.ZMax)]
-
-
-patterns = {n: scaled(s, CP.ORIGIN[n]) for n, s in pre.items()}
-for n, s in list(cast.items()) + list(shafts.items()) + list(patterns.items()) + [('az_housing_corebox', corebox), ('az_housing_cores', cores)]:
+fin = {'body': BD.body(), 'lid': BD.lid(), 'mast_bracket': AX.mast_bracket(), 'yoke_arm': AX.yoke_arm(1), 'yoke_arm_neg': AX.yoke_arm(-1),
+       'saddle': AX.saddle(), 'boom_clamp': AX.boom_clamp(1), 'boom_clamp_neg': AX.boom_clamp(-1)}
+other = {'boom': AX.boom(), 'lift_arm_pos': AX.lift_arm(1), 'lift_arm_neg': AX.lift_arm(-1),
+         'counterweight_pos': AX.counterweight(1, CW_KG), 'counterweight_neg': AX.counterweight(-1, CW_KG)}
+shafts = {'az_shaft': AX.az_shaft(), 'el_shaft': AX.el_shaft(), 'el_sleeve': AX.el_sleeve()}
+for n, s in {**fin, **other, **shafts}.items():
     if not s.isValid():
         failures.append(f'{n}: invalid shape')
-if abs(CP.SEAT_Z[0] - CP.SEAT_Z[1] - P.RADIAL_SPAN * 1000) > 1e-6:
-    failures.append('6206 seat centres are not RADIAL_SPAN apart')
-if cores.common(cast['az_housing']).Volume > MAX_INTERFERENCE_MM3:
-    failures.append('az_housing cores intersect the finished housing')
 
-report['cast'], report['shafts'] = {}, {}
-for n, s in cast.items():
-    pn = n
-    pr = pre[pn]
-    if s.cut(pr).Volume > MAX_INTERFERENCE_MM3:
-        failures.append(f'{n}: finished part not inside its pattern (machining allowance missing)')
-    for i, ax in enumerate('xyz'):
-        f, pp, pb = dims(s)[i], dims(patterns[pn])[i], dims(pre[pn])[i]
-        if pp - f < (SHRINK - 1) * f - 1e-6:
-            failures.append(f'{n}: pattern smaller than part + shrink on {ax}')
-        if ax in CP.ALLOW_AXES[pn] and pb - f < P.CAST['machining'] - 1e-6:
-            failures.append(f'{n}: pattern lacks machining allowance on {ax}')
-    cm3 = s.Volume / 1000.0
-    pat = patterns[pn]
-    report['cast'][n] = dict(volume_cm3=round(cm3, 3), mass_g=round(cm3 * P.ALU_CAST_G_CM3, 1), valid=bool(s.isValid()),
-                             machined_area_cm2=round(CP.machined_area_cm2(pn), 2), bore_solid_cm3=round(CP.bore_solid_cm3(n), 2),
-                             bbox=bbox(s), pattern=pn + '_pattern', pattern_volume_cm3=round(pat.Volume / 1000.0, 3),
-                             pattern_area_cm2=round(pat.Area / 100.0, 2), pattern_bbox=bbox(pat), parting=CP.PARTING[pn])
-for n, s in shafts.items():
-    cm3 = s.Volume / 1000.0
-    d, ln = CP.shaft_stock(CP.SHAFTS[n])
-    report['shafts'][n] = dict(volume_cm3=round(cm3, 3), mass_g=round(cm3 * CP.SS_G_CM3, 1), valid=bool(s.isValid()), bbox=bbox(s),
-                               length_mm=CP.shaft_length(CP.SHAFTS[n]), stock_d_mm=d, stock_l_mm=ln,
-                               steps=[list(x) for x in CP.SHAFTS[n]], bores=[list(x) for x in CP.SHAFT_BORES[n]])
-report['clamp_m20_exit'] = CP.M20_EXIT
-report['core_box'] = dict(volume_cm3=round(corebox.Volume / 1000.0, 3), bbox=bbox(corebox))
-
-# az_index_disc sits on the round DIN 705 collar, which is modelled as a box envelope: its corners overlap the disc ring by design
-ALLOWED = {('az_index_disc', 'az_collar'), ('az_shaft', 'az_gearbox'), ('el_shaft', 'el_gearbox'), ('az_shaft', 'mast_clamp'), ('az_shaft', 'az_collar'),
-           ('el_shaft', 'boom_socket'), ('el_shaft', 'el_bearing_housing')}   # intended fits: shaft in gearbox bore / clamp bore / socket hub bore / bearing seats
-mine = {**cast, **shafts, **index}
-others = {**shapes, **envs}
-for n, s in mine.items():
-    for on, os_ in list(others.items()) + [(k, v) for k, v in mine.items() if k > n]:
-        if (n, on) in ALLOWED or (on, n) in ALLOWED or not s.BoundBox.intersect(os_.BoundBox):
-            continue
-        vol = s.common(os_).Volume
-        worst[f'{n}/{on}'] = round(vol, 4)
-        if vol > MAX_INTERFERENCE_MM3:
-            failures.append(f'interference {n}/{on}: {vol:.2f} mm3')
-report['allowed_pairs'] = sorted(' / '.join(p) for p in ALLOWED)
-report['items'] = {'cross_boom': dict(volume_cm3=round(boom.Volume / 1000.0, 3), mass_g=round(boom.Volume / 1000.0 * 2.70, 1),
-                                      section_mm=list(P.CROSS_BOOM), length_mm=P.CROSS_BOOM_L)}
-
-if abs(report['cast']['boom_socket']['mass_g'] - P.SOCKET_MASS_KG * 1000) > 0.15 * P.SOCKET_MASS_KG * 1000:
-    failures.append('boom_socket mass differs >15 % from params.SOCKET_MASS_KG (calc/lsr2_sizing.py uses it)')
-
-# EL sweep: socket + cross-boom + antenna envelopes turn about the EL axis (y, x=0, z=EL_Z) over -30..150 deg, 5 deg steps;
-# static = head, az_housing, mast_clamp, plates, gearboxes ... and the mast envelope
-moving_names = ['boom_socket', 'cross_boom', 'el_index_disc'] + [n for n in envs if n.startswith('ant_')]
-allsh = {**shapes, **cast, **envs, **index}
-moving = {n: allsh[n] for n in moving_names}
-static = {n: s for n, s in {**allsh, **shafts, 'mast': mast}.items() if n not in moving_names and n != 'el_shaft'}
-sweep_worst, sweep_at = 0.0, None
-for ang in range(-30, 151, 5):
+# EL sweep: yoke, saddle, boom, clamps, lift arms and counterweights turn about the EL axis (y, x = 0, z = z_el); elevation up = rotation about -y
+moving = {n: s for n, s in {**fin, **other}.items() if n.split('_')[0] in ('yoke', 'saddle', 'boom', 'lift', 'counterweight')}
+static = {'body': fin['body'], 'lid': fin['lid'], 'mast_bracket': fin['mast_bracket']}
+worst, sweep_worst, sweep_at = {}, 0.0, None
+for ang in range(int(P.EL_RANGE[0]), int(P.EL_RANGE[1]) + 1, 5):
     for mn, ms in moving.items():
         r = ms.copy()
-        r.rotate(V(0, 0, PL.EL_Z), V(0, 1, 0), ang)
+        r.rotate(V(0, 0, K['z_el']), V(0, 1, 0), -ang)
         for sn, ss in static.items():
             if not r.BoundBox.intersect(ss.BoundBox):
                 continue
-            vol = r.common(ss).Volume
+            cm = r.common(ss)
+            vol = 0.0 if cm.isNull() else cm.Volume
             if vol > sweep_worst:
                 sweep_worst, sweep_at = vol, f'{mn}/{sn}@{ang}'
             if vol > MAX_INTERFERENCE_MM3:
                 failures.append(f'EL sweep {mn}/{sn} at {ang} deg: {vol:.2f} mm3')
-report['checks']['el_sweep'] = dict(range_deg=[-30, 150], step_deg=5, moving=moving_names, worst_mm3=round(sweep_worst, 4), worst_at=sweep_at)
+for a, b in (('body', 'lid'), ('body', 'mast_bracket'), ('lid', 'mast_bracket')):
+    cm = fin[a].common(fin[b])
+    worst[f'{a}/{b}'] = 0.0 if cm.isNull() else round(cm.Volume, 4)
+    if worst[f'{a}/{b}'] > MAX_INTERFERENCE_MM3:
+        failures.append(f'interference {a}/{b}: {worst[f"{a}/{b}"]:.2f} mm3')
 
-for n, s in cast.items():
-    s.exportStep(os.path.join(OUT, 'cast', 'lsr2', n + '.step'))
-    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
-for n, s in patterns.items():
-    s.exportStep(os.path.join(OUT, 'cast', 'lsr2', n + '_pattern.step'))
-    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '_pattern.stl'))
-for n, s in (('az_housing_corebox', corebox), ('az_housing_cores', cores)):
-    s.exportStep(os.path.join(OUT, 'cast', 'lsr2', n + '.step'))
-    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
+# --- routes A and B for every structural part (yoke arm / clamp: side +1 is built, the other is its mirror image) -----------------------
+cast_dir, cnc_dir = os.path.join(OUT, 'cast', 'lsr2'), os.path.join(OUT, 'cnc', 'lsr2')
+route_a = RA.build_all(cast_dir)
+route_b = RB.build_all(cnc_dir)
+for n in RB.PARTS:
+    RB.write_csv(n, os.path.join(OUT, 'cam', 'lsr2'))
+parts = {n: dict(qty=RA.QTY[n], finished_cm3=route_a[n]['finished_cm3'], route_a=route_a[n], route_b=route_b[n]) for n in RA.PARTS}
+for n, p in parts.items():
+    if n != 'body' and abs(p['route_b']['finished_cm3'] - p['finished_cm3']) > 0.05 * p['finished_cm3'] + 0.5:
+        failures.append(f'{n}: route B variant volume differs from the finished solid by more than 5 %')
+
+# --- other exports and the report ---------------------------------------------------------------------------------------------------
 for n, s in shafts.items():
-    s.exportStep(os.path.join(OUT, 'cnc', 'lsr2', n + '.step'))
+    s.exportStep(os.path.join(cnc_dir, n + '.step'))
+for n, s in {**fin, **other, **shafts}.items():   # whole-head STL set for scripts/render_lsr2.py and the Blender renders
     s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
-for n, s in list(index.items()) + [('index_bracket', index_bracket)]:   # printed ASA parts: STL (and STEP) only
-    if not s.isValid():
-        failures.append(f'{n}: invalid shape')
-    s.exportStep(os.path.join(OUT, 'cnc', 'lsr2', n + '.step'))
-    s.exportStl(os.path.join(OUT, 'stl', 'lsr2', n + '.stl'))
-report['index'] = dict(notch_deg={'az': round(IX.AZ_DISC['notch_deg'], 2), 'el': round(IX.EL_DISC['notch_deg'], 2)},
-                       disc_t_mm=IX.I['t'], material=IX.I['material'], parts=list(index) + ['index_bracket'])
-
-# --- phase 9: visual-only models of the bought parts + scene description for scripts/render_blender.py ---------
-# Not used by any check above. A failing visual builder only warns: the fabricated parts and the checks stay valid.
-VIS = os.path.join(OUT, 'stl', 'lsr2', 'visual')
-os.makedirs(VIS, exist_ok=True)
-
-
-def export_fine(s, path):
-    """Finer tessellation than exportStl so that smooth-shaded renders keep round silhouettes."""
-    try:
-        import MeshPart
-        MeshPart.meshFromShape(Shape=s, LinearDeflection=0.05, AngularDeflection=0.2, Relative=False).write(path)
-    except Exception:
-        s.exportStl(path)
-
-
-visual = {}
-try:
-    import visual_parts as VP
-    visual = VP.build_all()
-except Exception as ex:
-    print('WARNING: visual parts not built:', ex)
-visual['cross_boom'] = boom
-fine = {**shapes, **cast, **shafts, **index, **patterns, 'az_housing_corebox': corebox, 'az_housing_cores': cores}
-for n, s in list(fine.items()) + list(visual.items()):
-    export_fine(s, os.path.join(VIS, n + '.stl'))
-EL_GROUP = ['boom_socket', 'cross_boom', 'el_index_disc', 'yagi_145', 'yagi_435', 'hardware_socket', 'hardware_ant']
-EXPLODE = {'az_index_disc': (0, 0, 110), 'az_gearbox': (0, 0, 45), 'spacer': (0, 0, 20), 'el_bracket': (0, -45, 0),
-           'el_bearing_housing': (0, 45, 0), 'hardware_housing': (0, 45, 0), 'boom_socket': (0, 90, 0), 'hardware_socket': (0, 90, 0),
-           'el_index_disc': (0, 90, 0), 'cross_boom': (0, 150, 0), 'yagi_145': (0, 150, 0), 'yagi_435': (0, 150, 0), 'hardware_ant': (0, 150, 0),
-           'el_shaft': (0, 0, 130), 'az_housing': (0, 0, -50), 'az_shaft': (0, 0, -100), 'mast_clamp': (0, 0, -200),
-           'hardware_clamp': (0, 0, -200), 'mast': (0, 0, -200)}
-EXPLODE.update({f'az_motor_{k}': (0, 0, 45) for k in ('body', 'caps', 'shaft', 'cable')})   # same offsets as scripts/render_lsr2.py
-_g = P.NMRV030_GEO
-scene = dict(
-    units='mm', el_axis=dict(point=[0, 0, PL.EL_Z], dir=[0, 1, 0]), az_axis=dict(point=[0, 0, 0], dir=[0, 0, 1]),
-    el_sign=-1, el_range=list(P.EL_RANGE), el_group=EL_GROUP, explode={k: list(v) for k, v in EXPLODE.items()},
-    parts=sorted(set(fine) | set(visual) | {n + '_pattern' for n in pre}), floor_z=CP.Z_CL_TOP - 1500.0, sock_y1=CP.SOCK_Y1, ant_pos_y=list(P.ANT_POS_Y),
-    gearbox_top_z=PL.T_SPACER + _g['out_width'], housing_end_y=CP.BH['y0'] + CP.BH['L'],
-    index=dict(t=IX.I['t'], gap=IX.I['gap'], notch_depth=IX.I['notch_depth'],
-               az=dict(z=list(IX.AZ_DISC['z']), r_out=IX.AZ_DISC['r_out'], r_sensor=IX.AZ_DISC['r_sensor'], notch_deg=IX.AZ_DISC['notch_deg']),
-               el=dict(y=IX.EL_DISC['y'], r_out=IX.EL_DISC['r_out'], r_sensor=IX.EL_DISC['r_sensor'], notch_deg=IX.EL_DISC['notch_deg'])),
-    sun_sight=dict(y=CP.SOCK_Y1 + 200.0, z=PL.EL_Z + PL.BOOM_H / 2))
-with open(os.path.join(OUT, 'build', 'lsr2_render_scene.json'), 'w', encoding='utf-8') as fh:
-    json.dump(scene, fh, indent=2)
-report['checks'] = dict(max_interference_mm3=max(worst.values()), limit_mm3=MAX_INTERFERENCE_MM3,
-                        interference_mm3=worst, failures=failures, passed=not failures, el_sweep=report['checks']['el_sweep'])
-Part.makeCompound(list(shapes.values()) + list(envs.values()) + list(mine.values())).exportStep(
-    os.path.join(OUT, 'cnc', 'lsr2', 'lsr2_head_assembly.step'))
+report = dict(rev=P.REV, parts=parts, shafts={}, items={}, mass_check={})
+for n, s in shafts.items():
+    cm3 = s.Volume / 1000.0
+    d, ln = AX.shaft_stock(AX.SHAFTS[n])
+    report['shafts'][n] = dict(volume_cm3=round(cm3, 3), mass_g=round(cm3 * AX.SS_G_CM3, 1), length_mm=AX.shaft_length(AX.SHAFTS[n]), stock_d_mm=d, stock_l_mm=ln,
+                               steps=[list(x) for x in AX.SHAFTS[n]], bores=[list(x) for x in AX.SHAFT_BORES[n]])
+bm = other['boom']
+report['items']['cross_boom'] = dict(volume_cm3=round(bm.Volume / 1000.0, 3), mass_g=round(bm.Volume / 1000.0 * 2.70, 1),
+                                     section_mm=[K['boom_w'], K['boom_w'], K['boom_t']], length_mm=K['boom_len'])
+for n, est in {'body': 5.4, 'lid': 1.3}.items():   # inputs.HEAD estimates (kg): flagged when > 10 % apart, never a failure
+    kg = parts[n]['finished_cm3'] * P.ALU_CAST_G_CM3 / 1000.0
+    report['mass_check'][n] = dict(finished_kg=round(kg, 3), inputs_kg=est, differs_over_10pct=abs(kg - est) > 0.1 * est)
+report['checks'] = dict(limit_mm3=MAX_INTERFERENCE_MM3, interference_mm3=worst, failures=failures, passed=not failures,
+                        el_sweep=dict(range_deg=list(P.EL_RANGE), step_deg=5, moving=sorted(moving), worst_mm3=round(sweep_worst, 4), worst_at=sweep_at))
+Part.makeCompound(list(fin.values()) + list(other.values()) + list(shafts.values())).exportStep(os.path.join(cnc_dir, 'lsr2_head_assembly.step'))
 with open(os.path.join(OUT, 'build', 'lsr2_build_report.json'), 'w', encoding='utf-8') as fh:
     json.dump(report, fh, indent=2)
 if failures:
     raise RuntimeError('LSR-2 build failed: ' + '; '.join(failures))
-print('LSR-2 build OK:', len(shapes), 'plates,', len(cast), 'cast parts,', len(shafts), 'shafts')
+print('LSR-2 phase 11 build OK:', len(parts), 'structural parts, routes A and B,', len(shafts), 'shafts')

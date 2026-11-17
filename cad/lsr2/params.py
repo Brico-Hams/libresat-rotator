@@ -85,3 +85,38 @@ CAST = dict(alloy='A356-T6', shrink=1.013, draft_out=2.0, draft_in=3.0,
 PLATE = dict(alloy='6061-T6 or 5083', thickness=(8.0, 10.0))
 LIGHTEN = dict(min_web=6.0, keep_out=20.0)   # mm: web between cut-outs/edges; clear ring around functional holes
 ALU_PLATE_G_CM3, ALU_CAST_G_CM3, PLA_G_CM3 = 2.70, 2.68, 1.24
+
+# --- Phase 11c Route A: casting (PARAMETRIC unless noted; every value "to agree with the foundry") -----------------------------------
+# One dict per quantity group so shrinkage, draft, stock, wall and fillet stay independent. CAST_PART overrides CAST per part (cad/lsr2/route_a.py).
+REV = 'A0'                                   # revision string stamped in the report and the file names of every cast/CNC model
+CAST.update(hot_spot_max=2.0,                # largest inscribed sphere / adjacent wall; above it a riser, chill or core is required (route_a.JUNCTIONS)
+            pla_fill=0.25,                   # infill fraction of the recoverable printed pattern (volume x this = PLA)
+            series=1,                        # castings made per pattern (PLA and pattern cost are divided by this)
+            lump_max=2.0,                    # sand lump depth / mean width in the green-sand pattern pockets
+            draft_step=4.0,                  # mm per slice of the stacked-offset draft of the printable pattern
+            core_print=30.0, core_clear=0.5, # core print length beyond the open face, sand clearance (mm)
+            dowel_d=8.0, dowel_len=10.0, dowel_clear=0.3,            # registration pin of the pattern halves / print joints (mm)
+            print_margin=6.0)                # usable print volume = inputs print_volume - this per axis (brim, skirt, bed edge)
+CAST_PART = {                                # per-part overrides of CAST (empty = the part follows CAST)
+    'lid': dict(draft_out=1.0),              # 5 mm flat plate: draft is below the printer resolution anyway
+    'saddle': dict(draft_out=1.0),
+    'boom_clamp': dict(draft_out=1.0),
+}
+# Consumable (lost-PLA) pattern: a SEPARATE parameter set, never mixed with CAST. The pattern is the finished-plus-stock solid itself (cavity
+# included, sand poured into it), so it has no draft, no cores and no halves. Material, wall and burn-out are decided with the foundry.
+CAST_LOST = dict(material='low-ash PLA (e.g. foundry-approved casting filament)', shrink=1.013, machining=3.0, wall=2.0, infill=0.0,
+                 vent_d=3.0, note='TO BE APPROVED BY THE FOUNDRY: burn-out strategy, coating, vent and sprue layout')
+# --- Phase 11d Route B: CNC from block / plate (PARAMETRIC) --------------------------------------------------------------------------------
+CNC = dict(alloys=('6082-T6', '6061-T6'), density=2.70, price_eur_kg=11.0,      # block/plate stock EUR/kg, VERIFY with a quote
+           margin=1.5, tab=8.0, plate_t=(10, 12, 15, 20, 25, 30, 40, 50, 60, 80, 100),   # blank margin per face, clamping tab per footprint side, stock thicknesses sold (mm)
+           tool_clear_z=15.0,                                                    # spindle-nose and holder clearance subtracted from the z travel
+           tools=(dict(name='E12', d=12.0, z=3, reach=36.0, role='rough'), dict(name='E12L', d=12.0, z=3, reach=75.0, role='rough / contour, long reach'),
+                  dict(name='E8', d=8.0, z=3, reach=24.0, role='finish'), dict(name='E8L', d=8.0, z=3, reach=50.0, role='finish contour, long reach'),
+                  dict(name='E6', d=6.0, z=3, reach=24.0, role='finish small'), dict(name='D8.5', d=8.5, z=2, reach=40.0, role='drill M10 / seat'),
+                  dict(name='D5', d=5.0, z=2, reach=30.0, role='drill M6'), dict(name='BH', d=0.0, z=1, reach=90.0, role='boring head')),
+           corner_r=6.0,                                                          # inside vertical corners of deep pockets = E12 radius (body cavity floor corners)
+           vc=250.0, fz=0.05, rpm_max=12000, ap_rough=0.5, ae_rough=0.5, ap_finish=1.0,   # m/min, mm/tooth, rpm, depth/width of cut as fractions of D: recompute for the real tool/alloy/machine
+           mrr_cm3_min=15.0, finish_cm2_min=40.0, setup_min=25.0, rate_eur_h=40.0,                # PARAMETRIC machining time and shop rate
+           stock_finish=0.3, z_wall_min=3.0)                                                       # finishing stock per face; thinnest rough wall (mm)
+# Numeric manufacturing tolerances until the 11e table fixes them (mm, deg): PARAMETRIC defaults, each tied to the mating component.
+TOL = dict(el_coax=0.04, az_el_perp=0.05, flat_lid=0.10, flat_base=0.05, datum_dist=0.10, bore_h7=0.021, seat_6206=0.019, seat_6004=0.016)

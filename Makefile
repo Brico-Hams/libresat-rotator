@@ -32,8 +32,10 @@ lsr2:
 	$(PY) cad/lsr2/axes.py
 	$(PY) cad/lsr2/body.py
 	$(PY) cad/lsr2/cables.py
+	$(PY) cad/lsr2/route_a.py
+	$(PY) cad/lsr2/route_b.py
 	cd $(CURDIR) && REPO=$(CURDIR) $(FREECADCMD) -c "exec(open(r'$(CURDIR)/cad/lsr2/build.py').read())"
-	$(PY) scripts/render_lsr2.py $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 docs/img
+	$(PY) scripts/render_lsr2_head.py $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 docs/img
 render:
 	$(BLENDER) -b --factory-startup -P scripts/render_blender.py -- $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 $(RENDER_OUT) $(RENDER_ARGS)
 bom:

@@ -1,332 +1,552 @@
 {
-  "plates": {
-    "base": {
-      "volume_cm3": 94.943,
-      "mass_g": 256.3,
-      "valid": true,
-      "bbox": [
-        -55.0,
-        55.0,
-        -62.0,
-        72.0,
-        -8.0,
-        0.0
-      ]
+  "rev": "A0",
+  "parts": {
+    "body": {
+      "qty": 1,
+      "finished_cm3": 2348.867701341928,
+      "route_a": {
+        "rev": "A0",
+        "qty": 1,
+        "finished_cm3": 2348.867701341928,
+        "preform_cm3": 2591.9717956881545,
+        "cast_cm3": 2591.9717956881545,
+        "pattern_cm3": 12823.06834166883,
+        "pla_cm3": 3205.7670854172075,
+        "core_cm3": 9383.69004770618,
+        "machined_cm2": 371.01556645003234,
+        "pattern_pieces": 5,
+        "mockup_pieces": 2,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "wall-rib tee",
+            "d": 7.75,
+            "wall": 5.0,
+            "ratio": 1.55,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "wall corner",
+            "d": 6.89,
+            "wall": 5.0,
+            "ratio": 1.38,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "lid-screw post on wall",
+            "d": 9.45,
+            "wall": 5.0,
+            "ratio": 1.89,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "EL boss on side plate (boss 20 deep, plate+wall 14)",
+            "d": 20.0,
+            "wall": 14.0,
+            "ratio": 1.43,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "AZ pillar ring (r40, cast bore r28.5)",
+            "d": 11.5,
+            "wall": 5.0,
+            "ratio": 2.3,
+            "ok": false,
+            "mitigation": "chill at the pillar foot and riser on the pillar top; foundry to confirm"
+          },
+          {
+            "name": "AZ neck + floor + pillar foot block (z -12..15)",
+            "d": 27.0,
+            "wall": 5.0,
+            "ratio": 5.4,
+            "ok": false,
+            "mitigation": "chill under the neck; riser through the AZ core print; foundry to confirm"
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 2619.288676274677,
+          "pla_cm3": 1462.1824376635504,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -75.0,
+            -47.0
+          ],
+          [
+            211.0,
+            341.5
+          ]
+        ]
+      },
+      "route_b": {
+        "alloy": "6082-T6",
+        "qty": 1,
+        "finished_cm3": 2357.106792357015,
+        "blank_cm3": 18386.16,
+        "pieces": [
+          "slab1",
+          "slab2",
+          "slab3",
+          "slab4",
+          "slab5"
+        ],
+        "setups": 15,
+        "blank_kg": 49.643,
+        "removed_cm3": 16029.053,
+        "minutes": 1443.604,
+        "stock_eur": 546.069,
+        "machine_eur": 962.402
+      }
     },
-    "spacer": {
-      "volume_cm3": 30.96,
-      "mass_g": 83.6,
-      "valid": true,
-      "bbox": [
-        -40.0,
-        40.0,
-        -40.0,
-        40.0,
-        0.0,
-        8.0
-      ]
+    "lid": {
+      "qty": 1,
+      "finished_cm3": 162.3200852778612,
+      "route_a": {
+        "rev": "A0",
+        "qty": 1,
+        "finished_cm3": 162.3200852778612,
+        "preform_cm3": 251.84999999999997,
+        "cast_cm3": 251.84999999999997,
+        "pattern_cm3": 262.1842827831048,
+        "pla_cm3": 65.5460706957762,
+        "core_cm3": 0.0,
+        "machined_cm2": 335.8,
+        "pattern_pieces": 1,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "plate",
+            "d": 7.5,
+            "wall": 7.5,
+            "ratio": 1.0,
+            "ok": true,
+            "mitigation": ""
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 268.64,
+          "pla_cm3": 150.18188548800003,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -75.0,
+            -98.0
+          ],
+          [
+            205.0,
+            98.0
+          ]
+        ]
+      },
+      "route_b": {
+        "alloy": "6061-T6",
+        "qty": 1,
+        "finished_cm3": 162.3200852778612,
+        "blank_cm3": 410.85,
+        "pieces": [
+          "lid"
+        ],
+        "setups": 2,
+        "blank_kg": 1.109,
+        "removed_cm3": 248.53,
+        "minutes": 66.569,
+        "stock_eur": 12.202,
+        "machine_eur": 44.379
+      }
     },
-    "el_bracket": {
-      "volume_cm3": 41.2,
-      "mass_g": 111.2,
-      "valid": true,
-      "bbox": [
-        -48.0,
-        48.0,
-        61.0,
-        69.0,
-        0.0,
-        80.0
-      ]
-    }
-  },
-  "envelopes": [
-    "az_gearbox",
-    "az_motor",
-    "az_collar",
-    "el_gearbox",
-    "el_motor",
-    "cross_boom",
-    "ant_1",
-    "ant_2"
-  ],
-  "checks": {
-    "max_interference_mm3": 0.0,
-    "limit_mm3": 1.0,
-    "interference_mm3": {
-      "base/az_gearbox": 0.0,
-      "base/az_motor": 0.0,
-      "base/az_collar": 0.0,
-      "base/el_gearbox": 0.0,
-      "base/el_motor": 0.0,
-      "base/cross_boom": 0.0,
-      "base/ant_1": 0.0,
-      "base/ant_2": 0.0,
-      "spacer/az_gearbox": 0.0,
-      "spacer/az_motor": 0.0,
-      "spacer/az_collar": 0.0,
-      "spacer/el_gearbox": 0.0,
-      "spacer/el_motor": 0.0,
-      "spacer/cross_boom": 0.0,
-      "spacer/ant_1": 0.0,
-      "spacer/ant_2": 0.0,
-      "el_bracket/az_gearbox": 0.0,
-      "el_bracket/az_motor": 0.0,
-      "el_bracket/az_collar": 0.0,
-      "el_bracket/el_gearbox": 0.0,
-      "el_bracket/el_motor": 0.0,
-      "el_bracket/cross_boom": 0.0,
-      "el_bracket/ant_1": 0.0,
-      "el_bracket/ant_2": 0.0,
-      "az_housing/base": 0.0,
-      "az_housing/az_shaft": 0.0,
-      "el_bearing_housing/el_gearbox": 0.0,
-      "boom_socket/cross_boom": 0.0,
-      "boom_socket/ant_1": 0.0,
-      "boom_socket/el_index_disc": 0.0,
-      "az_shaft/base": 0.0,
-      "az_shaft/spacer": 0.0,
-      "el_index_disc/el_shaft": 0.0
+    "mast_bracket": {
+      "qty": 1,
+      "finished_cm3": 426.9446735045112,
+      "route_a": {
+        "rev": "A0",
+        "qty": 1,
+        "finished_cm3": 426.9446735045112,
+        "preform_cm3": 497.28475077514224,
+        "cast_cm3": 497.28475077514224,
+        "pattern_cm3": 1356.6154601378921,
+        "pla_cm3": 339.15386503447303,
+        "core_cm3": 643.3597891199537,
+        "machined_cm2": 45.36459791783662,
+        "pattern_pieces": 2,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "tube ring (r38, cast bore r27.75)",
+            "d": 10.25,
+            "wall": 10.25,
+            "ratio": 1.0,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "pinch lug 24 x 28 x 32",
+            "d": 24.0,
+            "wall": 10.25,
+            "ratio": 2.34,
+            "ok": false,
+            "mitigation": "chill on the lug, feed from the tube; or CNC route"
+          },
+          {
+            "name": "shaft-pocket ring (r38, cast r13.0)",
+            "d": 25.0,
+            "wall": 6.0,
+            "ratio": 4.17,
+            "ok": false,
+            "mitigation": "riser at the cup centre; or CNC route"
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 508.56375562492263,
+          "pla_cm3": 184.62822392309423,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -80.0,
+            -187.5
+          ],
+          [
+            83.0,
+            23.0
+          ]
+        ]
+      },
+      "route_b": {
+        "alloy": "6082-T6",
+        "qty": 1,
+        "finished_cm3": 426.9446735045112,
+        "blank_cm3": 2426.08,
+        "pieces": [
+          "tube_clamp",
+          "top_plate"
+        ],
+        "setups": 4,
+        "blank_kg": 6.55,
+        "removed_cm3": 1999.135,
+        "minutes": 233.276,
+        "stock_eur": 72.055,
+        "machine_eur": 155.517
+      }
     },
-    "failures": [],
-    "passed": true,
-    "el_sweep": {
-      "range_deg": [
-        -30,
-        150
-      ],
-      "step_deg": 5,
-      "moving": [
-        "boom_socket",
-        "cross_boom",
-        "el_index_disc",
-        "ant_1",
-        "ant_2"
-      ],
-      "worst_mm3": 0.0,
-      "worst_at": null
-    }
-  },
-  "cast": {
-    "az_housing": {
-      "volume_cm3": 180.307,
-      "mass_g": 483.2,
-      "valid": true,
-      "machined_area_cm2": 171.81,
-      "bore_solid_cm3": 0.0,
-      "bbox": [
-        -55.63,
-        55.63,
-        -63.0,
-        63.0,
-        -152.0,
-        -8.0
-      ],
-      "pattern": "az_housing_pattern",
-      "pattern_volume_cm3": 404.552,
-      "pattern_area_cm2": 715.96,
-      "pattern_bbox": [
-        -56.35,
-        56.35,
-        -63.82,
-        63.82,
-        -176.66,
-        14.79
-      ],
-      "parting": "Parting plane z=-8 (flange face, flat). Single drag half: all outer draft opens towards the flange. Core prints: A on the flange face (cope), B through the lip hole (drag); cores in az_housing_corebox."
+    "yoke_arm": {
+      "qty": 2,
+      "finished_cm3": 77.12100355886754,
+      "route_a": {
+        "rev": "A0",
+        "qty": 2,
+        "finished_cm3": 77.12100355886754,
+        "preform_cm3": 87.17692579393969,
+        "cast_cm3": 87.17692579393969,
+        "pattern_cm3": 153.42773317669332,
+        "pla_cm3": 38.35693329417333,
+        "core_cm3": 14.09593353757571,
+        "machined_cm2": 24.566370614359176,
+        "pattern_pieces": 2,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "boss ring (r20, cast bore r7.5)",
+            "d": 12.5,
+            "wall": 10.0,
+            "ratio": 1.25,
+            "ok": true,
+            "mitigation": ""
+          },
+          {
+            "name": "plate-flange tee",
+            "d": 12.25,
+            "wall": 10.0,
+            "ratio": 1.23,
+            "ok": true,
+            "mitigation": ""
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 88.95463033995416,
+          "pla_cm3": 44.04096731695063,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -45.0,
+            63.0
+          ],
+          [
+            75.0,
+            147.5
+          ]
+        ]
+      },
+      "route_b": {
+        "alloy": "6082-T6",
+        "qty": 2,
+        "finished_cm3": 77.12100355886754,
+        "blank_cm3": 583.84,
+        "pieces": [
+          "yoke_arm"
+        ],
+        "setups": 2,
+        "blank_kg": 1.576,
+        "removed_cm3": 506.719,
+        "minutes": 83.781,
+        "stock_eur": 17.34,
+        "machine_eur": 55.854
+      }
     },
-    "mast_clamp": {
-      "volume_cm3": 97.765,
-      "mass_g": 262.0,
-      "valid": true,
-      "machined_area_cm2": 63.33,
-      "bore_solid_cm3": 42.41,
-      "bbox": [
-        -41.0,
-        21.0,
-        -45.0,
-        45.0,
-        -235.0,
-        -175.0
-      ],
-      "pattern": "mast_clamp_pattern",
-      "pattern_volume_cm3": 153.123,
-      "pattern_area_cm2": 241.01,
-      "pattern_bbox": [
-        -41.53,
-        21.27,
-        -45.58,
-        45.58,
-        -235.78,
-        -172.47
-      ],
-      "parting": "Parting plane z=-175 (boss top). Drag only, strip and boss drafted 2 deg by the pattern maker; bore cast solid."
+    "saddle": {
+      "qty": 1,
+      "finished_cm3": 97.35406926692363,
+      "route_a": {
+        "rev": "A0",
+        "qty": 1,
+        "finished_cm3": 97.35406926692363,
+        "preform_cm3": 163.43600000000006,
+        "cast_cm3": 163.43600000000006,
+        "pattern_cm3": 171.70187111382884,
+        "pla_cm3": 42.92546777845721,
+        "core_cm3": 0.0,
+        "machined_cm2": 294.0,
+        "pattern_pieces": 1,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "plate 8 + stock",
+            "d": 13.0,
+            "wall": 13.0,
+            "ratio": 1.0,
+            "ok": true,
+            "mitigation": ""
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 176.00799999999995,
+          "pla_cm3": 73.67072484800002,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -35.0,
+            -130.0
+          ],
+          [
+            85.0,
+            130.0
+          ]
+        ]
+      },
+      "route_b": {
+        "alloy": "6061-T6",
+        "qty": 1,
+        "finished_cm3": 97.35406926692363,
+        "blank_cm3": 244.57199999999997,
+        "pieces": [
+          "saddle"
+        ],
+        "setups": 2,
+        "blank_kg": 0.66,
+        "removed_cm3": 147.218,
+        "minutes": 59.815,
+        "stock_eur": 7.264,
+        "machine_eur": 39.876
+      }
     },
-    "el_bearing_housing": {
-      "volume_cm3": 118.234,
-      "mass_g": 316.9,
-      "valid": true,
-      "machined_area_cm2": 129.15,
-      "bore_solid_cm3": 130.77,
-      "bbox": [
-        -44.0,
-        44.0,
-        125.0,
-        242.0,
-        -4.0,
-        84.0
-      ],
-      "pattern": "el_bearing_housing_pattern",
-      "pattern_volume_cm3": 284.481,
-      "pattern_area_cm2": 549.87,
-      "pattern_bbox": [
-        -44.57,
-        44.57,
-        122.47,
-        246.05,
-        -4.57,
-        84.57
-      ],
-      "parting": "Parting plane at the flange face (y = EL gearbox face B): flange in the cope, rings and ribs in the drag; drafted 2 deg by the pattern maker; all bores cast solid and bored in one setup (coaxiality of the seats and the face recess)."
-    },
-    "boom_socket": {
-      "volume_cm3": 130.752,
-      "mass_g": 350.4,
-      "valid": true,
-      "machined_area_cm2": 39.3,
-      "bore_solid_cm3": 21.21,
-      "bbox": [
-        -25.5,
-        25.5,
-        247.0,
-        363.0,
-        4.0,
-        65.5
-      ],
-      "pattern": "boom_socket_pattern",
-      "pattern_volume_cm3": 329.808,
-      "pattern_area_cm2": 323.58,
-      "pattern_bbox": [
-        -25.83,
-        25.83,
-        244.47,
-        379.7,
-        3.53,
-        65.83
-      ],
-      "parting": "Parting plane at the mouth face: body in the drag, hub up; the 40.5 pocket is formed by one prismatic sand core (15 mm print at the mouth, 2 deg draft by the pattern maker; core box not modelled); \u00d830 bore cast solid and bored, slit sawn."
+    "boom_clamp": {
+      "qty": 2,
+      "finished_cm3": 19.713203649089614,
+      "route_a": {
+        "rev": "A0",
+        "qty": 2,
+        "finished_cm3": 19.713203649089614,
+        "preform_cm3": 31.5,
+        "cast_cm3": 31.5,
+        "pattern_cm3": 33.15389692101246,
+        "pla_cm3": 8.288474230253115,
+        "core_cm3": 0.0,
+        "machined_cm2": 42.0,
+        "pattern_pieces": 1,
+        "mockup_pieces": 1,
+        "stock_mm": 2.5,
+        "hot_spots": [
+          {
+            "name": "block 10 + stock",
+            "d": 15.0,
+            "wall": 15.0,
+            "ratio": 1.0,
+            "ok": true,
+            "mitigation": ""
+          }
+        ],
+        "lost_pla": {
+          "stock_mm": 3.0,
+          "cast_cm3": 33.6,
+          "pla_cm3": 15.187301199999984,
+          "watertight": true
+        },
+        "dowels": [
+          [
+            -35.0,
+            20.0
+          ],
+          [
+            85.0,
+            100.0
+          ]
+        ]
+      },
+      "route_b": {
+        "alloy": "6061-T6",
+        "qty": 2,
+        "finished_cm3": 19.713203649089614,
+        "blank_cm3": 65.415,
+        "pieces": [
+          "boom_clamp"
+        ],
+        "setups": 2,
+        "blank_kg": 0.177,
+        "removed_cm3": 45.702,
+        "minutes": 53.047,
+        "stock_eur": 1.943,
+        "machine_eur": 35.365
+      }
     }
   },
   "shafts": {
     "az_shaft": {
-      "volume_cm3": 125.858,
-      "mass_g": 1000.6,
-      "valid": true,
-      "bbox": [
-        -15.0,
-        15.0,
-        -15.01,
-        15.01,
-        -225.0,
-        81.0
-      ],
-      "length_mm": 306.0,
+      "volume_cm3": 95.54,
+      "mass_g": 759.5,
+      "length_mm": 240.0,
       "stock_d_mm": 33.0,
-      "stock_l_mm": 316.0,
+      "stock_l_mm": 250.0,
       "steps": [
         [
-          -225.0,
-          1.0,
+          -50.0,
+          111.0,
           30.0
         ],
         [
-          1.0,
-          81.0,
+          111.0,
+          190.0,
           14.0
         ]
       ],
       "bores": [
         [
-          -225.0,
-          -1.0,
+          -50.0,
+          97.0,
           16.0
         ]
       ]
     },
     "el_shaft": {
-      "volume_cm3": 93.237,
-      "mass_g": 741.2,
-      "valid": true,
-      "bbox": [
-        -15.0,
-        15.0,
-        70.0,
-        276.0,
-        25.0,
-        55.0
-      ],
-      "length_mm": 206.0,
-      "stock_d_mm": 33.0,
-      "stock_l_mm": 216.0,
+      "volume_cm3": 54.948,
+      "mass_g": 436.8,
+      "length_mm": 241.0,
+      "stock_d_mm": 23.0,
+      "stock_l_mm": 251.0,
       "steps": [
         [
-          70.0,
-          162.0,
-          14.0
+          -120.0,
+          -3.0,
+          20.0
         ],
         [
-          162.0,
-          276.0,
-          30.0
+          -3.0,
+          121.0,
+          14.0
         ]
       ],
       "bores": []
+    },
+    "el_sleeve": {
+      "volume_cm3": 9.133,
+      "mass_g": 72.6,
+      "length_mm": 57.0,
+      "stock_d_mm": 23.0,
+      "stock_l_mm": 67.0,
+      "steps": [
+        [
+          63.0,
+          120.0,
+          20.0
+        ]
+      ],
+      "bores": [
+        [
+          63.0,
+          120.0,
+          14.0
+        ]
+      ]
     }
   },
-  "clamp_m20_exit": false,
-  "core_box": {
-    "volume_cm3": 409.481,
-    "bbox": [
-      -40.0,
-      120.0,
-      -35.0,
-      35.0,
-      -6.0,
-      51.5
-    ]
-  },
-  "allowed_pairs": [
-    "az_index_disc / az_collar",
-    "az_shaft / az_collar",
-    "az_shaft / az_gearbox",
-    "az_shaft / mast_clamp",
-    "el_shaft / boom_socket",
-    "el_shaft / el_bearing_housing",
-    "el_shaft / el_gearbox"
-  ],
   "items": {
     "cross_boom": {
-      "volume_cm3": 488.4,
-      "mass_g": 1318.7,
+      "volume_cm3": 710.4,
+      "mass_g": 1918.1,
       "section_mm": [
         40.0,
         40.0,
         3.0
       ],
-      "length_mm": 1100.0
+      "length_mm": 1600.0
     }
   },
-  "index": {
-    "notch_deg": {
-      "az": 15.18,
-      "el": 7.14
+  "mass_check": {
+    "body": {
+      "finished_kg": 6.295,
+      "inputs_kg": 5.4,
+      "differs_over_10pct": true
     },
-    "disc_t_mm": 3.0,
-    "material": "ASA",
-    "parts": [
-      "az_index_disc",
-      "el_index_disc",
-      "index_bracket"
-    ]
+    "lid": {
+      "finished_kg": 0.435,
+      "inputs_kg": 1.3,
+      "differs_over_10pct": true
+    }
+  },
+  "checks": {
+    "limit_mm3": 1.0,
+    "interference_mm3": {
+      "body/lid": 0.0,
+      "body/mast_bracket": 0.0,
+      "lid/mast_bracket": 0.0
+    },
+    "failures": [],
+    "passed": true,
+    "el_sweep": {
+      "range_deg": [
+        -30.0,
+        150.0
+      ],
+      "step_deg": 5,
+      "moving": [
+        "boom",
+        "boom_clamp",
+        "boom_clamp_neg",
+        "counterweight_neg",
+        "counterweight_pos",
+        "lift_arm_neg",
+        "lift_arm_pos",
+        "saddle",
+        "yoke_arm",
+        "yoke_arm_neg"
+      ],
+      "worst_mm3": 0.0,
+      "worst_at": null
+    }
   }
 }
