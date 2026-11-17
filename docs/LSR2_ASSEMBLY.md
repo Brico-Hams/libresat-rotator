@@ -2,7 +2,7 @@
 
 Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina.
 
-Parts and prices: [BOM_LSR2](BOM_LSR2.md). Design and checks: [ARCHITECTURE](ARCHITECTURE.md), [LSR2_SIZING](LSR2_SIZING.md), [LSR2_MATERIALS](LSR2_MATERIALS.md). Every torque, fit and catalogue value below is **VERIFY** against your real parts.
+Parts and prices: [BOM_LSR2](BOM_LSR2.md). Design and checks: [ARCHITECTURE](ARCHITECTURE.md), [LSR2_SIZING](LSR2_SIZING.md), [LSR2_MATERIALS](LSR2_MATERIALS.md). Every torque, fit and catalogue value below is **VERIFY** against your real parts. Drawings (SVG and PDF, one per fabricated part, assembly, exploded view): [drawings/](drawings/); wiring: [drawings/LSR2_wiring.svg](drawings/LSR2_wiring.svg); acceptance: [LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md); what is still open: [OPEN_ITEMS](OPEN_ITEMS.md).
 
 ![LSR-2 exploded view, rendered](img/lsr2_exploded_real.png)
 

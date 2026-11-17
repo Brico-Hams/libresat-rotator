@@ -124,7 +124,7 @@ def lsr2():
           f'| **Total, one rotator without mast, antenna and cable run** | **{tot_eur:.0f} €** |',
           f'| **Mass, rotator and electronics** | **{tot_g / 1000:.2f} kg** |',
           '\nBy group: ' + ', '.join(f'{k} {v:.0f} €' for k, v in groups.items()) + f', fabricated {eur_fab:.0f} €, PLA {t["pla_eur"]:.0f} €.\n',
-          'The two NMRV030 gearboxes and the two NEMA23 motors dominate the mass and the cost of the bought parts; see [LSR2_MATERIALS](LSR2_MATERIALS.md) for the cost model and [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) for the build.']
+          'The two NMRV030 gearboxes and the two NEMA23 motors dominate the mass and the cost of the bought parts; see [LSR2_MATERIALS](LSR2_MATERIALS.md) for the cost model and [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) for the build. Dimensioned drawings of every fabricated part (`LSR2_part_NN_*.svg|pdf`, BricoHams title block with material, tolerances and scale), the exploded view with the Pos balloons and the wiring diagram are in [drawings/](drawings/) (`make lsr2`); open items in [OPEN_ITEMS](OPEN_ITEMS.md).']
     if c.get('budget'):   # separate variant: not in the totals above
         o += ['\n## Budget build variant (not the default, not in the totals above)\n', c['budget_note'], '',
               '| Item | Qty | Unit € (VERIFY) | Total € | Replaces / consequence |', '|---|---|---|---|---|']

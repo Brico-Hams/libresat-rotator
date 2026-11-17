@@ -40,6 +40,7 @@ lsr2:
 	$(PY) scripts/bom.py
 	$(PY) scripts/render_lsr2_head.py $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 docs/img
 	$(PY) scripts/drawings.py $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 docs/drawings
+	$(PY) scripts/wiring.py $(CURDIR) docs/drawings
 render:
 	$(BLENDER) -b --factory-startup -P scripts/render_blender.py -- $(CURDIR) $(or $(LSR2_OUT),$(CURDIR))/stl/lsr2 $(RENDER_OUT) $(RENDER_ARGS)
 bom:

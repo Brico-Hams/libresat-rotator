@@ -8,10 +8,10 @@
 |---|---|---|
 | Use | portable, photo/survey tripod | fixed mast, 40–60 mm |
 | Drive | printed cycloid 25:1 + NEMA17 | NMRV030 worm 80:1 + NEMA23 |
-| Range | AZ 0–450° (cable wrap), EL 0–180° (flip) | Mk5-class: AZ ±360°, EL −30…150° (PLANNED; no flip, out of scope) |
-| Sensing | absolute EL (accelerometer), AZ index + saved position, AS5600 closed loop | absolute magnetic encoder on each **output** shaft (AS5048A/AS5600), index kept as cross-check (PLANNED) |
-| Controller | LSR-CTL, internal TMC2209 | LSR-CTL, step/dir to external drivers DM542 or TMC5160 (PLANNED) |
-| Structure | printed PETG/ASA, metal only for pins, bearings and bolts | CNC 6061-T6/5083 plates (8 mm, top 6 mm) + cast A356 parts |
+| Range | AZ 0–450° (cable wrap), EL 0–180° (flip) | Mk5-class: AZ ±360°, EL −30…150° (no flip) |
+| Sensing | absolute EL (accelerometer), AZ index + saved position, AS5600 closed loop | AS5600 closed loop on each axis (J5/J7), photo-interrupter index per axis, saved position on power loss |
+| Controller | LSR-CTL, internal TMC2209 | LSR-CTL, step/dir to external DM542 drivers (`LSR_DRIVER=EXT_STEPDIR`; TMC5160 in step/dir mode is the alternative) |
+| Structure | printed PETG/ASA, metal only for pins, bearings and bolts | aluminium open-box body with ribs and gasketed lid, yoke, saddle and clamps: cast A356-T6 (route A) or CNC 6082/6061 (route B) |
 | Mass | ≈ 2.3 kg (ESTIMATE, rotator + controller) | see [LSR2_MATERIALS](LSR2_MATERIALS.md) (ESTIMATE) |
 | Cost | ≈ 150 € parts (Pi Zero 2 W) | see [LSR2_MATERIALS](LSR2_MATERIALS.md) (ESTIMATE, VERIFY) |
 | Payload | light Yagi / SpaceQuad class | crossed Yagi pair 145/435 on NMRV030; larger dishes need NMRV040/050 or a slewing drive ([LSR2_SIZING](LSR2_SIZING.md)) |
@@ -22,13 +22,13 @@ One firmware, one protocol and one head software drive both rotators.
 
 ```mermaid
 flowchart LR
-    PSS["antenaSatCommrotor<br/>PortableSatStation<br/>(EasyComm backend PLANNED, ADR-036)"]
+    PSS["antenaSatCommrotor<br/>PortableSatStation<br/>(EasyComm backend: see its ADR-036)"]
     GP["Gpredict / Look4Sat / SatNOGS"]
     PI["Pi head software<br/>software/lsr: tracker, web UI, Doppler"]
     RC["rotctld :4533"]
     CTL["LSR-CTL RP2040 firmware<br/>EasyComm II, closed loop"]
     L1["LSR-1<br/>TMC2209 + NEMA17 + cycloid"]
-    L2["LSR-2<br/>external step/dir driver (PLANNED)<br/>NEMA23 + NMRV030"]
+    L2["LSR-2<br/>external step/dir driver<br/>NEMA23 + NMRV030"]
     PSS -->|EasyComm II / rotctld| RC
     GP --> RC
     PI --- RC
@@ -38,11 +38,11 @@ flowchart LR
     CTL -.->|LSR_DRIVER=EXT_STEPDIR| L2
 ```
 
-- **LSR-CTL RP2040 firmware** (C/C++, Pico SDK). LSR-2 adds an external step/dir driver output, flag `LSR_DRIVER=EXT_STEPDIR` (PLANNED).
+- **LSR-CTL RP2040 firmware** (C/C++, Pico SDK). LSR-2 adds an external step/dir driver output, flag `LSR_DRIVER=EXT_STEPDIR` (compile on the target: [OPEN_ITEMS](OPEN_ITEMS.md) O24).
 - **EasyComm II** is the common protocol (plus LSR extensions).
 - **rotctld** on port 4533 serves Hamlib clients.
-- **Pi head software** (`software/lsr`): tracker, web UI, Doppler. LSR-2 uses a rotator profile `lsr2` (PLANNED).
-- **antenaSatCommrotor PortableSatStation** is a client of either rotator. Its EasyComm backend is PLANNED (see its ADR-036).
+- **Pi head software** (`software/lsr`): tracker, web UI, Doppler. LSR-2 uses the rotator profile `lsr2` (`software/lsr/config.py`).
+- **antenaSatCommrotor PortableSatStation** is a client of either rotator (EasyComm backend: its ADR-036).
 
 ## 3. LSR-2 mechanical architecture
 
@@ -104,22 +104,25 @@ make render   # Blender 5.x Cycles: img/lsr2_hero.png, lsr2_head_closeup.png (li
 | 1 | Spec, sizing calc, parameter file | done |
 | 2 | CNC route: scripts, STEP, interference check (superseded by route B of phase 11) | done |
 | 3 | Casting route, shafts, structural checks (superseded by route A of phase 11) | done (foundry quote and first casting pending) |
-| 4 | Firmware `EXT_STEPDIR`, LSR-CTL header, `lsr2` profile | in progress, see [FIRMWARE](FIRMWARE.md) |
-| 5 | BOM ([BOM_LSR2](BOM_LSR2.md)), assembly guide ([LSR2_ASSEMBLY](LSR2_ASSEMBLY.md)), `antenaSatCommrotor` rotctld backend (branch `feat/lsr-rotctld-backend` of Brico-Hams/antenaSatCommrotor), branding | documentation done; backend in progress |
+| 4 | Firmware `EXT_STEPDIR`, LSR-CTL header, `lsr2` profile | done; host tests pass, compile on the target open (O24), see [FIRMWARE](FIRMWARE.md) |
+| 5 | BOM ([BOM_LSR2](BOM_LSR2.md)), assembly guide ([LSR2_ASSEMBLY](LSR2_ASSEMBLY.md)), `antenaSatCommrotor` rotctld backend (branch `feat/lsr-rotctld-backend` of Brico-Hams/antenaSatCommrotor), branding | done (backend lives in the other repository) |
 | 6 | Two gearbox blocks and a square cross boom (replaced by phase 11) | superseded |
 | 6b | Correction of the phase-6 boom layout (replaced by phase 11) | superseded |
-| 6c | Aligned with the SARCTrac Mk5 data (SARCNET): drive at 400 microsteps/rev, power-loss save, photo-interrupter index, EasyComm II 9600, shim washers (see §7b) | written; build and tests pending |
-| 7 | PLANNED: our own two-half cast worm-gear housing replaces the bought NMRV030 housings, with the SAME output-face PCD 65 pattern and hub | planned |
+| 6c | Aligned with the SARCTrac Mk5 data (SARCNET): drive at 400 microsteps/rev, power-loss save, photo-interrupter index, EasyComm II 9600, shim washers (see §7b) | done |
+| 7 | Own two-half cast worm-gear housing LSR-WG30 with the SAME output-face PCD 65 pattern and hub (§7f) | done as an option; the bought NMRV030 stays the default |
+| 8 | Automatic calibration and pointing model ([CALIBRATION](CALIBRATION.md), §7c) | done |
+| 9 | Photoreal render pipeline (`make render`) and technical figures | done |
+| 10 | Completeness audit: power budget, cable and gland fill, wiring diagram, acceptance checklist, [OPEN_ITEMS](OPEN_ITEMS.md) | done |
+| 11 | Mk5-schematic architecture, routes A and B, deliverables (§7d, §7e) | done; first casting, quotes and bench tests open |
 
-Future: printed ASA weather cover.
+Weather cover: no separate cover is designed; the gasketed body, glands, breather and drain protect the drives (see [OPEN_ITEMS](OPEN_ITEMS.md), decisions taken).
 
-**VERIFY before cutting metal or pouring:**
+**VERIFY before cutting metal or pouring** (the complete list with owner actions is [OPEN_ITEMS](OPEN_ITEMS.md)):
 - NMRV030 dimensions: measure the real gearbox with a caliper and update `params.py`, then fit-test a 1:1 print;
 - the keyed shaft torsion, the gearbox radial-load model and the EL bearing span;
-- bearing, 51206 washer recess, circlip and U-bolt catalogue sizes against the real parts;
-- A356-T6 allowable (80 MPa), modulus, U-bolt preload and friction, and the proof load of the first mast bracket;
-- gun drilling of the Ø16 bore and the cable passage;
-- prices, yield and sheet size in the materials budget (local quotes), and the foundry's pattern requirements;
+- bearing, 51206 washer recess, circlip groove and U-bolt catalogue sizes against the real parts;
+- A356-T6 yield (180 MPa in `inputs.py`, certificate of the foundry), modulus, U-bolt preload and friction, and the proof load of the first mast bracket;
+- prices, yield and stock sizes in the materials budget (local quotes), and the foundry's pattern requirements;
 - gearbox catalogue ratings with the supplier.
 
 ## 7b. Phase 6c: alignment with SARCTrac Mk5
@@ -142,7 +145,7 @@ LSR-2 adopts the facts published by SARCNET for the SARCTrac Mk5 ([reference dat
 | Thrust stack 51206 + M30×56×3 stainless shims | adopted: one washer replaces the old 3 mm ring, a second adjusts the preload (circlip 1.5 + 2 × 3 = 7.5 mm of the 10 mm gap, checked in calc) | standard part, cheaper than a turned ring |
 | Mk5 load path (gearbox output bearings carry the overturning moment) | kept our bearing pair + 51206 in the body pillar | the sizing shows the gearbox output bearings allow about 38 N·m, below the survival moment of any payload ([LSR2_SIZING](LSR2_SIZING.md)) |
 | M14 stainless threaded rod + 5×8 roll pins as EL shaft | kept the turned keyed Ø30/Ø14 shaft | one-sided boom: the rod fails the von Mises check at the outer bearing (calc `mk5_options`) |
-| M14 rod + roll pins as AZ shaft | kept the turned shaft | the rod would pass the torque-only check as a stub, but the AZ shaft is one Ø30 piece (bearing seats, Ø16 cable bore): no saving |
+| M14 rod + roll pins as AZ shaft | kept the turned shaft | the AZ shaft is a Ø30/Ø14 piece with the bearing seats and the circlip groove: no saving from a rod |
 | Galvanised angle brackets for the mast platform / boom socket | "budget build" variant only (separate BOM section, not in the totals) | not covered by the calc, galvanic corrosion with Al/stainless on the coast, steel is heavier than the cast parts |
 | Thrust-bearing seal (PVC pipe + silicone) | our V-ring + housing recess; inspection interval in [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) | no extra part; same inspection routine |
 | Tef-Gel on dissimilar-metal joints | adopted everywhere (BOM, assembly) | corrosion rule |
@@ -168,7 +171,7 @@ Replaces the phase-6 two-block layout. Binding brief: `reference/BRICOHAMS_LSR2_
 - **AZ** (`axes.py`): Ø30 shaft on 2×6206 + 51206 in the pillar; the gearbox transmits torque only (coupling by key). Mast split-clamp bracket with labyrinth cup under the skirt. Index disc inside the pillar.
 - **EL**: Ø20 through-shaft on two 6004 in the side walls, torque coupling to the gearbox; two yoke arms (U) → saddle → two boom clamp blocks → cross boom Ø40 (1.6 m) → lift arms with antennas and sliding counterweights at the ends.
 - **Load path**: antenna → lift arm → boom → clamps → saddle → yoke arms → EL shaft/bearings → body walls → AZ pillar (radial 2×6206, axial 51206) → mast bracket → mast. Gearboxes see torque only.
-- **Cables**: coax clock-spring coils at the EL bearings, harness wrap around the mast bracket (`cables.py`); bend radius ≥ 10×OD; stops (EL pin on the arm, AZ software limit + index sensor); AZ wrap vs slip ring is an open decision.
+- **Cables**: coax clock-spring coils at the EL bearings, harness wrap around the mast bracket (`cables.py`, gland fill in [LSR2_SIZING](LSR2_SIZING.md) §16); the AZ shaft is solid, no cable bore; bend radius ≥ 10×OD; stops (EL pin on the arm, AZ software limit + index sensor); AZ wrap vs slip ring is an open decision.
 - **Sealing**: lid gasket, shaft seals, glands with drip loop, breather and drain; IP target defined but **to be tested** (no IP claim).
 - **Noise (VHF/UHF)**: shielded motor/driver cables with ferrites, driver chopping frequency kept off the 144/435 MHz harmonics, drivers separated from the coax path inside the body; to be measured.
 - **Manufacturing routes (11c/11d)**: every structural part (body, lid, mast bracket, yoke arm, saddle, boom clamp) has route A, printed pattern → sand-cast A356-T6 → machining ([LSR2_ROUTE_A_CASTING](LSR2_ROUTE_A_CASTING.md), `route_a.py`) and route B, 3-axis CNC from 6082/6061 block ([LSR2_ROUTE_B_CNC](LSR2_ROUTE_B_CNC.md), `route_b.py`, `cam/lsr2/<part>_setups.csv`). `calc/lsr2_materials.py` compares both per part; `bom_lsr2.yaml` lists both and the BOM takes the cheaper as default.
@@ -183,7 +186,9 @@ Replaces the phase-6 two-block layout. Binding brief: `reference/BRICOHAMS_LSR2_
 | Tolerances (datums, ISO fits, finishes, justification by mating part and process) | [LSR2_TOLERANCES](LSR2_TOLERANCES.md), generated from `cad/lsr2/tolerances.py` |
 | Inspection sheet (empty result column) | [LSR2_INSPECTION](LSR2_INSPECTION.md) |
 | Risk review | [LSR2_RISKS](LSR2_RISKS.md) |
-| Assembly guide (order, torques, fitting, coupling, balance, cabling) | [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md); wiring in [ELECTRONICS](ELECTRONICS.md) |
+| Assembly guide (order, torques, fitting, coupling, balance, cabling) | [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md); wiring in [ELECTRONICS](ELECTRONICS.md) and `docs/drawings/LSR2_wiring.svg` (`scripts/wiring.py`) |
+| Power budget and cable/gland fill | [LSR2_SIZING](LSR2_SIZING.md) §15–16 |
+| Acceptance checklist and open items | [LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md), [OPEN_ITEMS](OPEN_ITEMS.md) |
 | Progressive bench test plan and results table | [LSR2_TEST_PLAN](LSR2_TEST_PLAN.md) |
 | Technical figures and photoreal renders | `docs/img/` (`render_lsr2_head.py`, `render_blender.py`) |
 

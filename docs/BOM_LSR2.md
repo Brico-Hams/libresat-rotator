@@ -75,7 +75,7 @@ Route A cost = poured A356 + foundry + machining of the stock pads; route B = bl
 
 By group: Motion 146 €, Bearings 18 €, Cross boom 13 €, Lift arms and counterweights 15 €, Hardware 21 €, Fasteners 8 €, Corrosion 6 €, Electronics 94 €, Sensors 8 €, Wiring 17 €, fabricated 461 €, PLA 154 €.
 
-The two NMRV030 gearboxes and the two NEMA23 motors dominate the mass and the cost of the bought parts; see [LSR2_MATERIALS](LSR2_MATERIALS.md) for the cost model and [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) for the build.
+The two NMRV030 gearboxes and the two NEMA23 motors dominate the mass and the cost of the bought parts; see [LSR2_MATERIALS](LSR2_MATERIALS.md) for the cost model and [LSR2_ASSEMBLY](LSR2_ASSEMBLY.md) for the build. Dimensioned drawings of every fabricated part (`LSR2_part_NN_*.svg|pdf`, BricoHams title block with material, tolerances and scale), the exploded view with the Pos balloons and the wiring diagram are in [drawings/](drawings/) (`make lsr2`); open items in [OPEN_ITEMS](OPEN_ITEMS.md).
 
 ## Budget build variant (not the default, not in the totals above)
 

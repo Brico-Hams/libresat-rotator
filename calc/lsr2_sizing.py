@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
 import params as PR  # noqa: E402
 import inputs as IN  # noqa: E402
 import gearbox as GBX  # noqa: E402  (pure-Python gear data of the own gearbox LSR-WG30, phase 7)
+import cables as CB  # noqa: E402  (pure-Python cable table; FreeCAD is imported only inside its geometry functions)
 
 I = IN.I
 G = 9.81
@@ -420,7 +421,25 @@ def evaluate():
     chk('Survival 130 km/h (option)', 'AZ holding torque', p130['tau_az'], PEAK, 1.5, 'N·m, reported only', True)
     chk('Survival 130 km/h (option)', 'EL holding torque', p130['tau_el'], PEAK, 1.5, 'N·m, reported only', True)
     R['wg30'] = wg30(R)
+    R['pw'] = power(R)
     return R
+
+
+def power(R):
+    """Supply budget: copper + mechanical power, and the chopper supply-current rule; the larger one is used per moving axis."""
+    p_cu, p_cu_idle = I['drv_i_pk'] ** 2 * I['motor_r'], I['drv_i_pk'] ** 2 * I['motor_r'] * I['idle_cut'] ** 2   # two phases at I/sqrt2 RMS
+    w_m = R['rpm'] * 2 * math.pi / 60
+    mech = {a: R[t] / (RATIO * ETA) * w_m for a, t in (('AZ', 'taz'), ('EL', 'tel'))}
+    p_rule = I['psu_v'] * I['supply_k'] * I['drv_i_pk']
+    mov = {a: max((p_cu + m) / I['drv_eta'], p_rule) + I['drv_idle_w'] for a, m in mech.items()}
+    idle = 2 * (p_cu_idle / I['drv_eta'] + I['drv_idle_w']) + I['logic_w']
+    peak = sum(mov.values()) + I['logic_w']
+    avg = I['duty_move'] * peak + (1 - I['duty_move']) * idle
+    psu = I['psu_v'] * I['psu_a']
+    hold = 0.5 * I['cap_uf'] * 1e-6 * (I['psu_v'] ** 2 - I['cap_v_min'] ** 2) / (I['logic_w'] + 2 * I['drv_idle_w'])
+    chk('Power budget', 'supply power vs both axes moving + logic', peak, psu, 1.25, f'W, {I["psu_v"]:g} V x {I["psu_a"]:g} A')
+    chk('Power budget', 'rail hold-up time vs flash save after a power loss', I['save_ms'] / 1000, hold, 2.0, 's, motors disabled')
+    return dict(p_cu=p_cu, p_cu_idle=p_cu_idle, mech=mech, p_rule=p_rule, mov=mov, idle=idle, peak=peak, avg=avg, psu=psu, hold=hold, i_peak=peak / I['psu_v'])
 
 
 # ---- Reports --------------------------------------------------------------------------------------------------------------------
@@ -549,6 +568,31 @@ def report(R):
           f'parity needs a ≈ {w["a_eq"]:.0f} mm (an NMRV050-class envelope, heavier and dearer). A two-stage or coaxial pre-stage cannot fit inside the NMRV030 envelope because the NEMA23 flange axis '
           f'is the worm axis. The geometry, patterns, bearings and interfaces are complete and drop-in, but with these gears the **LSR-WG30 is an option for light duty (holding at stand-still with a '
           f'lower wind survival, or a different gear set), not a replacement for the NMRV030 at the loads of this head: keep the bought NMRV030.** The cost comparison is in [LSR2_MATERIALS](LSR2_MATERIALS.md).', '']
+    pw = R['pw']
+    L += ['## 15. Power budget (48 V supply, 2 x DM542, controller, no heaters)', '']
+    L += tbl(['Item', 'Value', 'Tag'], [
+        ('Motor copper loss, full / standstill current', f'{pw["p_cu"]:.1f} / {pw["p_cu_idle"]:.1f} W per motor (I² R, R = {I["motor_r"]:g} ohm)', 'MEASURE R'),
+        ('Mechanical power at the motor shaft, AZ / EL', f'{pw["mech"]["AZ"]:.1f} / {pw["mech"]["EL"]:.1f} W at {I["vmax_dps"]:g} deg/s', 'calc'),
+        ('Supply-current rule, one axis at speed', f'{pw["p_rule"]:.0f} W ({I["supply_k"]} x {I["drv_i_pk"]:g} A x {I["psu_v"]:g} V; the larger of this and copper + mechanical is used)', 'PARAMETRIC, bench-measure'),
+        ('Input power per axis moving, AZ / EL', f'{pw["mov"]["AZ"]:.0f} / {pw["mov"]["EL"]:.0f} W', 'calc'),
+        ('Both axes moving + logic (peak)', f'{pw["peak"]:.0f} W = {pw["i_peak"]:.1f} A at {I["psu_v"]:g} V', 'calc'),
+        ('Holding (both drivers at half current + logic)', f'{pw["idle"]:.1f} W', 'calc'),
+        ('Average in a pass at a moving duty of ' + f'{I["duty_move"]:.0%}', f'{pw["avg"]:.0f} W', 'PARAMETRIC duty'),
+        ('Supply', f'{pw["psu"]:.0f} W ({I["psu_v"]:g} V x {I["psu_a"]:g} A): SF {pw["psu"] / pw["peak"]:.2f}', 'BOM_LSR2'),
+        ('Hold-up of the 48 V rail ' + f'{I["cap_uf"]:g} uF down to {I["cap_v_min"]:g} V', f'{pw["hold"] * 1000:.0f} ms against a flash save of {I["save_ms"]:g} ms', 'MEASURE save time')])
+    L += ['Idle reduction (DM542 SW4) cuts the holding copper loss to a quarter. Heaters: none. Fuse the 48 V line at about 1.5 x the peak current. '
+          'The supply-current rule dominates at speed, so the budget is conservative; measure the real input current with a clamp meter in test S1-8 ([LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md)). '
+          'The LSR-1 field budget is in [POWER](POWER.md).', '']
+    L += ['## 16. Cables through the body glands and the harness wrap', '']
+    rows = []
+    for n, gl in CB.GLAND_CABLES.items():
+        od = CB.gland_bundle_od(gl['cables'])
+        rows.append((n, '; '.join(f'{c} (Ø{o:g})' for c, o in gl['cables']), f'Ø{od:.1f}', f'{gl["range"][0]:g}-{gl["range"][1]:g}', f'Ø{gl["hole"]:g}'))
+    L += tbl(['Gland', 'Cables (PARAMETRIC, VERIFY)', 'Bundle OD mm', 'Gland clamping range mm', 'Body hole mm'], rows)
+    L += [f'The AZ shaft is a solid Ø14 stub (no bore): the harness is not threaded through it but wrapped {CB.WRAP["turns"]:g} turns round the mast bracket at r {CB.WRAP["r"]:g} mm '
+          f'({CB.WRAP["r"] / CB.HARNESS["od"]:.0f} x OD, rule >= 10 x OD), which absorbs the ±360° azimuth range; the coax coils on the EL axis at r {CB.EL_COIL["major_r"]:g} mm '
+          f'({CB.EL_COIL["major_r"] / CB.COAX["od"]:.0f} x OD; LMR-240 static minimum {CB.COAX["bend_r_min"]} mm). Both antennas share one feed line through a VHF/UHF diplexer at the boom centre (open decision: two coax lines need a second gland, which the body rib layout does not leave room for). '
+          'A wireless link (Wi-Fi, the Mk5 way) removes the data cores from the harness.', '']
     return '\n'.join(L)
 
 
@@ -601,6 +645,10 @@ def self_test():
     # each counterweight balances its side exactly: gravity torque about EL is zero at any elevation
     for e in (0, 37, 90, 150):
         assert abs(G * sum(m * (a * math.cos(math.radians(e)) - h * math.sin(math.radians(e))) for _, m, a, y, h in MOV)) < 1e-9
+    # power: copper loss at 3 A, 1.1 ohm = 9.9 W; standstill at half current = 2.475 W; hold-up 0.5 * 2.2e-3 * (48^2 - 12^2) / (3 + 4 W) = 2.376 J / 7 W = 0.339 s
+    assert abs(I['drv_i_pk'] ** 2 * I['motor_r'] - 9.9) < 1e-9 and abs(9.9 * I['idle_cut'] ** 2 - 2.475) < 1e-9
+    assert abs(0.5 * I['cap_uf'] * 1e-6 * (I['psu_v'] ** 2 - I['cap_v_min'] ** 2) / (I['logic_w'] + 2 * I['drv_idle_w']) - 0.3394) < 1e-3
+    CB.self_test()
     prof = firmware_profile()
     if prof:
         assert abs(prof[-4] - I['vmax_dps']) < 1e-6 and abs(prof[-2] - I['acc_dps2']) < 1e-6, prof
