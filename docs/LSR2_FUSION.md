@@ -41,6 +41,16 @@ Written without a Fusion session available: first run may need small API adjustm
 
 A fully constrained parametric Fusion model of the LSR-2 rotor in the SARCTrac Mk5 arrangement. Arrangement replicated, own dimensions, no third-party CAD geometry: every size comes from `params.py` / `inputs.py` (NMRV030 envelope, NEMA23 57x57 with 47.14 bolt square, 51206 thrust bearing, mast, boom and antenna inputs) and is held as a Fusion user parameter.
 
+![Fusion layout, full rotor at EL 45°](img/lsr2_mk5_layout_full.png)
+
+![Fusion layout, head (cover hidden)](img/lsr2_mk5_layout_head.png)
+
+| Front | Side (along the EL shaft) |
+|---|---|
+| ![front](img/lsr2_mk5_layout_front.png) | ![side](img/lsr2_mk5_layout_side.png) |
+
+Views saved from Fusion with `Viewport.saveAsImageFile` (cover and enclosure lid hidden).
+
 **Arrangement (front view, plate vertical)**
 
 - A vertical aluminium **plate** is the backbone. The **EL gearbox** (NMRV030) is mounted high, the **AZ gearbox** (NMRV030) low, same orientation, fins under the bodies, 4 face holes PCD65 M6.
