@@ -48,7 +48,7 @@ flowchart LR
 
 Default design: the SARCTrac Mk4 replica built from the SARCNET FreeCAD files ([LSR2_MK4](LSR2_MK4.md)): 10 mm aluminium mounting plate, saddle plates and mast bracket, 2 mm laser-cut cover and electronics enclosure with 16 mm corner blocks, two NMRV30-G50 gearboxes with 23HS32-4004S motors, 25 mm SHS lift arms, stainless azimuth hub and thrust bearing washer stack. The phase 11 architecture (Mk5 schematic, §7d and §7e) is the optional cast/CNC variant. The phase-6 two-block layout is no longer part of the repository.
 
-![LSR-2 Mk4 head close-up: plate, gearboxes, motors, drivers and the Deltron housing, cover lifted](img/lsr2_head_closeup.png)
+![LSR-2 head without its cover: plate, both gearboxes and motors, saddle, lift arms and the Deltron housing](img/lsr2_head_closeup.png)
 
 *Render, not a photo: the Mk4 head built from the SARCNET files.*
 
@@ -56,7 +56,7 @@ Default design: the SARCTrac Mk4 replica built from the SARCNET FreeCAD files ([
 
 *Render, not a photo: the Mk4 replica exploded along the axes.*
 
-![LSR-2 Mk4 EL sweep, rendered](img/lsr2_el_sweep_real.png)
+![LSR-2 elevation sweep: saddle and lift arms at −30°, 45° and 150° (antennas left out)](img/lsr2_el_sweep_real.png)
 
 *Render, not a photo: moving group of the Mk4 replica at EL -30°, 45° and 150°.*
 
@@ -92,7 +92,7 @@ make lsr2     # self-tests, then freecadcmd: body, lid, yoke, saddle, clamps, ma
 `scripts/render_lsr2_head.py` draws `img/lsr2_assembly.png`, `img/lsr2_exploded.png`, `img/lsr2_el_sweep.png`, `img/lsr2_castings.png` (route A) and `img/lsr2_blanks.png` (route B) from the STL files; `scripts/drawings.py` writes the dimensioned drawings to `docs/drawings/`. `build.py` does not delete files of removed parts: the stale list is in `docs/reference/STALE_FILES.txt`.
 
 ```bash
-make render   # Blender 5.x Cycles: img/lsr2_hero.png, lsr2_head_closeup.png (Mk4 head, cover lifted), lsr2_exploded_real.png, lsr2_castings_real.png, lsr2_blanks_real.png, lsr2_el_sweep_real.png
+make render   # Blender 5.x Cycles: img/lsr2_hero.png, lsr2_head_closeup.png (Mk4 head, cover removed), lsr2_exploded_real.png, lsr2_laser_parts_real.png, lsr2_el_sweep_real.png (cast variant: lsr2_castings_real.png, lsr2_blanks_real.png)
 ```
 
 `build.py` also writes `stl/lsr2/visual/` (visual models of the bought parts: NMRV030, NEMA23, drivers, bearings, mast, Yagis, fasteners), `cad/lsr2/LSR2_assembly.FCStd` / `.step` and `build/lsr2_render_scene.json` (EL axis, groups, categories, exploded offsets). `scripts/render_blender.py` reads them. Variables: `BLENDER`, `RENDER_OUT` (default `docs/img`; outside Documents on Windows with Controlled Folder Access), `RENDER_ARGS="--samples 64"`. The images are renders, not photos.

@@ -36,7 +36,7 @@ ROWS = [
     (17, 'Bearing 6206-2RS (AZ)', BOUGHT, 'bearing steel', 'catalogue', 2, 'brg6206', ('brg_az_lower', 'brg_az_upper')),
     (18, 'Thrust bearing 51206 (AZ)', BOUGHT, 'bearing steel', 'catalogue', 1, 'brg51206', ('brg_az_thrust',)),
     (19, 'Bearing 6004-2RS (EL)', BOUGHT, 'bearing steel', 'catalogue', 2, 'brg6004', ('brg_el_pos', 'brg_el_neg')),
-    (20, 'Driver DM542 (inner wall)', BOUGHT, 'catalogue module', 'catalogue', 2, 'driver', ('drivers',)),
+    (20, 'Driver DM542T (inner wall)', BOUGHT, 'catalogue module', 'catalogue', 2, 'driver', ('drivers',)),
     (21, 'Boom clamp bolts M6', BOUGHT, 'A4-70', 'catalogue', 8, 'clamp_bolts', ('clamp_bolts',)),
     (22, 'Mast (customer, not in BOM)', BOUGHT, 'steel tube 60.3 x 3.6', 'customer', 1, None, ('mast',)),
     (23, 'Yagi 145 MHz (customer)', BOUGHT, 'aluminium', 'customer', 1, None, ('yagi_145',)),

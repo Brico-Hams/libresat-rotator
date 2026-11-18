@@ -1,7 +1,7 @@
 """LSR-2 phase 11e: visual models of the bought parts in the head frame (FreeCAD Part builders, mm). Visual models of the bought parts in the head frame.
 
 Frame as axes.py: origin = centre of the body bottom face, z = AZ axis, x boresight, y along the EL axis. Sizes: params.NMRV030_GEO / NEMA23
-(DATASHEET catalogue, VERIFY with a caliper), DM542 housing 118 x 75 x 34 (MEASURE), mast Ø60.3 x 3.6 (inputs.mast_od, PARAMETRIC), Yagi element
+(DATASHEET catalogue, VERIFY with a caliper), DM542T housing 118 x 75 x 34 (MEASURE), mast Ø60.3 x 3.6 (inputs.mast_od, PARAMETRIC), Yagi element
 lengths are PARAMETRIC visual placeholders (the real antenna is an open decision). Visual only: the interference checks use the real fabricated parts.
 """
 import math
@@ -101,7 +101,7 @@ def motors():
 
 
 def drivers():
-    """Two DM542 on the thermal pad of the inner -y wall, one above the other, fins towards the pad: PARAMETRIC placement."""
+    """Two DM542T on the thermal pad of the inner -y wall, one above the other, fins towards the pad: PARAMETRIC placement."""
     y0 = -BD.BY + BD.W + BD.DRIVER_PAD['t']
     return Part.makeCompound([box(70.0, 70.0 + 118.0, y0, y0 + 34.0, z, z + 75.0) for z in (30.0, 110.0)])
 

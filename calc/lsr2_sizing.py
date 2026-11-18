@@ -589,7 +589,7 @@ def report(R):
         ('Average in a pass at a moving duty of ' + f'{I["duty_move"]:.0%}', f'{pw["avg"]:.0f} W', 'PARAMETRIC duty'),
         ('Supply', f'{pw["psu"]:.0f} W ({I["psu_v"]:g} V x {I["psu_a"]:g} A): SF {pw["psu"] / pw["peak"]:.2f}', 'BOM_LSR2'),
         ('Hold-up of the 48 V rail ' + f'{I["cap_uf"]:g} uF down to {I["cap_v_min"]:g} V', f'{pw["hold"] * 1000:.0f} ms against a flash save of {I["save_ms"]:g} ms', 'MEASURE save time')])
-    L += ['Idle reduction (DM542 SW4) cuts the holding copper loss to a quarter. Heaters: none. Fuse the 48 V line at about 1.5 x the peak current. '
+    L += ['Idle reduction (DM542T SW4) cuts the holding copper loss to a quarter. Heaters: none. Fuse the 48 V line at about 1.5 x the peak current. '
           'The supply-current rule dominates at speed, so the budget is conservative; measure the real input current with a clamp meter in test S1-8 ([LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md)). '
           'The LSR-1 field budget is in [POWER](POWER.md).', '']
     L += ['## 16. Cables through the body glands and the harness wrap', '']

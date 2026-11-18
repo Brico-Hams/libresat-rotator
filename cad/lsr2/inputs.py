@@ -162,8 +162,8 @@ ROWS = [
     ('Power', 'drv_i_pk', 4.0, 'A', D, 'DM542T peak current setting = 23HS32-4004S rated phase current (driver maximum 4.5 A)'),
     ('Power', 'motor_r', 0.6, 'ohm', M, 'winding resistance of one phase of the 23HS32-4004S; measure with a multimeter'),
     ('Power', 'drv_eta', 0.85, '-', P, 'driver + chopper efficiency'),
-    ('Power', 'drv_idle_w', 2.0, 'W', P, 'quiescent loss of one DM542 powered and enabled'),
-    ('Power', 'idle_cut', 0.5, '-', D, 'standstill current fraction of the DM542 (SW4 on): half current'),
+    ('Power', 'drv_idle_w', 2.0, 'W', P, 'quiescent loss of one DM542T powered and enabled'),
+    ('Power', 'idle_cut', 0.5, '-', D, 'standstill current fraction of the DM542T (SW4 on): half current'),
     ('Power', 'supply_k', 0.67, '-', P, 'rule of thumb: supply current of a chopper driver at speed = 0.67 x phase current setting; bench-measure it'),
     ('Power', 'logic_w', 3.0, 'W', P, 'LSR-CTL, level shifter, sensors, 48 V to 5 V converter loss, no heaters'),
     ('Power', 'duty_move', 0.3, '-', P, 'fraction of a satellite pass with both axes moving (the rest holds at the idle current)'),
@@ -185,9 +185,9 @@ CAST_OVERRIDES = {
     'saddle_mass': (0.5, 'saddle plate, two clamp blocks and hardware (CAD volume + fasteners)'),
     'stat_mass': (1.7, 'stationary part: AZ shaft and mast bracket (does not rotate); CAD volumes in the build report'),
     'motor_curve': (((0, 2.8), (100, 2.4), (200, 2.0), (300, 1.6), (500, 1.1), (800, 0.7), (1200, 0.45)),
-                    '57BYG250H-8 on DM542 at 48 V: points from typical NEMA23 2.8 N·m curves, NOT the maker curve; measure on the bench'),
+                    '57BYG250H-8 on DM542T at 48 V: points from typical NEMA23 2.8 N·m curves, NOT the maker curve; measure on the bench'),
     'rotor_j': (8.0e-5, '57BYG250H-8 rotor inertia, typical 0.8 kg·cm²; maker sheet or measure'), 'motor_mass': (1.4, '57BYG250H-8, 112 mm body; weigh it'),
-    'drv_i_pk': (3.0, 'DM542 peak current setting = 57BYG250H-8 rated phase current (SARCNET)'),
+    'drv_i_pk': (3.0, 'DM542T peak current setting = 57BYG250H-8 rated phase current (SARCNET)'),
     'motor_r': (1.1, 'winding resistance of one phase of the 57BYG250H-8; measure with a multimeter'),
     'psu_a': (6.0, 'supply current rating chosen in BOM_LSR2 (288 W)'),
 }
@@ -223,7 +223,7 @@ HEAD = [
     ('EL gearbox NMRV030', I['gb_mass'], 0.0, 0.030, I['z_el'], M, 'high, on the +y wall, output axis = EL axis'),
     ('AZ motor 57BYG250H-8', I['motor_mass'], 0.111, 0.030, 0.176, M, 'both motors on the same side (front, +x; see open decision)'),
     ('EL motor 57BYG250H-8', I['motor_mass'], 0.111, 0.030, I['z_el'] - 0.030, M, 'parallel to the AZ motor, stacked'),
-    ('2 x DM542 drivers', 0.5, 0.115, -0.051, 0.10, M, 'inner -y side wall, thermal pads to the aluminium'),
+    ('2 x DM542T drivers', 0.5, 0.115, -0.051, 0.10, M, 'inner -y side wall, thermal pads to the aluminium'),
 ]
 if DESIGN == 'mk4':
     # Mk4 box: 10 mm mounting plate + six 2 mm covers + 8 corner blocks + laser enclosure; Deltron 483-0100 housing with the electronics (positions as the cast layout, VERIFY)
@@ -249,7 +249,7 @@ OPEN_DECISIONS = [
     'Brake: not needed if the bench test confirms the worm stays locked under vibrating wind; otherwise add a spring-applied brake.',
     'Parking elevation and azimuth rule in survival wind (the sizing shows which elevation is better).',
     'Survival wind 130 km/h parked: reported only; passing it may need a stronger gearbox or a lower antenna area.',
-    'Motor stall torque at the output exceeds the gearbox peak: soft limits + bumpers, or a lower DM542 current / slip element (decide from the bench test).',
+    'Motor stall torque at the output exceeds the gearbox peak: soft limits + bumpers, or a lower DM542T current / slip element (decide from the bench test).',
     'Motors forward (+x, chosen) versus rearward: "same side" in the brief is ambiguous; rearward needs yoke arms of ~284 mm (layout study row).',
     'Strap supporting the forward-cantilevered motors (about 0.13 m past the body wall) if the vibration test asks for it.',
     'AZ cable: helical wrap around the mast (chosen, +-360 deg) versus a slip ring.',

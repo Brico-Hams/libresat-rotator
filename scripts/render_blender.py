@@ -2,7 +2,7 @@
 #   blender -b --factory-startup -P scripts/render_blender.py -- <repo_root> <stl_dir> <out_dir> [--samples N]
 # stl_dir = <build out>/stl/lsr2 (fabricated parts; stl_dir/visual/<name>.stl holds the bought parts). Scene data (EL axis, groups, exploded offsets,
 # categories, route A/B folders) = build/lsr2_render_scene.json from build.py.
-# Output: lsr2_hero.png, lsr2_head_closeup.png (lid lifted), lsr2_exploded_real.png, lsr2_castings_real.png (route A), lsr2_blanks_real.png, lsr2_gearbox_real.png (LSR-WG30 halves apart), lsr2_el_sweep_real.png
+# Output (mk4): lsr2_hero.png, lsr2_head_closeup.png (cover hidden), lsr2_exploded_real.png, lsr2_laser_parts_real.png, lsr2_el_sweep_real.png; cast variant adds lsr2_castings_real.png, lsr2_blanks_real.png, lsr2_gearbox_real.png
 import bpy, sys, os, re, json, math, struct
 import numpy as np
 from mathutils import Vector, Matrix
@@ -407,8 +407,8 @@ def caption(thx):
     return made
 
 
-def render(fname, objs, pts, direction, lens, floor_z=None):
-    thx = frame(pts, direction, lens)
+def render(fname, objs, pts, direction, lens, floor_z=None, m=0.92):
+    thx = frame(pts, direction, lens, m, m * 0.87)
     FLOOR.location.z = FLOOR_Z if floor_z is None else floor_z
     made = caption(thx)
     scene.render.filepath = os.path.join(out_dir, fname)
@@ -426,18 +426,21 @@ HIDE_CLOSEUP = [n for n in S.get('closeup_hide', []) if n in OBJ]
 HEAD = [n for n in FULL if n not in YAGI + MASTWARE + HIDE_CLOSEUP]   # mk4: the cover is hidden, the Mk4 antenna stays in the hero only
 if MK4:
     HEAD = [n for n in HEAD if S['category'].get(n) != 'antenna']
+# the big Yagis (Mk4: antenna_left/right) dwarf the head; frame on the rotator and keep them out of the exploded and sweep views
+ANT = YAGI + ['antenna_left', 'antenna_right']
+NO_ANT = [n for n in FULL if n not in ANT]
 
 
-def run(fname, names, el, explode, direction, lens, frame_names=None, floor_z=None):
+def run(fname, names, el, explode, direction, lens, frame_names=None, floor_z=None, m=0.92):
     show(names)
     FLOOR.hide_render = False
     pose(el, explode)
     fr = [OBJ[n] for n in (frame_names or names) if n in OBJ]
-    render(fname, names, points(fr), direction, lens, floor_z)
+    render(fname, names, points(fr), direction, lens, floor_z, m)
 
 
 # 1. hero: whole rotator on the mast, both Yagis, EL 30 deg
-run('lsr2_hero.png', FULL, S.get('hero_el', 30.0), False, (1.0, -1.15, 0.38), 42)
+run('lsr2_hero.png', FULL, S.get('hero_el', 30.0), False, (1.0, -1.1, 0.45), 50, frame_names=NO_ANT, m=0.5)
 
 # 2. lifted-lid close-up: gearboxes, motors, drivers visible, lid raised by lid_lift
 LID = OBJ.get('lid')
@@ -450,7 +453,7 @@ FLOOR.hide_render = False
 render('lsr2_head_closeup.png', HEAD, points(fr), (0.85, -0.95, 0.65), 50, floor_z=min(p.z for p in points(fr)) - 0.0005)
 
 # 3. exploded along the axes (offsets of cad/lsr2/parts_table.py)
-ex = [n for n in FULL if n not in YAGI]
+ex = list(NO_ANT)
 pose(0.0, True)
 zmin = min(p.z for p in points([OBJ[n] for n in ex]))
 run('lsr2_exploded_real.png', ex, 0.0, True, (1.0, -0.45, 0.42), 45, floor_z=zmin - 0.02)
@@ -540,11 +543,11 @@ if not MK4 and all(os.path.exists(f) for f in gb.values()):
             ob.hide_render = True
 
 # 5. EL sweep: the moving group ghosted at -30, 45 and 150 deg about the EL axis
-sw_static = [n for n in FULL if n not in EL_GROUP]
+sw_static = [n for n in NO_ANT if n not in EL_GROUP]
 show(sw_static)
 pose(0.0, False)
 ghosts = []
-group = [n for n in EL_GROUP if n in OBJ and n not in EXTRA]
+group = [n for n in EL_GROUP if n in OBJ and n not in EXTRA + ANT]
 for ang, col in ((-30, BLUE), (45, '#2e7d32'), (150, '#8a3b8a')):
     gm = pbr(f'ghost{ang}', col, 0.0, 0.35, alpha=0.45)
     for n in group:
@@ -554,6 +557,6 @@ for ang, col in ((-30, BLUE), (45, '#2e7d32'), (150, '#8a3b8a')):
         g.matrix_world = el_matrix(ang)
         ghosts.append(g)
 FLOOR.hide_render = False
-render('lsr2_el_sweep_real.png', [], points([OBJ[n] for n in sw_static] + ghosts), (0.45, -1.0, 0.2), 38)
+render('lsr2_el_sweep_real.png', [], points([OBJ[n] for n in sw_static] + ghosts), (0.25, -1.0, 0.3), 45)
 for g in ghosts:
     bpy.data.objects.remove(g)

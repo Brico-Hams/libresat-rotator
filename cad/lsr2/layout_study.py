@@ -18,7 +18,7 @@ GAP = 3.0                         # P solver clearance between envelopes
 GB = dict(x=(-40.0, 49.0), y=(-40.0, 57.0), w=56.0, boss=3.5)     # M NMRV030 local box
 MOTOR_HALF, MOTOR_X = 28.5, (40.0, 167.0)                        # M NEMA23 envelope (57 mm face + caps)
 BODY = dict(x=(-AX.K['x_back'], AX.K['x_front']), z_lid=AX.K['rim'] + AX.K['lid_t'])
-DRIVER = dict(size=(118.0, 75.5, 34.0), watt=10.0)               # M DM542 body; P 10 W dissipated each at 48 V (bench to confirm)
+DRIVER = dict(size=(118.0, 75.5, 34.0), watt=10.0)               # M DM542T body; P 10 W dissipated each at 48 V (bench to confirm)
 DT_LIMIT = 30.0                                                    # P allowed driver wall temperature rise (K)
 H_NAT, RIB_GAIN = 8.0, 1.8                                         # P natural convection W/m2K and external rib gain
 

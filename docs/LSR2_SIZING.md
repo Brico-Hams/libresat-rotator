@@ -356,7 +356,7 @@ Drop-in for the NMRV030 (same faces, Ø14 keyed hollow output, Ø55 boss, NEMA23
 | Supply | 398 W (48 V x 8.3 A): SF 1.51 | BOM_LSR2 |
 | Hold-up of the 48 V rail 2200 uF down to 12 V | 339 ms against a flash save of 60 ms | MEASURE save time |
 
-Idle reduction (DM542 SW4) cuts the holding copper loss to a quarter. Heaters: none. Fuse the 48 V line at about 1.5 x the peak current. The supply-current rule dominates at speed, so the budget is conservative; measure the real input current with a clamp meter in test S1-8 ([LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md)). The LSR-1 field budget is in [POWER](POWER.md).
+Idle reduction (DM542T SW4) cuts the holding copper loss to a quarter. Heaters: none. Fuse the 48 V line at about 1.5 x the peak current. The supply-current rule dominates at speed, so the budget is conservative; measure the real input current with a clamp meter in test S1-8 ([LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md)). The LSR-1 field budget is in [POWER](POWER.md).
 
 ## 16. Cables through the body glands and the harness wrap
 

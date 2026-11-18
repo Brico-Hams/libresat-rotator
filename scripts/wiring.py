@@ -10,19 +10,19 @@ W, H = 1240, 800
 
 # block: (x, y, w, title, [pin labels]); wires reference (block, pin index) on its left (L) or right (R) side
 BLOCKS = {
-    'psu': (30, 70, 190, '48 V supply (6 A) + fuse', ['L / N mains', '+48 V', '0 V', 'PE']),
+    'psu': (30, 70, 190, 'S-400-48 48 V supply + fuse', ['L / N mains', '+48 V', '0 V', 'PE']),
     'cap': (30, 250, 190, '2200 uF 63 V + PWRFAIL opto', ['+48 V', '0 V', 'PC817 + 47k to GP22']),
-    'buck': (30, 400, 190, 'XL7015 buck 48 V to 5 V', ['VIN 48 V', 'GND', 'OUT 5 V']),
-    'ctl': (400, 70, 270, 'LSR-CTL (Pico) J-pins per config.h', [
+    'buck': (30, 400, 190, '2 x XL7015 buck 48 V to 12 V / 5 V', ['VIN 48 V', 'GND', 'OUT 5 V']),
+    'ctl': (400, 70, 270, 'LSR-CTL (Pico) per config.h (controller: O35)', [
         'GP10 STEP AZ', 'GP11 DIR AZ', 'GP2 EN AZ', 'GP12 STEP EL', 'GP13 DIR EL', 'GP3 EN EL', 'GP22 PWRFAIL',
         'GP20 J9 AZ index (3V3, SIG, GND)', 'GP21 J10 EL index (3V3, SIG, GND)', 'GP0/GP1 UART0 TX/RX (Pi / PC link, 9600 8N1)',
         'GP16/17 J5 AS5600 AZ (SDA/SCL)', 'GP18/19 J7 AS5600 EL (SDA/SCL)', 'VSYS 5 V']),
-    'lvl': (400, 460, 270, '3.3 V to 5 V level stage (opto drive)', ['6 inputs from the Pico', '6 outputs to DM542 -', '5 V']),
-    'drvaz': (800, 70, 230, 'DM542 AZ', ['PUL+/DIR+/ENA+ to 5 V', 'PUL- / DIR- / ENA-', 'VCC +48 V / GND', 'A+ A- B+ B-']),
-    'drvel': (800, 260, 230, 'DM542 EL', ['PUL+/DIR+/ENA+ to 5 V', 'PUL- / DIR- / ENA-', 'VCC +48 V / GND', 'A+ A- B+ B-']),
-    'maz': (800, 470, 230, 'Motor AZ 57BYG250H-8', ['coil 1: A+ A-', 'coil 2: B+ B-', 'shield at the driver only']),
-    'mel': (800, 600, 230, 'Motor EL 57BYG250H-8', ['coil 1: A+ A-', 'coil 2: B+ B-', 'shield at the driver only']),
-    'gl': (1060, 70, 160, 'Body glands', ['M16: 7 x 0.75 harness', 'M12: LMR-240 coax']),
+    'lvl': (400, 460, 270, '3.3 V to 5 V level stage (opto drive)', ['6 inputs from the Pico', '6 outputs to DM542T -', '5 V']),
+    'drvaz': (800, 70, 230, 'DM542T AZ', ['PUL+/DIR+/ENA+ to 5 V', 'PUL- / DIR- / ENA-', 'VCC +48 V / GND', 'A+ A- B+ B-']),
+    'drvel': (800, 260, 230, 'DM542T EL', ['PUL+/DIR+/ENA+ to 5 V', 'PUL- / DIR- / ENA-', 'VCC +48 V / GND', 'A+ A- B+ B-']),
+    'maz': (800, 470, 230, 'Motor AZ 23HS32-4004S', ['coil 1: A+ A-', 'coil 2: B+ B-', 'shield at the driver only']),
+    'mel': (800, 600, 230, 'Motor EL 23HS32-4004S', ['coil 1: A+ A-', 'coil 2: B+ B-', 'shield at the driver only']),
+    'gl': (1060, 70, 160, 'Deltron 483-0100 glands', ['harness: 48 V + data', 'coax']),
 }
 WIRES = [  # (src block, pin, dst block, pin, label, colour)
     ('psu', 1, 'cap', 0, '+48 V', '#c00'), ('psu', 2, 'cap', 1, '0 V', '#222'),
@@ -32,7 +32,7 @@ WIRES = [  # (src block, pin, dst block, pin, label, colour)
     ('ctl', 0, 'lvl', 0, 'STEP/DIR/EN x 2', '#06c'), ('lvl', 1, 'drvaz', 1, 'AZ', '#06c'), ('lvl', 1, 'drvel', 1, 'EL', '#06c'),
     ('buck', 2, 'drvaz', 0, '5 V opto +', '#080'), ('cap', 0, 'drvaz', 2, '+48 V', '#c00'), ('cap', 0, 'drvel', 2, '+48 V', '#c00'),
     ('drvaz', 3, 'maz', 0, 'motor cable', '#222'), ('drvel', 3, 'mel', 0, 'motor cable', '#222'),
-    ('psu', 0, 'gl', 0, 'supply cable through the M16 gland', '#888'),
+    ('psu', 0, 'gl', 0, 'supply cable through the harness gland', '#888'),
 ]
 ROW = 22
 
@@ -64,8 +64,8 @@ def svg():
     o += [box(k) for k in BLOCKS]
     o += [f'<rect x="10" y="{H - 62}" width="{W - 20}" height="52" fill="none" stroke="#222"/>',
           f'<text x="20" y="{H - 38}" font-size="14" font-weight="bold">BricoHams · LibreSat LSR-2 · Wiring diagram</text>',
-          f'<text x="20" y="{H - 20}" font-size="10">Pins from firmware/src/config.h and docs/ELECTRONICS.md (LSR-2 external drivers). Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina. '
-          'Colours: red 48 V, green 5 V, blue signal, black 0 V. DM542 pin names VERIFY against the driver label.</text>', '</svg>']
+          f'<text x="20" y="{H - 20}" font-size="10">Pins from firmware/src/config.h and docs/ELECTRONICS.md (LSR-2 Mk4 replica, external drivers; the Mk4 Wemos controller is open item O35). Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina. '
+          'Colours: red 48 V, green 5 V, blue signal, black 0 V. DM542T pin names VERIFY against the driver label.</text>', '</svg>']
     return '\n'.join(o)
 
 

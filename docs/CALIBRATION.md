@@ -4,9 +4,9 @@ Applies to LSR-1 and LSR-2. Every step works alone, writes its result to the con
 
 ## Procedure
 
-![SARCTrac Mk4 replica head: gearboxes, motors and drivers, cover lifted](img/lsr2_head_closeup.png)
+![LSR-2 head without its cover: plate, both gearboxes and motors, saddle and lift arms](img/lsr2_head_closeup.png)
 
-*Render, not a photo: the LSR-2 Mk4 head with the cover lifted. The AZ index disc sits inside the pillar and the photo-interrupters are described in [ELECTRONICS](ELECTRONICS.md); the EL disc position is an open decision.*
+*Render, not a photo: the LSR-2 Mk4 head with the cover removed. The Mk4 uses NJK-5002C Hall index sensors ([ELECTRONICS](ELECTRONICS.md)); the photo-interrupter index discs belong to the cast variant.*
 
 | # | Step | Command | Needs | Result |
 |---|---|---|---|---|
