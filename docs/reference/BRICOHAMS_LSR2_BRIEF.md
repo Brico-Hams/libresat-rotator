@@ -2,6 +2,8 @@
 
 Texto del encargo de BricoHams (Anatol EA5KAO), conservado como referencia de diseño. Las URL de SARCNET son públicas; los datos usados se resumen en [SARCTRAC_MK5_DATA.md](SARCTRAC_MK5_DATA.md).
 
+> **Update (phase 12, English note):** this brief is kept as written. The owner later decided that LSR-2 is a replica of the SARCNET SARCTrac Mk4, built from the SARCNET FreeCAD files released under the MIT licence (`third_party/sarctrac-mk4`); the design described below is the optional cast/CNC variant (`LSR2_DESIGN=cast`). See [LSR2_MK4](../LSR2_MK4.md).
+
 ## Esquema de componentes del Mk5 (descripción de la imagen schematic.png de SARCNET)
 
 De arriba abajo:

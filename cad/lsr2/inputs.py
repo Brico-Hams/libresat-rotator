@@ -1,29 +1,37 @@
-"""LSR-2 (Mk5-schematic architecture) input table: single source for calc/lsr2_sizing.py and the phase 11 CAD scripts.
+"""LSR-2 input table (default: SARCTrac Mk4 replica): single source for calc/lsr2_sizing.py and the phase 11 CAD scripts.
+
+Mk4 masses (lift arm, saddle, stationary part, head box, electronics, gearbox, motor) are read from calc/lsr2_mk4_bom.py, which takes the
+made-part masses from build/lsr2_build_report.json and the bought-part masses from its catalogue values; the numbers in ROWS are the fallback.
 
 Units: m, kg, N, N·m, deg unless the row says otherwise (CAD scripts convert to mm themselves).
 Every row is (group, key, value, unit, tag, note). Tags:
   DATASHEET  published by a maker or a standard; the note names the source
   MEASURE    needs a caliper / scale / test on the real part; the value is a placeholder until measured
   PARAMETRIC our own choice, editable; the sizing re-runs with it
-Pure Python, no imports. docs/LSR2_INPUTS.md is generated from ROWS by calc/lsr2_sizing.py.
+Pure Python (os only). docs/LSR2_INPUTS.md is generated from ROWS by calc/lsr2_sizing.py.
+The rows hold the SARCTrac Mk4 replica (LSR2_DESIGN=mk4, default: NMRV30 50:1, 23HS32-4004S, DM542T, S-400-48, Mk4 antenna 1270 mm and 25 mm SHS lift arms,
+SARCNET FreeCAD files under the MIT licence in third_party/sarctrac-mk4). CAST_OVERRIDES below restores the phase-11 cast/CNC values when LSR2_DESIGN=cast.
 Frames: body frame at EL = 0: x forward (boresight), y along the EL axis (the cross boom), z up. AZ origin = centre of the body
 bottom mounting face, z up along the AZ axis. a = distance along the boresight from the EL axis, h = height above the EL axis plane.
 """
+import os
+
+DESIGN = os.environ.get('LSR2_DESIGN', 'mk4')
 D, M, P = 'DATASHEET', 'MEASURE', 'PARAMETRIC'
 
 ROWS = [
     # ---- Antennas (current payload: crossed Yagis 145 and 435 MHz, one at each boom end)
     ('Antennas', 'ant145_mass', 3.5, 'kg', M, '145 MHz crossed Yagi, ~2 m boom; weigh it. Payload total 6.0 kg as in the old budget'),
     ('Antennas', 'ant145_y', -0.65, 'm', P, 'station along the cross boom (y from the EL-axis centre); 1.0 m elements must clear the yoke arm at |y| = 0.10'),
-    ('Antennas', 'ant145_boom', 2.0, 'm', M, 'antenna boom length along the boresight'),
-    ('Antennas', 'ant145_elem', 1.0, 'm', M, 'longest element (across the boresight)'),
-    ('Antennas', 'ant145_as', 0.20, 'm²', P, 'projected area seen side-on (boom + both polarisations); refine from the antenna drawing'),
+    ('Antennas', 'ant145_boom', 1.27, 'm', D, 'antenna boom length along the boresight: Mk4 Antenna part is 1270 mm long (mk4_dump.json); weigh and measure the real antenna'),
+    ('Antennas', 'ant145_elem', 1.105, 'm', D, 'longest element (across the boresight): Mk4 Antenna envelope 1105 mm wide'),
+    ('Antennas', 'ant145_as', 0.13, 'm²', P, 'projected area seen side-on (boom + both polarisations), scaled from 0.20 m² at 2 m boom; refine from the antenna drawing'),
     ('Antennas', 'ant145_af', 0.03, 'm²', P, 'projected area seen end-on'),
     ('Antennas', 'ant435_mass', 2.5, 'kg', M, '435 MHz crossed Yagi, ~2 m boom; weigh it'),
     ('Antennas', 'ant435_y', 0.65, 'm', P, 'station along the cross boom'),
-    ('Antennas', 'ant435_boom', 2.0, 'm', M, 'antenna boom length'),
+    ('Antennas', 'ant435_boom', 1.27, 'm', D, 'antenna boom length: Mk4 Antenna part is 1270 mm long'),
     ('Antennas', 'ant435_elem', 0.35, 'm', M, 'longest element'),
-    ('Antennas', 'ant435_as', 0.15, 'm²', P, 'projected area side-on'),
+    ('Antennas', 'ant435_as', 0.10, 'm²', P, 'projected area side-on, scaled from 0.15 m² at 2 m boom'),
     ('Antennas', 'ant435_af', 0.02, 'm²', P, 'projected area end-on'),
     ('Antennas', 'ant_cg_a', 0.05, 'm', M, 'antenna CG ahead of the EL axis (lift-arm offset); measure the CG on the real antenna'),
     ('Antennas', 'ant_h', 0.0, 'm', P, 'antenna CG height above the EL axis: the lift arm drops the antenna onto the axis plane'),
@@ -32,18 +40,18 @@ ROWS = [
     # ---- Cross boom, lift arms, counterweights, saddle, yoke
     ('Boom and moving group', 'boom_w', 0.040, 'm', P, 'square 6063-T6 tube 40 x 40 x 3 (as phases 6-9)'),
     ('Boom and moving group', 'boom_t', 0.003, 'm', P, 'tube wall'),
-    ('Boom and moving group', 'boom_len', 1.6, 'm', P, 'cross boom length, parallel to the EL axis'),
+    ('Boom and moving group', 'boom_len', 1.3, 'm', P, 'cross boom length, parallel to the EL axis (Mk4 lift arms at y = +-0.60 m; VERIFY against the Mk4 tube)'),
     ('Boom and moving group', 'boom_h', 0.155, 'm', P, 'boom axis above the EL axis (arms to the saddle underside 125 mm + saddle 8 + half tube 20 + 2); arm length from cad/lsr2/layout_study.py (rear clearance at EL 150)'),
     ('Boom and moving group', 'boom_rho', 2700.0, 'kg/m³', D, '6063 aluminium density'),
     ('Boom and moving group', 'boom_g', 26.0e9, 'Pa', D, '6063 shear modulus'),
     ('Boom and moving group', 'cd_boom', 1.5, '-', P, 'square tube drag coefficient'),
-    ('Boom and moving group', 'lift_mass', 0.35, 'kg', P, 'lift arm with its antenna bracket, per side'),
+    ('Boom and moving group', 'lift_mass', 0.80, 'kg', P, 'Mk4 lift arm (25 mm aluminium SHS with end plates, CAD solid 296 cm³ x 2.7) with its antenna bracket, per side'),
     ('Boom and moving group', 'cw_lever', 0.20, 'm', P, 'counterweight lever arm from the EL axis (the weight sits opposite the moment of the rest)'),
     ('Boom and moving group', 'cw_hw', 0.25, 'kg', P, 'counterweight arm and clamp hardware, per side, counted inside the counterweight mass'),
     ('Boom and moving group', 'cw_res_max', 1.5, 'N·m', P, 'allowed residual gravity torque on EL after trimming (about 10 % of the NMRV030 rating)'),
     ('Boom and moving group', 'cg_err', 0.02, 'm', M, 'uncertainty of the antenna CG along the boresight until measured'),
     ('Boom and moving group', 'cw_tol', 0.03, '-', P, 'counterweight mass tolerance (fraction)'),
-    ('Boom and moving group', 'saddle_mass', 0.5, 'kg', P, 'saddle plate, two clamp blocks and hardware (CAD volume + fasteners)'),
+    ('Boom and moving group', 'saddle_mass', 2.27, 'kg', P, 'Mk4 saddle: three 10 mm plates, two bars, U-bolts, hardware (BOM_LSR2 Saddle list)'),
     ('Boom and moving group', 'saddle_h', 0.145, 'm', P, 'saddle CG height above the EL axis'),
     ('Boom and moving group',     'yoke_mass', 0.23, 'kg', P, 'each of the two U-yoke arms (CAD volume + key)'),
         ('Boom and moving group', 'yoke_h', 0.055, 'm', P, 'yoke arm CG height'),
@@ -58,7 +66,7 @@ ROWS = [
     ('Body and axes', 'body_area', 0.06, 'm²', P, 'body projected area to the wind (0.20 x 0.30 m)'),
     ('Body and axes', 'body_cp_z', 0.16, 'm', P, 'height of the body centre of pressure above the bottom face'),
     ('Body and axes', 'cd_body', 1.3, '-', P, 'bluff body drag coefficient'),
-    ('Body and axes', 'stat_mass', 1.7, 'kg', P, 'stationary part: AZ shaft and mast bracket (does not rotate); CAD volumes in the build report'),
+    ('Body and axes', 'stat_mass', 1.5, 'kg', P, 'stationary part: Mk4 bracket, azimuth hub, shaft, thrust bearing stack (BOM_LSR2); does not rotate'),
     ('Body and axes', 'max_mass', 28.0, 'kg', P, 'target maximum total mass of head + payload (LIGHT goal)'),
     ('Body and axes', 'envelope', (0.30, 0.22, 0.36), 'm', P, 'desired body envelope x, y, z (open box with lid, excluding yoke, motors and boom)'),
     ('Body and axes', 'clamp_z', (-0.080, -0.140), 'm', P, 'the two mast pinch-bolt levels of the mast bracket (z below the bottom face)'),
@@ -94,17 +102,17 @@ ROWS = [
     ('Motion', 'el_travel_pass', 160.0, 'deg', P, 'EL travel per pass (up and back)'),
     ('Motion', 'life_years', 20.0, 'years', P, 'bearing life wanted'),
     # ---- Drive components (NEMA23 / NMRV030 base data stay in cad/lsr2/params.py)
-    ('Drive', 'motor_curve', ((0, 2.8), (100, 2.4), (200, 2.0), (300, 1.6), (500, 1.1), (800, 0.7), (1200, 0.45)), 'rpm, N·m', M,
-     '57BYG250H-8 on DM542 at 48 V: points from typical NEMA23 2.8 N·m curves, NOT the maker curve; measure on the bench'),
+    ('Drive', 'motor_curve', ((0, 2.4), (100, 2.05), (200, 1.7), (300, 1.4), (500, 0.95), (800, 0.6), (1200, 0.4)), 'rpm, N·m', M,
+     '23HS32-4004S on DM542T at 48 V: the 2.4 N·m holding torque with the typical NEMA23 shape of the old 2.8 N·m curve, NOT the maker curve; measure on the bench'),
     ('Drive', 'motor_usable', 0.8, '-', P, 'fraction of the pull-out torque used (margin against lost steps)'),
-    ('Drive', 'rotor_j', 8.0e-5, 'kg·m²', M, '57BYG250H-8 rotor inertia, typical 0.8 kg·cm²; maker sheet or measure'),
-    ('Drive', 'motor_mass', 1.4, 'kg', M, '57BYG250H-8, 112 mm body; weigh it'),
-    ('Drive', 'gb_mass', 1.4, 'kg', M, 'NMRV030 with NEMA23 flange; weigh it'),
+    ('Drive', 'rotor_j', 7.0e-5, 'kg·m²', M, '23HS32-4004S rotor inertia, typical 0.7 kg·cm²; maker sheet or measure'),
+    ('Drive', 'motor_mass', 1.0, 'kg', M, '23HS32-4004S; weigh it'),
+    ('Drive', 'gb_mass', 1.4, 'kg', M, 'NMRV30-G50-D11 with NEMA23 flange; weigh it'),
     ('Drive', 'service_factor', 1.25, '-', P, 'uniform load, frequent starts, <= 8 h/day: applied to the torque against the gearbox rating'),
-    ('Drive', 'gb_backlash', 0.33, 'deg', M, 'NMRV030 80:1 output backlash, typical <= 20 arcmin; measured by XCAL BACKLASH'),
+    ('Drive', 'gb_backlash', 0.33, 'deg', M, 'NMRV030 output backlash, typical <= 20 arcmin; measured by XCAL BACKLASH'),
     ('Drive', 'gb_stiff', 3438.0, 'N·m/rad', M, 'gearbox torsional stiffness at the output, 1 N·m/arcmin assumed; not published'),
     ('Drive', 'bl_repeat', 0.02, 'deg', M, 'residual reversal error after the firmware backlash compensation; measure repeated reversals'),
-    ('Drive', 'worm_lead_deg', 2.3, 'deg', M, 'worm lead angle (single start, 80 teeth); count and measure'),
+    ('Drive', 'worm_lead_deg', 2.3, 'deg', M, 'worm lead angle (assumed single start on the same Ø20 worm for 1/50 and 1/80; count the starts and measure)'),
     ('Drive', 'worm_mu_static', 0.10, '-', P, 'worm mesh friction, static, greased bronze'),
     ('Drive', 'worm_mu_dyn', 0.05, '-', P, 'worm mesh friction while the wind makes the load vibrate'),
     ('Drive', 'worm_alpha', 20.0, 'deg', P, 'worm normal pressure angle'),
@@ -124,11 +132,11 @@ ROWS = [
     ('Shafts and joints', 'circlip_n', 6000.0, 'N', M, 'axial capacity of the DIN 471 Ø30 circlip groove (supplier tables)'),
     # ---- Gearbox input adapter (the 8 / 11 mm discrepancy)
     ('Input adapter', 'adapter_od', 11.0, 'mm', D, 'NMRV030 input bore, keyed, as published (SARCNET); MEASURE with a caliper before ordering'),
-    ('Input adapter', 'adapter_id', 8.0, 'mm', D, '57BYG250H-8 shaft, Ø8 with one flat (SARCNET); MEASURE the flat depth'),
+    ('Input adapter', 'adapter_id', 8.0, 'mm', D, '23HS32-4004S shaft, Ø8 (Mk4: 11 -> 8 mm adaptor); MEASURE the flat depth'),
     ('Input adapter', 'adapter_len', 20.0, 'mm', M, 'bushing length: limited by the gearbox input bore depth and the 21 mm motor shaft; measure both'),
     ('Input adapter', 'adapter_key', '4x4 DIN 6885 (Ø11: t1 2.5, t2 1.8)', '-', D, 'key in the Ø11 gearbox bore'),
     ('Input adapter', 'adapter_screws', 'M4 DIN 916 cup point x2: one on the flat, one at 90 deg', '-', P, 'set screws locked with threadlocker'),
-    ('Input adapter', 'adapter_hold', 6.0, 'N·m', M, 'holding torque of the two set screws; pull-test it, must stay above 2 x the 2.8 N·m motor torque'),
+    ('Input adapter', 'adapter_hold', 6.0, 'N·m', M, 'holding torque of the two set screws; pull-test it, must stay above 2 x the 2.4 N·m motor torque (2.8 N·m in the cast variant)'),
     # ---- Materials and fixings
     ('Materials', 'shaft_yield', 450e6, 'Pa', M, 'shaft steel 1.4404 +C700 cold drawn, Rp0.2; mill certificate'),
     ('Materials', 'shaft_rm', 700e6, 'Pa', M, 'same bar, Rm'),
@@ -148,11 +156,11 @@ ROWS = [
     ('Materials', 'crush_kloc', 3.0, '-', P, 'local peak factor of the saddle contact on the tube wall'),
     ('Materials', 'boom_clamp_leg_pre', 3000.0, 'N', P, 'preload per leg of the four M6 boom clamp legs'),
     ('Materials', 'a356_yield', 180e6, 'Pa', M, 'sand-cast A356-T6 minimum yield; foundry certificate'),
-    # ---- Power budget (48 V supply, 2 x DM542, controller; no heaters)
-    ('Power', 'psu_v', 48.0, 'V', D, 'DC supply voltage (BOM_LSR2; the Mk5 also uses 48 V)'),
-    ('Power', 'psu_a', 6.0, 'A', P, 'supply current rating chosen in BOM_LSR2 (288 W)'),
-    ('Power', 'drv_i_pk', 3.0, 'A', D, 'DM542 peak current setting = 57BYG250H-8 rated phase current (SARCNET)'),
-    ('Power', 'motor_r', 1.1, 'ohm', M, 'winding resistance of one phase of the 57BYG250H-8; measure with a multimeter'),
+    # ---- Power budget (48 V S-400-48 supply, 2 x DM542T, controller; no heaters)
+    ('Power', 'psu_v', 48.0, 'V', D, 'DC supply voltage: Mk4 S-400-48 (the Mk5 also uses 48 V)'),
+    ('Power', 'psu_a', 8.3, 'A', D, 'S-400-48 rating, 8.3 A (400 W), indoors'),
+    ('Power', 'drv_i_pk', 4.0, 'A', D, 'DM542T peak current setting = 23HS32-4004S rated phase current (driver maximum 4.5 A)'),
+    ('Power', 'motor_r', 0.6, 'ohm', M, 'winding resistance of one phase of the 23HS32-4004S; measure with a multimeter'),
     ('Power', 'drv_eta', 0.85, '-', P, 'driver + chopper efficiency'),
     ('Power', 'drv_idle_w', 2.0, 'W', P, 'quiescent loss of one DM542 powered and enabled'),
     ('Power', 'idle_cut', 0.5, '-', D, 'standstill current fraction of the DM542 (SW4 on): half current'),
@@ -168,7 +176,44 @@ ROWS = [
     ('Fabrication', 'cnc_travel', (0.600, 0.400, 0.100), 'm', P, 'assumed 3-axis router/mill travel x, y, z'),
 ]
 
+# Phase-11 cast/CNC variant (LSR2_DESIGN=cast): the values that differ from the Mk4 rows above, as key: (value, note).
+CAST_OVERRIDES = {
+    'ant145_boom': (2.0, 'antenna boom length along the boresight'), 'ant145_elem': (1.0, 'longest element (across the boresight)'),
+    'ant145_as': (0.20, 'projected area seen side-on (boom + both polarisations); refine from the antenna drawing'),
+    'ant435_boom': (2.0, 'antenna boom length'), 'ant435_as': (0.15, 'projected area side-on'),
+    'boom_len': (1.6, 'cross boom length, parallel to the EL axis'), 'lift_mass': (0.35, 'lift arm with its antenna bracket, per side'),
+    'saddle_mass': (0.5, 'saddle plate, two clamp blocks and hardware (CAD volume + fasteners)'),
+    'stat_mass': (1.7, 'stationary part: AZ shaft and mast bracket (does not rotate); CAD volumes in the build report'),
+    'motor_curve': (((0, 2.8), (100, 2.4), (200, 2.0), (300, 1.6), (500, 1.1), (800, 0.7), (1200, 0.45)),
+                    '57BYG250H-8 on DM542 at 48 V: points from typical NEMA23 2.8 N·m curves, NOT the maker curve; measure on the bench'),
+    'rotor_j': (8.0e-5, '57BYG250H-8 rotor inertia, typical 0.8 kg·cm²; maker sheet or measure'), 'motor_mass': (1.4, '57BYG250H-8, 112 mm body; weigh it'),
+    'drv_i_pk': (3.0, 'DM542 peak current setting = 57BYG250H-8 rated phase current (SARCNET)'),
+    'motor_r': (1.1, 'winding resistance of one phase of the 57BYG250H-8; measure with a multimeter'),
+    'psu_a': (6.0, 'supply current rating chosen in BOM_LSR2 (288 W)'),
+}
+if DESIGN == 'cast':
+    ROWS = [(gr, k, CAST_OVERRIDES[k][0], u, t, CAST_OVERRIDES[k][1]) if k in CAST_OVERRIDES else (gr, k, v, u, t, n) for gr, k, v, u, t, n in ROWS]
+
 I = {k: v for _, k, v, *_ in ROWS}
+
+MK4M = None
+if DESIGN == 'mk4':
+    # masses of the Mk4 rows come from calc/lsr2_mk4_bom.py (made parts: build report; bought parts: catalogue); the hard-coded values above are the fallback
+    try:
+        import sys
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'calc'))
+        import lsr2_mk4_bom as _B
+        MK4M = _B.sizing_masses()
+        _src = 'build report' if _B.SOURCE == 'report' else 'BOM estimates, no build report'
+        _MK4 = {'lift_mass': (MK4M['lift_mass'], f'Mk4 lift arm per side, incl. the steel counterweight leaf of the SARCNET part file ({_src}; calc/lsr2_mk4_bom.py)'),
+                'saddle_mass': (MK4M['saddle_mass'], f'Mk4 saddle list + platform + clamp bar (BOM_LSR2; {_src} for the made parts)'),
+                'stat_mass': (MK4M['stat_mass'], f'stationary part: Mk4 bracket, azimuth hub, shaft, thrust bearing stack (BOM_LSR2; {_src} for the made parts); does not rotate'),
+                'motor_mass': (MK4M['motor_mass'], '23HS32-4004S (catalogue, calc/lsr2_mk4_bom.py); weigh it'),
+                'gb_mass': (MK4M['gb_mass'], 'NMRV30-G50-D11 with NEMA23 flange (catalogue, calc/lsr2_mk4_bom.py); weigh it')}
+        ROWS = [(gr, k, _MK4[k][0], u, t, _MK4[k][1]) if k in _MK4 else (gr, k, v, u, t, n) for gr, k, v, u, t, n in ROWS]
+        I = {k: v for _, k, v, *_ in ROWS}
+    except (ImportError, OSError, StopIteration, KeyError, NameError):
+        MK4M = None
 
 # Static head items that rotate with AZ but do not move in EL: (name, mass kg, x, y, z m from the AZ origin, tag, note)
 HEAD = [
@@ -180,11 +225,23 @@ HEAD = [
     ('EL motor 57BYG250H-8', I['motor_mass'], 0.111, 0.030, I['z_el'] - 0.030, M, 'parallel to the AZ motor, stacked'),
     ('2 x DM542 drivers', 0.5, 0.115, -0.051, 0.10, M, 'inner -y side wall, thermal pads to the aluminium'),
 ]
+if DESIGN == 'mk4':
+    # Mk4 box: 10 mm mounting plate + six 2 mm covers + 8 corner blocks + laser enclosure; Deltron 483-0100 housing with the electronics (positions as the cast layout, VERIFY)
+    _bx, _el, _dr = ((MK4M['head_box'], MK4M['head_elec'], MK4M['drivers']) if MK4M else (1.5, 0.7, 0.56))
+    HEAD = [
+        ('Mk4 mounting plate, 2 mm covers, corner blocks, enclosure', _bx, 0.055, 0.003, 0.16, P, 'calc/lsr2_mk4_bom.py: plate + covers + corner blocks + enclosure plates (masses of the build report)'),
+        ('Deltron housing + controller + converters', _el, 0.065, 0.0, 0.316, P, 'calc/lsr2_mk4_bom.py: diecast housing, Wemos, XL7015 x 2, LDO, antenna, power-down detect, glands, toggle'),
+        ('AZ gearbox NMRV30-G50', I['gb_mass'], 0.0, 0.004, 0.176, M, 'low in the body, output axis = AZ axis'),
+        ('EL gearbox NMRV30-G50', I['gb_mass'], 0.0, 0.030, I['z_el'], M, 'high, on the +y wall, output axis = EL axis'),
+        ('AZ motor 23HS32-4004S', I['motor_mass'], 0.111, 0.030, 0.176, M, 'both motors on the same side (front, +x)'),
+        ('EL motor 23HS32-4004S', I['motor_mass'], 0.111, 0.030, I['z_el'] - 0.030, M, 'parallel to the AZ motor, stacked'),
+        ('2 x DM542T drivers', _dr, 0.115, -0.051, 0.10, M, 'inner -y side wall, thermal pads to the aluminium (calc/lsr2_mk4_bom.py)'),
+    ]
 
 OPEN_DECISIONS = [
     'Real antenna masses, CGs and projected areas (weigh and measure; the table uses the old 6 kg / 0.35 m² payload).',
     'Mast: diameter, wall, material and free height of the real installation; whether it can be guyed (guying removes the tilt term).',
-    'Maker torsional stiffness and backlash of the purchased NMRV030, and the motor torque-speed curve on the DM542 at 48 V (bench test).',
+    'Maker torsional stiffness and backlash of the purchased NMRV030, and the motor torque-speed curve on the DM542T at 48 V (bench test).',
     'NMRV030 input bore: caliper the real part; bushing adapter versus a supplier NEMA23 input kit with an Ø8 bore.',
     'EL shaft stepping (one turned piece with a removable bearing sleeve on one side, or two half shafts keyed into the hub).',
     'Foundry: alloy and treatment, shrinkage and process (recoverable-pattern sand vs consumable PLA); the consumable variant is not sized here.',
@@ -204,4 +261,7 @@ OPEN_DECISIONS = [
     'Foundry route (11c) and CNC route (11d) derive from the same finished solid; wall/rib thickness follows params.CAST.',
     'Body, lid, yoke and AZ masses from the CAD build report: if they differ from this table by > 10 % update HEAD / stat_mass / yoke_mass.',
     'Mast clamp crush is checked on the Ø60.3 x 3.6 design mast; thin-wall masts down to Ø40 need a sleeve or a saddle with a larger contact.',
+    'Mk4 replica: rated output torque of the NMRV30-G50 (13 N·m used, catalogue estimate) against the AZ torque at 60 km/h with the 1270 mm antennas: read the Gearbox (service factor) rows of LSR2_SIZING; any row below its target is a real open item.',
+    'Mk4 replica: 23HS32-4004S maker torque-speed curve on the DM542T at 48 V (the table scales the typical NEMA23 shape to 2.4 N·m); winding resistance and rotor inertia.',
+    'Mk4 replica: the antenna masses stay at the old payload values until the real Mk4 antennas are weighed; the lift-arm, saddle and head masses come from the build report and the BOM (calc/lsr2_mk4_bom.py).',
 ]

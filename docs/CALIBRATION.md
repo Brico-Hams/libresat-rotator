@@ -4,9 +4,9 @@ Applies to LSR-1 and LSR-2. Every step works alone, writes its result to the con
 
 ## Procedure
 
-![Phase-11 head with the lid lifted: gearboxes, motors and drivers](img/lsr2_head_closeup.png)
+![SARCTrac Mk4 replica head: gearboxes, motors and drivers, cover lifted](img/lsr2_head_closeup.png)
 
-*Render, not a photo: the LSR-2 head with the lid lifted. The AZ index disc sits inside the pillar and the photo-interrupters are described in [ELECTRONICS](ELECTRONICS.md); the EL disc position is an open decision.*
+*Render, not a photo: the LSR-2 Mk4 head with the cover lifted. The AZ index disc sits inside the pillar and the photo-interrupters are described in [ELECTRONICS](ELECTRONICS.md); the EL disc position is an open decision.*
 
 | # | Step | Command | Needs | Result |
 |---|---|---|---|---|

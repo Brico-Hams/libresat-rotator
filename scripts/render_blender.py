@@ -148,8 +148,17 @@ MAT = {
 }
 
 
+MK4 = S.get('design') == 'mk4'
+MK4_MAT = {'alu_sheet': 'alu_sheet', 'alu_plate': 'alu_brushed', 'steel': 'stainless', 'motor_black': 'motor_black', 'gearbox_grey': 'nmrv',
+           'rubber': 'rubber', 'electronics': 'electronics', 'antenna': 'tube'}
+MAT['alu_sheet'] = pbr('alu_sheet', '#c4cbd2', 1.0, 0.35, aniso=0.3, bump=0.02, bump_scale=900.0, stretch=0.05)   # 2 mm laser-cut sheet
+MAT['electronics'] = pbr('electronics', '#2f9e57', 0.0, 0.40)
+
+
 def mat_for(n):
     cat = S['category'].get(n)
+    if MK4:
+        return MK4_MAT.get(cat, 'alu_brushed')
     if n.endswith('_pattern'):
         return 'pla'
     if n.endswith('_blank'):
@@ -413,7 +422,10 @@ ALL = list(OBJ)
 YAGI = ['yagi_145', 'yagi_435']
 MASTWARE = ['mast']
 FULL = list(ALL)
-HEAD = [n for n in FULL if n not in YAGI + MASTWARE]
+HIDE_CLOSEUP = [n for n in S.get('closeup_hide', []) if n in OBJ]
+HEAD = [n for n in FULL if n not in YAGI + MASTWARE + HIDE_CLOSEUP]   # mk4: the cover is hidden, the Mk4 antenna stays in the hero only
+if MK4:
+    HEAD = [n for n in HEAD if S['category'].get(n) != 'antenna']
 
 
 def run(fname, names, el, explode, direction, lens, frame_names=None, floor_z=None):
@@ -431,7 +443,7 @@ run('lsr2_hero.png', FULL, S.get('hero_el', 30.0), False, (1.0, -1.15, 0.38), 42
 LID = OBJ.get('lid')
 show(HEAD)
 pose(0.0, False)
-if LID is not None:
+if LID is not None and not MK4:
     LID.matrix_world = Matrix.Translation((0, 0, S['lid_lift'] * MM))
 fr = [OBJ[n] for n in HEAD]
 FLOOR.hide_render = False
@@ -473,12 +485,48 @@ def route_row(parts, suffix, fname):
     render(fname, [], points(placed), (0.35, -1.0, 0.55), 50, floor_z=0.0)
 
 
-route_row(S.get('cast_parts', []), 'pattern', 'lsr2_castings_real.png')
-route_row(S.get('cnc_parts', []), 'blank', 'lsr2_blanks_real.png')
+def laser_row(names, fname):
+    """Mk4: the 2 mm laser-cut parts laid flat (thinnest bbox axis to Z) in a row on the floor."""
+    objs = [OBJ[n] for n in names if n in OBJ]
+    if not objs:
+        return
+    for ob in OBJ.values():
+        ob.hide_render = True
+    for ob in objs:
+        ob.matrix_world = Matrix.Identity(4)
+    cursor, placed = 0.0, []
+    for ob in objs:
+        pts = points([ob])
+        lo = [min(q[i] for q in pts) for i in range(3)]
+        hi = [max(q[i] for q in pts) for i in range(3)]
+        c = [(a + b) / 2 for a, b in zip(lo, hi)]
+        ext = [b - a for a, b in zip(lo, hi)]
+        t = ext.index(min(ext))
+        if t == 2:
+            rot = Matrix.Identity(3)
+        elif t == 0:
+            rot = Matrix.Rotation(math.radians(90), 3, 'Y')
+        else:
+            rot = Matrix.Rotation(math.radians(90), 3, 'X')
+        r = rot @ Vector(ext)
+        zext, wx = abs(r.z), abs(r.x)
+        ob.hide_render = False
+        ob.matrix_world = Matrix.Translation((cursor + wx / 2, 0.0, zext / 2)) @ rot.to_4x4() @ Matrix.Translation(-Vector(c))
+        cursor += wx + 0.03
+        placed.append(ob)
+    FLOOR.hide_render = False
+    render(fname, [], points(placed), (0.35, -1.0, 0.55), 50, floor_z=0.0)
 
-# 4b. LSR-WG30 gearbox (phase 7), local frame: upper half lifted so the wheel and worm inside show; skipped without the STLs
+
+if MK4:
+    laser_row(S.get('laser_parts', []), 'lsr2_laser_parts_real.png')
+else:
+    route_row(S.get('cast_parts', []), 'pattern', 'lsr2_castings_real.png')
+    route_row(S.get('cnc_parts', []), 'blank', 'lsr2_blanks_real.png')
+
+# 4b. LSR-WG30 gearbox (phase 7), local frame: upper half lifted so the wheel and worm inside show; skipped without the STLs (and for mk4)
 gb = {k: os.path.join(stl_dir, f'gearbox_{k}.stl') for k in ('half_low', 'half_up', 'wheel', 'worm', 'bearings')}
-if all(os.path.exists(f) for f in gb.values()):
+if not MK4 and all(os.path.exists(f) for f in gb.values()):
     for ob in OBJ.values():
         ob.hide_render = True
     gbo = {k: load(f'gearbox_{k}', f) for k, f in gb.items()}

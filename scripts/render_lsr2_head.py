@@ -1,7 +1,8 @@
 # Quick matplotlib views of the LSR-2 phase 11 head (all parts of the parts table, bought parts from stl/lsr2/visual).
-# Args: repo_root stl_dir out_dir -> out_dir/lsr2_assembly.png, lsr2_exploded.png, lsr2_el_sweep.png, lsr2_castings.png, lsr2_blanks.png
+# Args: repo_root stl_dir out_dir -> out_dir/lsr2_assembly.png, lsr2_exploded.png, lsr2_el_sweep.png, lsr2_castings.png, lsr2_blanks.png (cast design)
+# or lsr2_laser_parts.png (mk4 design, default; LSR2_DESIGN selects)
 # (STL files and build/lsr2_render_scene.json are written by cad/lsr2/build.py)
-import sys, os, math, re, struct, json
+import sys, os, math, re, struct, json, functools
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -14,19 +15,29 @@ import parts_table as PT
 K = AX.K
 BLUE = '#12263f'
 TITLE = 'BricoHams · LibreSat LSR-2'
-MOVING = ['yoke_arm', 'yoke_arm_neg', 'saddle', 'boom_clamp', 'boom_clamp_neg', 'boom', 'lift_arm_pos', 'lift_arm_neg',
-          'counterweight_pos', 'counterweight_neg', 'el_shaft', 'el_sleeve']
-OUTSIDE = ('mast', 'yagi_145', 'yagi_435')   # too long for the head views
-HEAD_MODELS = [m for m in PT.BY_MODEL if m not in OUTSIDE]
-EXPLODE = PT.EXPLODE
-ZE = K['z_el']
+MK4 = PT.DESIGN == 'mk4'
 SCENE = next((p for p in (os.path.join(os.environ.get('LSR2_OUT') or repo, 'build', 'lsr2_render_scene.json'),
                           os.path.join(repo, 'build', 'lsr2_render_scene.json')) if os.path.exists(p)), None)
 SC = json.load(open(SCENE)) if SCENE else {}
+if MK4:
+    MOVING = list(SC.get('el_group', []))
+    OUTSIDE = ()
+    XE, ZE = SC['el_axis']['point'][0], SC['el_axis']['point'][2]
+    SGN = SC['el_sign']
+else:
+    MOVING = ['yoke_arm', 'yoke_arm_neg', 'saddle', 'boom_clamp', 'boom_clamp_neg', 'boom', 'lift_arm_pos', 'lift_arm_neg',
+              'counterweight_pos', 'counterweight_neg', 'el_shaft', 'el_sleeve']
+    OUTSIDE = ('mast', 'yagi_145', 'yagi_435')   # too long for the head views
+    XE, ZE, SGN = 0.0, K['z_el'], 1
+# mk4 PARTS also lists stand-alone SARCNET part files that the assembly does not place (no STL): skip them
+HEAD_MODELS = [m for m in PT.BY_MODEL if m not in OUTSIDE
+               and any(os.path.exists(os.path.join(stl_dir, d, m + '.stl')) for d in ('', 'visual'))]
+EXPLODE = PT.EXPLODE
 
 def colour(name):
-    return PT.COLOURS[PT.cat_of(name)] if name in PT.BY_MODEL or name.endswith('_pattern') else '#9aa7b4'
+    return PT.colour_of(name) if name in PT.BY_MODEL or name.endswith('_pattern') else '#9aa7b4'
 
+@functools.lru_cache(maxsize=None)
 def read_stl(name, path=None):
     path = path or next(p for p in (os.path.join(stl_dir, name + '.stl'), os.path.join(stl_dir, 'visual', name + '.stl')) if os.path.exists(p))
     data = open(path, 'rb').read()
@@ -42,7 +53,7 @@ def moved(tris, d):
 
 def rot_y(tris, deg):
     c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
-    return [[(x * c + (z - ZE) * s, y, -x * s + (z - ZE) * c + ZE) for x, y, z in t] for t in tris]
+    return [[((x - XE) * c + (z - ZE) * s + XE, y, -(x - XE) * s + (z - ZE) * c + ZE) for x, y, z in t] for t in tris]
 
 def add(ax, tris, color, alpha):
     ax.add_collection3d(Poly3DCollection(tris, facecolor=color, edgecolor='none', linewidth=0.15, alpha=alpha))
@@ -59,20 +70,25 @@ def save(fig, name, suptitle):
     fig.savefig(out, dpi=110)
     print('wrote', out)
 
-HEAD = ((-400, 400), (-750, 750), (-60, 560))
+def limits(names, move=None, pad=40):
+    """Axis limits (x, y, z) enclosing the STLs of names (mk4: the cast limits below do not fit); move = per-model offsets."""
+    vs = [v for n in names for t in moved(read_stl(n), (move or {}).get(n, (0, 0, 0))) for v in t]
+    return tuple((min(v[i] for v in vs) - pad, max(v[i] for v in vs) + pad) for i in range(3))
+
+HEAD = limits(HEAD_MODELS) if MK4 else ((-400, 400), (-750, 750), (-60, 560))
 fig = plt.figure(figsize=(14, 8), facecolor='#fcfcfb')
 for k, (el, az, title) in enumerate([(25, -60, 'Isometric'), (0, -90, 'Front (XZ)')]):
     ax = fig.add_subplot(1, 2, k + 1, projection='3d')
     for name in HEAD_MODELS:
         add(ax, read_stl(name), colour(name), 0.9)
     frame(ax, title, el, az, HEAD)
-save(fig, 'lsr2_assembly.png', 'head assembly, colour = bought / machined / cast / printed pattern')
+save(fig, 'lsr2_assembly.png', 'head assembly, colour = ' + ('material / part type (SARCTrac Mk4 replica)' if MK4 else 'bought / machined / cast / printed pattern'))
 
 fig = plt.figure(figsize=(11, 11), facecolor='#fcfcfb')
 ax = fig.add_subplot(1, 1, 1, projection='3d')
-for name in HEAD_MODELS + ['mast']:
+for name in HEAD_MODELS + ([] if MK4 else ['mast']):
     add(ax, moved(read_stl(name), EXPLODE.get(name, (0, 0, 0))), colour(name), 0.9)
-frame(ax, '', 22, -55, ((-400, 400), (-800, 800), (-700, 700)))
+frame(ax, '', 22, -55, limits(HEAD_MODELS, EXPLODE) if MK4 else ((-400, 400), (-800, 800), (-700, 700)))
 save(fig, 'lsr2_exploded.png', 'exploded view (each group moved along its own axis)')
 
 fig = plt.figure(figsize=(10, 10), facecolor='#fcfcfb')
@@ -83,9 +99,9 @@ for name in HEAD_MODELS:
 group = [read_stl(n) for n in MOVING]
 for ang, col in ((-30, BLUE), (45, '#2e7d32'), (150, '#8a3b8a')):
     for tris in group:
-        add(ax, rot_y(tris, ang), col, 0.55)
-    ax.text(600 * math.cos(math.radians(ang)), 0, ZE - 600 * math.sin(math.radians(ang)), f'{ang} deg', color=col, fontsize=9)
-frame(ax, '', 0, -90, ((-700, 700), (-800, 800), (-300, 800)))
+        add(ax, rot_y(tris, SGN * ang), col, 0.55)
+    ax.text(XE + 600 * math.cos(math.radians(ang)), 0, ZE - 600 * math.sin(math.radians(ang)), f'{ang} deg', color=col, fontsize=9)
+frame(ax, '', 0, -90, limits(HEAD_MODELS, pad=700) if MK4 else ((-700, 700), (-800, 800), (-300, 800)))
 save(fig, 'lsr2_el_sweep.png', 'EL sweep, moving group at -30, 45 and 150 deg (view along the EL axis)')
 
 def route_figure(parts, folder, suffix, name, what):
@@ -108,4 +124,6 @@ if SC.get('cast_parts'):
     route_figure(SC['cast_parts'], SC['cast_dir'], '_pattern', 'lsr2_castings.png', 'route A, printed patterns for the castings')
 if SC.get('cnc_parts'):
     route_figure(SC['cnc_parts'], SC['cnc_dir'], '_blank', 'lsr2_blanks.png', 'route B, CNC blanks')
+if MK4 and SC.get('laser_parts'):
+    route_figure(SC['laser_parts'], stl_dir, '', 'lsr2_laser_parts.png', '2 mm laser-cut aluminium parts (as assembled)')
 

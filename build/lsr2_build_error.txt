@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "<string>", line 52, in <module>
+  File "build.py", line 92, in <module>
+    PT.self_test()                         # reads the scene just written
+    ^^^^^^^^^^^^^^
+  File "C:\Users/anato/Documents/GitHub/libresat-rotator\cad\lsr2\parts_table.py", line 105, in self_test
+    assert set(EXPLODE) <= set(BY_MODEL), 'exploded offsets for unknown models: %s' % sorted(set(EXPLODE) - set(BY_MODEL))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: exploded offsets for unknown models: ['az_motor', 'az_shaft', 'boom', 'boom_clamp', 'boom_clamp_neg', 'brg_az_lower', 'brg_az_thrust', 'brg_az_upper', 'brg_el_neg', 'brg_el_pos', 'clamp_bolts', 'counterweight_neg', 'counterweight_pos', 'drivers', 'el_motor', 'el_shaft', 'el_sleeve', 'lid', 'lift_arm_neg', 'lift_arm_pos', 'mast', 'mast_bracket', 'saddle', 'yagi_145', 'yagi_435', 'yoke_arm', 'yoke_arm_neg']

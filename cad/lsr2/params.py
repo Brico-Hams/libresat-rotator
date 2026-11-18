@@ -2,25 +2,35 @@
 
 Units: mm, N, N·m, kg, deg. Values tagged VERIFY come from generic catalogues; measure the real
 part with a caliper (or read its own datasheet) and update here before cutting or casting metal.
-No geometry here is taken from the SARCTrac Mk5 files (see docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md §2).
+Two designs share this file, selected with LSR2_DESIGN: 'mk4' (default) = replica of the SARCNET SARCTrac Mk4 (FreeCAD files under the
+MIT licence, third_party/sarctrac-mk4; NMRV30 50:1 gearboxes, 23HS32-4004S motors) and 'cast' = our phase-11 cast/CNC open-box design
+(80:1 gearboxes, 57BYG250H-8 motors). The cast geometry here is our own, not taken from the Mk5 files (see docs/superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md §2).
 """
 import os
 
-# --- Stepper motor: NEMA23, 57BYG250H class (2.8 N·m, 3 A) -------------------------------
+DESIGN = os.environ.get('LSR2_DESIGN', 'mk4')          # 'mk4' (default) or 'cast'
+if DESIGN not in ('mk4', 'cast'):
+    raise ValueError(f"LSR2_DESIGN must be 'mk4' or 'cast', got {DESIGN!r}")
+GEARBOX_RATIO = int(os.environ.get('LSR2_RATIO', 50 if DESIGN == 'mk4' else 80))   # worm gearbox ratio: Mk4 NMRV30-G50 = 50, cast variant = 80
+
+# --- Stepper motor: NEMA23 -----------------------------------------------------------------
+# Mk4: 23HS32-4004S (2.4 N·m, 4.0 A, Ø8 shaft) on a DM542T. Cast variant: 57BYG250H-8 (2.8 N·m, 3 A), the motor SARCTrac Mk5 uses.
+# The mounting geometry (NEMA ICS 16 flange) is the same for both; body length and shaft length: VERIFY with the maker drawing.
 NEMA23 = dict(
-    model='57BYG250H-8',                                                  # the motor SARCTrac Mk5 uses (SARCNET); 8-lead, 112 mm body
+    model='23HS32-4004S' if DESIGN == 'mk4' else '57BYG250H-8',
     face=56.4, hole_square=47.14, hole_d=5.1, pilot_d=38.1, pilot_h=1.6,  # NEMA ICS 16 standard
-    shaft_d=8.0, length=112.0,                                            # 8 mm keyed shaft: VERIFY
-    t_hold=2.8, i_rated=3.0, steps_rev=200,
+    shaft_d=8.0, length=112.0,                                            # 8 mm shaft: VERIFY
+    t_hold=2.4 if DESIGN == 'mk4' else 2.8, i_rated=4.0 if DESIGN == 'mk4' else 3.0, steps_rev=200,
 )
 
-# --- Worm gearboxes (generic NMRV series, ratio 80:1) ------------------------------------
-# m2_rated: output torque rating at i=80 (catalogue, low duty); fr2: output radial load at
-# shaft mid-extension; bore: hollow output, DIN 6885 key. All VERIFY with the supplier's sheet.
+# --- Worm gearboxes (generic NMRV series; ratio GEARBOX_RATIO: 50 Mk4, 80 cast variant) ---------
+# m2_rated: output torque rating at the chosen ratio (catalogue, low duty; i=50 about 13, i=80 about 16.7 for the NMRV030);
+# fr2: output radial load at shaft mid-extension; bore: hollow output, DIN 6885 key. All VERIFY with the supplier's sheet.
+_M2 = {'NMRV030': {50: 13.0, 80: 16.7}, 'NMRV040': {50: 24.0, 80: 31.0}, 'NMRV050': {50: 44.0, 80: 55.0}}
 GEARBOX = {
-    'NMRV030': dict(ratio=80, m2_rated=16.7, fr2=1250.0, bore=14.0, key_w=5.0, centre=30.0),
-    'NMRV040': dict(ratio=80, m2_rated=31.0, fr2=1800.0, bore=18.0, key_w=6.0, centre=40.0),
-    'NMRV050': dict(ratio=80, m2_rated=55.0, fr2=2400.0, bore=25.0, key_w=8.0, centre=50.0),
+    'NMRV030': dict(ratio=GEARBOX_RATIO, m2_rated=_M2['NMRV030'].get(GEARBOX_RATIO, 16.7 * GEARBOX_RATIO / 80), fr2=1250.0, bore=14.0, key_w=5.0, centre=30.0),
+    'NMRV040': dict(ratio=GEARBOX_RATIO, m2_rated=_M2['NMRV040'].get(GEARBOX_RATIO, 31.0 * GEARBOX_RATIO / 80), fr2=1800.0, bore=18.0, key_w=6.0, centre=40.0),
+    'NMRV050': dict(ratio=GEARBOX_RATIO, m2_rated=_M2['NMRV050'].get(GEARBOX_RATIO, 55.0 * GEARBOX_RATIO / 80), fr2=2400.0, bore=25.0, key_w=8.0, centre=50.0),
 }
 GEARBOX_DEFAULT = 'NMRV030'
 # NMRV030 envelope (generic catalogue drawing, oyostepper NMRV030-40-50.pdf). Axes: 'out' = output
@@ -31,7 +41,7 @@ NMRV030_GEO = dict(
     n_len=97.0, out_from_foot=40.0, face_holes='M6', face_hole_depth=11.0, face_pcd=65.0,
     pilot_clear_d=55.2,   # clearance for the output boss/hub: VERIFY on the real part
 )
-WORM_EFF_RUN = 0.45      # 80:1 worm at ~150 rpm input (low-speed efficiency, conservative)
+WORM_EFF_RUN = 0.45      # single-start worm at ~100-150 rpm input (low-speed efficiency, conservative); the NMRV030 1/50 and 1/80 share the Ø20 worm lead angle: VERIFY
 GEAR_PEAK_FACTOR = 2.0   # short-term/standstill torque vs rating (catalogue fs, VERIFY)
 GEAR_REF_ARM = 0.030     # m: lever from housing face to where fr2 is quoted (VERIFY)
 
@@ -88,7 +98,7 @@ MAST_D = (40.0, 60.0)    # accepted mast range, mm
 
 # --- Motion ---------------------------------------------------------------------------------
 VMAX_DPS = 12.0          # output deg/s (both axes)
-MICROSTEP = 2            # DM542 at 400 microsteps/rev as on SARCTrac Mk5 (SARCNET): 1066.7 steps/s at 12 deg/s
+MICROSTEP = 2            # DM542T at 400 microsteps/rev (SARCTrac practice): 666.7 steps/s at 12 deg/s with 50:1 (1066.7 with 80:1)
 AZ_RANGE = (-360.0, 360.0)
 EL_RANGE = (-30.0, 150.0)
 

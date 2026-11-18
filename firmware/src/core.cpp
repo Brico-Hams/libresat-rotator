@@ -40,7 +40,7 @@ float az_resolve(float req, float cur, float min_deg, float max_deg) {
 // ------------------------------------------------------------------ model profiles
 static const lsr_model_t MODELS[2] = {
     {"LSR-1", 25.0f, 16,   0.0f, 450.0f,   0.0f,   0.0f, 180.0f, 20.0f, 15.0f, 25.0f, 20.0f, true},
-    {"LSR-2", 80.0f,  2,   0.0f, 720.0f, 360.0f, -30.0f, 150.0f, 12.0f, 12.0f, 10.0f, 10.0f, false},   // 400 usteps/rev as Mk5: 1066.7 steps/s at 12 deg/s
+    {"LSR-2", 50.0f,  2,   0.0f, 720.0f, 360.0f, -30.0f, 150.0f, 12.0f, 12.0f, 10.0f, 10.0f, false},   // Mk4 replica: NMRV30-G50, 400 usteps/rev (DM542T): 666.7 steps/s at 12 deg/s (motor 100 rpm); 80:1 cast variant: set ratio 80 (1066.7 steps/s)
 };
 
 const lsr_model_t *lsr_model(int model) { return &MODELS[model == 2 ? 1 : 0]; }

@@ -1,7 +1,11 @@
 # BricoHams · LibreSat LSR-2: Ruta B, mecanizado CNC de 3 ejes (Route B, 3-axis CNC)
 
 <!-- palette: blue #12263f, orange #e8871e -->
-Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina. Revision `params.REV` = **A0**. Binding brief: `reference/BRICOHAMS_LSR2_BRIEF.md`. Code: `cad/lsr2/route_b.py` (self-test and CSV writer: `python cad/lsr2/route_b.py`; solids by `build.py`). Cost: [LSR2_MATERIALS](LSR2_MATERIALS.md). Alternative: [LSR2_ROUTE_A_CASTING](LSR2_ROUTE_A_CASTING.md).
+Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina. Revision `params.REV` = **A0**.
+
+> **Optional cast/CNC variant, and the Mk4 plate parts.** The body-slab sections below belong to the optional cast/CNC variant (`LSR2_DESIGN=cast`). Route B CNC also covers the 10 mm aluminium plate parts of the default SARCTrac Mk4 replica (Plate, Saddle Plates, Bracket, Angle, Platform, 16 mm corner blocks and bar; drawings in `third_party/sarctrac-mk4/FreeCAD/Drawings/`): the same 3-axis set-ups, stock from the buy-in table of [BOM_LSR2](BOM_LSR2.md) and fits of [LSR2_TOLERANCES](LSR2_TOLERANCES.md) (M-rows).
+
+Binding brief: `reference/BRICOHAMS_LSR2_BRIEF.md`. Code: `cad/lsr2/route_b.py` (self-test and CSV writer: `python cad/lsr2/route_b.py`; solids by `build.py`). Cost: [LSR2_MATERIALS](LSR2_MATERIALS.md). Alternative: [LSR2_ROUTE_A_CASTING](LSR2_ROUTE_A_CASTING.md).
 
 Tags: **DATASHEET** (published, with source), **MEASURE** (needs a caliper), **PARAMETRIC** (our choice, editable in `params.CNC` / `params.TOL` / `inputs.py`).
 

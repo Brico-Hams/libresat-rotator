@@ -1,8 +1,11 @@
-"""LSR-2 phase 11 head build for FreeCAD 1.1 headless (run from the repo root, or set REPO):
+"""LSR-2 head build for FreeCAD 1.1 headless (run from the repo root, or set REPO):
 
     freecadcmd -c "exec(open(r'<repo>/cad/lsr2/build.py').read())"
 
-Builds the Mk5-schematic head (body, lid, mast bracket, yoke arms, saddle, boom, clamps, lift arms, counterweights, shafts), runs the EL sweep,
+LSR2_DESIGN=mk4 (default): replica of the SARCTrac Mk4 (SARCNET, MIT, third_party/sarctrac-mk4): mk4_build.py exports STL / STEP / DXF / scene / report from
+the original Rotator.FCStd. LSR2_DESIGN=cast: the optional phase 11 cast / CNC open-box variant described below (untouched).
+
+Phase 11 (cast): Builds the Mk5-schematic head (body, lid, mast bracket, yoke arms, saddle, boom, clamps, lift arms, counterweights, shafts), runs the EL sweep,
 then both manufacturing routes of every structural part: Route A (cast/lsr2/<part>_{finished,preform,pattern}.step|stl|3mf, cores, lost-PLA)
 and Route B (cnc/lsr2/<part>_{finished,blank}.step + cam/lsr2/<part>_setups.csv), with their checks. Writes build/lsr2_build_report.json
 (key `parts` feeds calc/lsr2_materials.py and scripts/bom.py). Phase 11e: also bought-part visual models (stl/lsr2/visual), route B blank STLs, the editable
@@ -60,17 +63,7 @@ if '_BUILD_INNER' not in globals():        # freecadcmd -c swallows tracebacks: 
         _hard_exit(1)                      # SystemExit inside freecadcmd -c can drop into the interactive console and hang on stdin: hard-exit instead
     _hard_exit(0)
 sys.path.insert(0, os.path.join(ROOT, 'cad', 'lsr2'))
-import params as P
-import body as BD
-import axes as AX
-import route_a as RA
-import route_b as RB
-import parts_table as PT
-import bought_parts as BP
-import gearbox as GBX
-
-MAX_INTERFERENCE_MM3 = 1.0
-CW_KG = 1.02                                  # PARAMETRIC counterweight mass per side
+DESIGN = (os.environ.get('LSR2_DESIGN') or 'mk4').lower()   # 'mk4' = SARCTrac Mk4 replica (default), 'cast' = phase 11 cast / CNC open-box head
 
 
 def stage(msg):
@@ -86,6 +79,36 @@ def stage(msg):
 os.makedirs(os.path.join(OUT, 'build'), exist_ok=True)
 if os.path.exists(os.path.join(OUT, 'build', 'lsr2_build_stage.log')):
     os.remove(os.path.join(OUT, 'build', 'lsr2_build_stage.log'))
+if DESIGN not in ('mk4', 'cast'):
+    print('LSR-2 build failed: LSR2_DESIGN must be mk4 or cast, got ' + DESIGN, flush=True)
+    _hard_exit(1)
+if DESIGN == 'mk4':
+    import mk4_build as MB
+    import parts_table as PT
+    import tolerances as TL
+    try:
+        _totals = MB.build(OUT, stage)         # raises with the list of failed exports; writes scene, report, STL / STEP / DXF
+        stage('parts table and tolerances')
+        PT.self_test()                         # reads the scene just written
+        TL.self_test()
+    except BaseException:
+        print('LSR-2 build failed (see build/lsr2_build_report.json and the traceback below)', flush=True)
+        raise
+    print('LSR-2 phase 11 build OK: mk4 replica,', _totals['instances'], 'instances,', _totals['made'], 'made parts, made mass', _totals['made_mass_g'], 'g', flush=True)
+    _hard_exit(0)
+import params as P
+import body as BD
+import axes as AX
+import route_a as RA
+import route_b as RB
+import parts_table as PT
+import bought_parts as BP
+import gearbox as GBX
+
+MAX_INTERFERENCE_MM3 = 1.0
+CW_KG = 1.02                                  # PARAMETRIC counterweight mass per side
+
+
 stage('self-tests')
 for d in ('cnc/lsr2', 'stl/lsr2/visual', 'cast/lsr2', 'cam/lsr2', 'build', 'cad/lsr2'):
     os.makedirs(os.path.join(OUT, d), exist_ok=True)

@@ -1,5 +1,7 @@
 # LSR-2 body and lid in Autodesk Fusion (alternative build)
 
+> **Phase 12:** this document concerns the optional cast/CNC variant (`LSR2_DESIGN=cast`) and earlier studies. The default LSR-2 is the SARCNET SARCTrac Mk4 replica, built from the SARCNET FreeCAD files under the MIT licence (`third_party/sarctrac-mk4`, see [LSR2_MK4](LSR2_MK4.md)). The Fusion models described here use our own dimensions and no third-party CAD geometry.
+
 `cad/lsr2/lsr2_fusion_build.py` rebuilds the LSR-2 main body and lid as **parametric Fusion features** (sketches, extrudes, shell, fillet, taper/draft, scale, plain blocks for the CNC blanks). It exists because the FreeCAD build (`cad/lsr2/build.py`) hangs right after exporting `cast/lsr2/body_core.step`, in the route A / route B derivation of the body (`route_a.py`, `route_b.py`, `body.py`: pattern, lost-PLA, hot-spot and mesh steps).
 
 **FreeCAD stays the reference build.** Fusion is a free-for-personal-use, closed-source tool, not open source: use this script to get patterns, blanks and STEP/STL files when FreeCAD stalls, then cross-check with the FreeCAD report once it runs again. Dimensions and parameters come from `params.py` and `inputs.py` (plain Python, no FreeCAD imports); the body geometry constants are copied from `body.py`, so update both when the body changes.

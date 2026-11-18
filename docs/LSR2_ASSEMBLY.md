@@ -2,13 +2,31 @@
 
 Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina.
 
-Parts and prices: [BOM_LSR2](BOM_LSR2.md). Design and checks: [ARCHITECTURE](ARCHITECTURE.md), [LSR2_SIZING](LSR2_SIZING.md), [LSR2_MATERIALS](LSR2_MATERIALS.md). Every torque, fit and catalogue value below is **VERIFY** against your real parts. Drawings (SVG and PDF, one per fabricated part, assembly, exploded view): [drawings/](drawings/); wiring: [drawings/LSR2_wiring.svg](drawings/LSR2_wiring.svg); acceptance: [LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md); what is still open: [OPEN_ITEMS](OPEN_ITEMS.md).
+> **Default design:** the SARCTrac Mk4 replica (SARCNET FreeCAD files, MIT, `third_party/sarctrac-mk4`, [LSR2_MK4](LSR2_MK4.md)). Part A below is its assembly order; part B (from "Optional cast/CNC variant") describes the optional cast/CNC variant (`LSR2_DESIGN=cast`). The fastener, torque, cabling and corrosion rules apply to both.
 
-![LSR-2 exploded view, rendered](img/lsr2_exploded_real.png)
+Parts and prices: [BOM_LSR2](BOM_LSR2.md). Design and checks: [ARCHITECTURE](ARCHITECTURE.md), [LSR2_SIZING](LSR2_SIZING.md), [LSR2_MATERIALS](LSR2_MATERIALS.md). Every torque, fit and catalogue value below is **VERIFY** against your real parts. Drawings of the Mk4 parts and assemblies (SARCNET PDFs): [third_party/sarctrac-mk4/FreeCAD/Drawings/](../third_party/sarctrac-mk4/FreeCAD/Drawings/); wiring: [drawings/LSR2_wiring.svg](drawings/LSR2_wiring.svg); acceptance: [LSR2_ACCEPTANCE](LSR2_ACCEPTANCE.md); what is still open: [OPEN_ITEMS](OPEN_ITEMS.md).
 
-*Render, not a photo. Balloon numbers = BOM "Pos" column ([BOM_LSR2](BOM_LSR2.md)); drawings in [drawings/](drawings/), editable model `cad/lsr2/LSR2_assembly.FCStd`.*
+![LSR-2 Mk4 exploded view, rendered](img/lsr2_exploded_real.png)
 
-Frame: origin at the centre of the body bottom mounting face, AZ = Z (vertical), EL axis horizontal along Y at z = 268 mm, boresight X. Use A4 fasteners and Tef-Gel on every thread. Datums, fits and finishes: [LSR2_TOLERANCES](LSR2_TOLERANCES.md); first-article check: [LSR2_INSPECTION](LSR2_INSPECTION.md); tests after assembly: [LSR2_TEST_PLAN](LSR2_TEST_PLAN.md). Every value below is **VERIFY** against the real parts.
+*Render, not a photo, of the Mk4 replica. Balloon numbers = BOM "Pos" column ([BOM_LSR2](BOM_LSR2.md)); editable model `cad/lsr2/LSR2_assembly.FCStd`.*
+
+## Part A. Mk4 assembly order (default)
+
+Follow the three SARCNET assembly drawings: [Thrust Bearing Assembly](../third_party/sarctrac-mk4/FreeCAD/Drawings/Thrust%20Bearing%20Assembly.pdf), [Saddle Assembly](../third_party/sarctrac-mk4/FreeCAD/Drawings/Saddle%20Assembly.pdf) and [Rotator Assembly](../third_party/sarctrac-mk4/FreeCAD/Drawings/Rotator%20Assembly.pdf). Use Tef-Gel on all stainless threads and aluminium–steel joints. Datums and fits: [LSR2_TOLERANCES](LSR2_TOLERANCES.md); first-article check: [LSR2_INSPECTION](LSR2_INSPECTION.md); tests after assembly: [LSR2_TEST_PLAN](LSR2_TEST_PLAN.md).
+
+1. **Check the parts** against [LSR2_INSPECTION](LSR2_INSPECTION.md): laser-cut 2 mm parts ±0.1 mm, CNC [Plate](../third_party/sarctrac-mk4/FreeCAD/Drawings/Plate.pdf) (gearbox spigot bores and bearing seats), [Angle](../third_party/sarctrac-mk4/FreeCAD/Drawings/Angle.pdf), [Bracket](../third_party/sarctrac-mk4/FreeCAD/Drawings/Bracket.pdf), [Platform](../third_party/sarctrac-mk4/FreeCAD/Drawings/Platform.pdf) and [Bar](../third_party/sarctrac-mk4/FreeCAD/Drawings/Bar.pdf).
+2. **Thrust bearing assembly:** stack the 4 × M30×56×3 washers, the 51206 races and cage on the stainless azimuth hub, as in the Thrust Bearing Assembly drawing; grease, and fit the PVC coupler as the seal. Check that the stack turns freely with no axial play.
+3. **Rotator assembly:** bolt the two NMRV30-G50-D11 gearboxes to the 10 mm plate (8 × M8×40 with washers and nyloc), fit the 23HS32-4004S motors with the 11 → 8 mm adaptors and [motor gaskets](../third_party/sarctrac-mk4/FreeCAD/Drawings/Motor%20Gasket.pdf); fit the AZ hub with its thrust stack on the AZ gearbox output; mount the [end stops](../third_party/sarctrac-mk4/FreeCAD/Drawings/End%20Stop.pdf), the magnet and the NJK-5002C Hall switches.
+4. **Saddle assembly:** assemble the saddle plates ([left](../third_party/sarctrac-mk4/FreeCAD/Drawings/Saddle%20Plate%20Left.pdf), [right](../third_party/sarctrac-mk4/FreeCAD/Drawings/Saddle%20Plate%20Right.pdf), [front](../third_party/sarctrac-mk4/FreeCAD/Drawings/Saddle%20Plate%20Front.pdf)) with the platform and bar, the 2 × 40 mm U-bolts for the mast and the EL hub; then the 25 mm SHS lift arms.
+5. **Electronics:** mount the Deltron 483-0100 housing and the laser-cut [enclosure](../third_party/sarctrac-mk4/FreeCAD/Drawings/Enclosure%20Front.pdf) (with bottom and top), the DM542T drivers, S-400-48 wiring (PSU indoors), XL7015 modules, controller and cable gland; see [ELECTRONICS](ELECTRONICS.md). Neoprene gasket under the cover.
+6. **Cover:** fit the 16 mm [corner blocks](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Corner%20Block.pdf) and the six 2 mm cover panels ([top](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Top.pdf), [bottom](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Bottom.pdf), [front](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Front.pdf), [back](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Back.pdf), [left](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Left.pdf), [right](../third_party/sarctrac-mk4/FreeCAD/Drawings/Cover%20Right.pdf)).
+7. **Hook-up and first power-up:** DM542T current for 4.0 A and **400 microsteps/rev** (666.7 steps/s at 12°/s on the 50:1 gearbox); free motion through ±5° on each axis, direction check, end stops, index; then calibrate (section 9b) and run [LSR2_TEST_PLAN](LSR2_TEST_PLAN.md).
+
+The tightening torques of section 2 apply to the M5/M8/M10 bolts here too.
+
+## Part B. Optional cast/CNC variant
+
+The sections below describe the optional cast/CNC variant (`LSR2_DESIGN=cast`: aluminium open-box body, NMRV030 80:1). Frame: origin at the centre of the body bottom mounting face, AZ = Z (vertical), EL axis horizontal along Y at z = 268 mm, boresight X. Use A4 fasteners and Tef-Gel on every thread. Every value below is **VERIFY** against the real parts.
 
 ## 0. Gate: measure the real NMRV030 (MEASURE)
 
@@ -86,7 +104,7 @@ Gearboxes only transmit torque: the external loads go through the dedicated bear
 ## 9. Electronics hook-up and first power-up
 
 1. Wiring: [ELECTRONICS](ELECTRONICS.md), section "LSR-2 external drivers" (drivers on the inner wall, glands, optional Wi-Fi bulkhead antenna).
-2. DM542 current to the motor rating (about 3 A, VERIFY) and **400 microsteps/rev**; 1066.7 steps/s at 12°/s.
+2. DM542T current to the motor rating (23HS32-4004S: 4.0 A; cast variant 57BYG250H-8 3 A, VERIFY) and **400 microsteps/rev**; 666.7 steps/s at 12°/s on the 50:1 gearbox (1066.7 with 80:1 in the cast variant).
 3. Firmware: [FIRMWARE](FIRMWARE.md) (`LSR_DRIVER=EXT_STEPDIR`, `lsr2` profile, EasyComm II 9600 8N1).
 4. First power-up without the antenna: free motion through ±5° on each axis, check the direction, then the one-off calibration below.
 

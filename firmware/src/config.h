@@ -41,8 +41,8 @@
 #define PIN_SCL0        17
 #define PIN_SDA1        18    // I2C1: EL encoder + boom IMU
 #define PIN_SCL1        19
-#define PIN_HALL_AZ     20    // AZ index (active low, DRV5032FB / AH1806 at 3.3 V)
-#define PIN_HALL_EL     21    // optional EL index / limit
+#define PIN_HALL_AZ     20    // AZ index (active low). LSR-1: DRV5032FB / AH1806 at 3.3 V. LSR-2 Mk4: NJK-5002C NPN Hall switch (12 V supply, open collector)
+#define PIN_HALL_EL     21    // EL index. LSR-2 Mk4: NJK-5002C; LSR-1: optional index / limit
 #define PIN_PWRFAIL     22    // LSR-2: 48 V opto-isolated power-loss detect (high = 48 V gone), see PWR_* below
 #define PIN_VSENSE      26    // ADC0: VM / 11
 #define ADC_VSENSE       0
@@ -56,8 +56,13 @@
 #define EXT_DIR_POS_LEVEL 1   // DIR pin level for +1
 #define EXT_EN_ACTIVE    0    // DM542 ENA is often active-low: enabled = low, disabled = high (VERIFY)
 
-// LSR-2 index (photo-interrupter + slotted disc, as SARCTrac Mk5): the NPN open-collector output pulls the pin low
-// while the slot is in the beam (3.3 V pull-up on the RP2040, so no 5 V on the pin). LSR-1 keeps its hall sensor.
+// LSR-2 index. Mk4 replica: NJK-5002C NPN Hall switch (SARCNET Hall Effect Switch) per axis, magnet on the moving part; the open-collector output
+// pulls the pin LOW while the magnet is in range (active low = IDX_SLOT_LEVEL 0). The sensor runs on 12 V (XL7015), so the output is pulled up to
+// 3.3 V on the RP2040 side only (the NPN open collector never drives the pin high: no 5 V/12 V on the GPIO; add a 10 k series resistor + 3.3 V
+// pull-up on the controller board). The earlier phase-11 design used a photo-interrupter + slotted disc with the same logic level.
+// Mechanical end stops (microswitches on the saddle, SARCNET "End Stop") are a fail-safe independent of the firmware: wired normally closed in
+// series with the driver enable (ENA) of the axis, so a pressed switch or a cut wire disables that driver in hardware. No GPIO is needed;
+// to also read them add a spare input with the same pull-up logic (the firmware limits and the bumpers act first). LSR-1 keeps its hall sensor.
 #define IDX_SLOT_LEVEL   0
 // LSR-2 power-loss detect: the opto transistor pulls PIN_PWRFAIL low while 48 V is present. On loss the firmware stops the
 // motors and saves the position to flash (bulk capacitance on the 48 V rail keeps the 5 V buck alive for the ~60 ms write).

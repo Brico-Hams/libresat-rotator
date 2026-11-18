@@ -30,12 +30,12 @@ int main() {
     CHECK(m1->el_min == 0 && m1->el_max == 180 && m1->vmax_az == 20 && m1->vmax_el == 15 && m1->flip);
     CHECK(m1->acc_az == 25 && m1->acc_el == 20 && m1->az_user_offset == 0);
     CHECK(lsr_model(7) == m1);
-    CHECK(m2->ratio == 80.0f && m2->microsteps == 2 && m2->vmax_az == 12 && m2->vmax_el == 12 && !m2->flip);
+    CHECK(m2->ratio == 50.0f && m2->microsteps == 2 && m2->vmax_az == 12 && m2->vmax_el == 12 && !m2->flip);
     axis_cfg_t a1 = {m1->ratio, m1->microsteps * 200, 1, 0, m1->az_min, m1->az_max, 20, 25, 0.05f};
     axis_cfg_t a2 = {m2->ratio, m2->microsteps * 200, 1, 0, m2->az_min, m2->az_max, 12, 10, 0.05f};
     NEAR(axis_steps_per_deg(&a1), 3200 * 25 / 360.0, 1e-3);          // 222.22
-    NEAR(axis_steps_per_deg(&a2), 400 * 80 / 360.0, 1e-3);           // 88.89 (Mk5: 400 microsteps/rev, DM542 DIP switches)
-    NEAR(12.0 * axis_steps_per_deg(&a2), 1066.7, 0.1);               // step rate at vmax = Mk5 1066 steps/s, motor 160 rpm
+    NEAR(axis_steps_per_deg(&a2), 400 * 50 / 360.0, 1e-3);           // 55.56 (Mk4: NMRV30 50:1, 400 microsteps/rev, DM542T DIP switches)
+    NEAR(12.0 * axis_steps_per_deg(&a2), 666.7, 0.1);                // step rate at vmax = 666.7 steps/s, motor 100 rpm
     // LSR-2 ranges: AZ -360..+360 user = 0..720 internal, EL -30..150
     NEAR(lsr_az_to_internal(m2, -360), 0, 1e-4); NEAR(lsr_az_to_internal(m2, 360), 720, 1e-4);
     NEAR(lsr_az_to_user(m2, 360), 0, 1e-4);

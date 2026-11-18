@@ -98,19 +98,19 @@ A cycloid suits printing because:
 
 ## 7. SARCTrac Mk5 (SARCNET) -> LSR-2
 
-LSR-2 is our own redesign of the architecture SARCNET published for the SARCTrac Mk5 (2 × NMRV030 80:1 + NEMA23, 51206 thrust bearing, 10 mm aluminium saddle plates, Pico-class MicroPython controller). The Mk5 FreeCAD files carry no licence, only an "as-is, no warranty" note. We used them only as a local reference to read the architecture: no file, geometry or drawing is copied, and all LSR-2 geometry comes from our own scripts. Full details in the [LSR-2 spec](superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md).
+LSR-2 is a replica of the SARCNET SARCTrac Mk4 (default design) built from the SARCNET FreeCAD files, which SARCNET released under the MIT licence (`third_party/sarctrac-mk4`, see PROVENANCE.md). Our own geometry is used for the optional cast/CNC variant only (`LSR2_DESIGN=cast`); there we did not use the Mk5 files, which carry no licence, only an "as-is, no warranty" note. We used them only as a local reference to read the architecture: no file, geometry or drawing is copied, and all geometry of that variant comes from our own scripts. Full details in the [LSR-2 spec](superpowers/specs/2026-11-16-lsr2-heavy-rotator-design.md).
 
 | Mk5 weak point | LSR-2 decision |
 |---|---|
 | A single index slot, open loop between indexes | AS5600 closed loop on each axis (same as LSR-1) plus a photo-interrupter index per axis |
-| Thrust bearing housed in PVC pipe with silicone | Bearing seat machined in the **aluminium body** (cast A356 or CNC), V-ring/lip seal and drain hole |
-| Threaded rod used as shaft, roll-pin keys | Ø14 h7 stainless 1.4404 shaft with an A5×5 DIN 6885 key, matching the NMRV030 bore |
-| Galvanised angle iron (corrosion, mixed metals) | Body, yoke, saddle and clamps in A356-T6 or 6082/6061; A2/A4 fasteners with Tef-Gel or Duralac at Al–steel joints |
-| MicroPython on a separate board | **LSR-CTL RP2040 firmware** has a step/dir output for external drivers (DM542 or TMC5160); EasyComm II and rotctld unchanged |
+| Thrust bearing housed in PVC pipe with silicone | Mk4 default: thrust bearing washer stack as in the SARCNET Thrust Bearing Assembly drawing; cast/CNC variant: bearing seat machined in the aluminium body (cast A356 or CNC), V-ring/lip seal and drain hole |
+| Threaded rod used as shaft, roll-pin keys | Mk4 default: stainless hub on the NMRV30 output as in the SARCNET drawings; cast/CNC variant: Ø14 h7 stainless 1.4404 shaft with an A5×5 DIN 6885 key, matching the NMRV030 bore |
+| Galvanised angle iron (corrosion, mixed metals) | Mk4 default: 10 mm aluminium plate, saddle plates and brackets, stainless hub and A2 fasteners with Tef-Gel at Al–steel joints; cast/CNC variant: body, yoke, saddle and clamps in A356-T6 or 6082/6061 |
+| MicroPython on a separate board | **LSR-CTL RP2040 firmware** has a step/dir output for external drivers (DM542T or TMC5160); the Mk4 build uses a Wemos D1 Mini Pro; EasyComm II and rotctld unchanged |
 | 48 V only | 24–48 V input; 5 V and 3.3 V rails stay on the board |
 | No wind or torque budget published | `calc/lsr2_sizing.py` gives wind moment, worm self-locking, bearing life and the safe payload limit ([LSR2_SIZING](LSR2_SIZING.md)) |
 
-Credit: the architecture idea comes from SARCNET. No SARCNET file was used or derived.
+Credit: the architecture idea comes from SARCNET; the default Mk4 replica uses their MIT-licensed FreeCAD files (`third_party/sarctrac-mk4`). In the cast/CNC variant no SARCNET file was used or derived.
 
 ## Sources
 

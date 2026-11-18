@@ -1,226 +1,3507 @@
 {
- "rev": "A0",
+ "rev": "mk4",
+ "design": "mk4",
+ "stl_dir": "stl/lsr2",
+ "cast_dir": "cast/lsr2",
+ "cnc_dir": "cnc/lsr2",
+ "laser_dir": "cnc/lsr2/laser",
+ "frame": "global (STL baked in assembly coordinates)",
  "el_axis": {
   "point": [
-   0,
-   0,
-   268
+   130.0,
+   0.0,
+   22.0
   ],
   "dir": [
-   0,
-   1,
-   0
+   0.0,
+   1.0,
+   0.0
+  ]
+ },
+ "az_axis": {
+  "point": [
+   130.0,
+   0.0,
+   0.0
+  ],
+  "dir": [
+   0.0,
+   0.0,
+   1.0
   ]
  },
  "el_sign": -1,
  "el_range": [
-  -30.0,
-  150.0
+  -30,
+  150
  ],
+ "hero_el": 30.0,
+ "lid_lift": 0.0,
+ "floor_z": -578.0,
  "el_group": [
-  "yoke_arm",
-  "yoke_arm_neg",
+  "saddle_assembly",
+  "antenna_left",
+  "antenna_right",
+  "lift_arm_right",
+  "lift_arm_left",
+  "saddle_plate_front",
+  "bar_right",
+  "bar_left",
+  "saddle_plate_left",
+  "saddle_plate_right",
   "saddle",
-  "boom",
-  "boom_clamp",
-  "boom_clamp_neg",
-  "lift_arm_pos",
-  "lift_arm_neg",
-  "counterweight_pos",
-  "counterweight_neg",
-  "clamp_bolts",
-  "yagi_145",
-  "yagi_435"
+  "end_stop001",
+  "end_stop002",
+  "angle_bracket",
+  "pipe_clamp",
+  "pipe_clamp001",
+  "hub_right",
+  "hub_left",
+  "platform",
+  "bar003"
  ],
  "category": {
-  "body": "Cast",
-  "lid": "Cast",
-  "mast_bracket": "Cast",
-  "yoke_arm": "Cast",
-  "yoke_arm_neg": "Cast",
-  "saddle": "Cast",
-  "boom_clamp": "Cast",
-  "boom_clamp_neg": "Cast",
-  "boom": "Bought",
-  "lift_arm_pos": "Machined",
-  "lift_arm_neg": "Machined",
-  "counterweight_pos": "Machined",
-  "counterweight_neg": "Machined",
-  "az_shaft": "Machined",
-  "el_shaft": "Machined",
-  "el_sleeve": "Machined",
-  "az_gearbox": "Bought",
-  "el_gearbox": "Bought",
-  "drivers": "Bought",
-  "mast": "Bought",
-  "az_motor": "Bought",
-  "el_motor": "Bought",
-  "brg_az_lower": "Bought",
-  "brg_az_upper": "Bought",
-  "brg_az_thrust": "Bought",
-  "brg_el_pos": "Bought",
-  "brg_el_neg": "Bought",
-  "clamp_bolts": "Bought",
-  "yagi_145": "Bought",
-  "yagi_435": "Bought"
+  "saddle_assembly": "alu_plate",
+  "antenna_left": "antenna",
+  "antenna_right": "antenna",
+  "lift_arm_right": "alu_plate",
+  "lift_arm_left": "alu_plate",
+  "u_bolt003": "steel",
+  "u_bolt004": "steel",
+  "hex_screw_washer_nut013": "steel",
+  "hex_screw_washer_nut014": "steel",
+  "hex_screw_washer_nut015": "steel",
+  "hex_screw_washer_nut016": "steel",
+  "hex_screw_washer_nut017": "steel",
+  "hex_screw_washer_nut018": "steel",
+  "hex_screw_washer_nut019": "steel",
+  "hex_screw_washer_nut020": "steel",
+  "saddle_plate_front": "alu_plate",
+  "bar_right": "alu_plate",
+  "bar_left": "alu_plate",
+  "saddle_plate_left": "alu_plate",
+  "saddle_plate_right": "alu_plate",
+  "saddle": "alu_plate",
+  "end_stop001": "alu_plate",
+  "end_stop002": "alu_plate",
+  "angle_bracket": "alu_plate",
+  "plate": "alu_plate",
+  "hex_screw_washer_nut005": "steel",
+  "hex_screw_washer_nut006": "steel",
+  "hex_screw_washer_nut007": "steel",
+  "hex_screw_washer_nut008": "steel",
+  "hex_screw_washer_nut009": "steel",
+  "hex_screw_washer_nut010": "steel",
+  "hex_screw_washer_nut011": "steel",
+  "hex_screw_washer_nut012": "steel",
+  "hall_switch_el": "electronics",
+  "pipe_clamp": "steel",
+  "cap_screw_washer_nut001": "steel",
+  "cap_screw_washer_nut002": "steel",
+  "hall_switch_az": "electronics",
+  "pipe_clamp001": "steel",
+  "cap_screw_washer_nut003": "steel",
+  "cap_screw_washer_nut004": "steel",
+  "23_hs32_4004_s007_001": "motor_black",
+  "cap_screw_washer_nut008": "steel",
+  "motor_gasket001": "rubber",
+  "gearbox001": "gearbox_grey",
+  "rv30_ab": "gearbox_grey",
+  "dust_cap_left": "rubber",
+  "dust_cap_right": "rubber",
+  "hub_right": "steel",
+  "hub_left": "steel",
+  "23_hs32_4004_s007_002": "motor_black",
+  "cap_screw_washer_nut009": "steel",
+  "motor_gasket003": "rubber",
+  "gearbox002": "gearbox_grey",
+  "dust_cap": "rubber",
+  "rv30_as": "gearbox_grey",
+  "hub_az": "steel",
+  "thrust_bearing": "steel",
+  "dm542_t_v4_1_010_az": "electronics",
+  "dm542_t_v4_1_009_el": "electronics",
+  "cap_screw_washer_nut011": "steel",
+  "cap_screw_washer_nut012": "steel",
+  "cap_screw_washer_nut013": "steel",
+  "cap_screw_washer_nut014": "steel",
+  "enclosure": "alu_plate",
+  "enclosure_front": "alu_sheet",
+  "enclosure_bottom": "alu_sheet",
+  "enclosure_top": "alu_sheet",
+  "xl7015_dc_dc_stepdown_voltage_converter001": "electronics",
+  "xl7015_dc_dc_stepdown_voltage_converter002": "electronics",
+  "wemos_d1_mini_pro_v5": "electronics",
+  "controller": "gearbox_grey",
+  "2_4_ghz_antenna": "antenna",
+  "connector_005": "antenna",
+  "sma": "antenna",
+  "cover_corner_block001": "alu_plate",
+  "cover_corner_block002": "alu_plate",
+  "cover_corner_block003": "alu_plate",
+  "cover_corner_block004": "alu_plate",
+  "cover_corner_block005": "alu_plate",
+  "cover_corner_block006": "alu_plate",
+  "cover_corner_block007": "alu_plate",
+  "cover_corner_block008": "alu_plate",
+  "cover_back": "alu_sheet",
+  "cover_front": "alu_sheet",
+  "cover_bottom": "alu_sheet",
+  "cover_top": "alu_sheet",
+  "cover": "alu_plate",
+  "cover_right": "alu_sheet",
+  "cover_left": "alu_sheet",
+  "mounting_assembly": "alu_plate",
+  "platform": "alu_plate",
+  "bracket001": "alu_plate",
+  "bracket": "alu_plate",
+  "u_bolt001": "steel",
+  "u_bolt002": "steel",
+  "hex_screw_washer_nut001": "steel",
+  "hex_screw_washer_nut002": "steel",
+  "hex_screw_washer_nut003": "steel",
+  "hex_screw_washer_nut004": "steel",
+  "bar003": "alu_plate"
  },
  "explode": {
-  "lid": [
-   0,
-   0,
-   260
+  "saddle_assembly": [
+   108.0,
+   378.9,
+   -3.4
   ],
-  "mast": [
-   0,
-   0,
-   -420
+  "antenna_left": [
+   468.0,
+   -225.9,
+   26.3
   ],
-  "mast_bracket": [
-   0,
-   0,
-   -200
+  "antenna_right": [
+   -252.0,
+   -225.9,
+   26.3
   ],
-  "az_shaft": [
-   0,
-   0,
-   -120
+  "lift_arm_right": [
+   -252.0,
+   526.1,
+   17.4
   ],
-  "brg_az_thrust": [
-   0,
-   0,
-   -80
+  "lift_arm_left": [
+   468.0,
+   526.1,
+   17.4
   ],
-  "brg_az_lower": [
-   0,
-   0,
-   -40
+  "u_bolt003": [
+   40.2,
+   388.9,
+   -3.4
   ],
-  "brg_az_upper": [
-   0,
-   0,
-   40
+  "u_bolt004": [
+   178.2,
+   388.9,
+   -3.4
   ],
-  "az_motor": [
-   150,
-   0,
-   0
+  "hex_screw_washer_nut013": [
+   158.4,
+   410.7,
+   -41.2
   ],
-  "el_motor": [
-   150,
-   0,
-   0
+  "hex_screw_washer_nut014": [
+   158.4,
+   413.4,
+   34.4
   ],
-  "drivers": [
-   0,
-   110,
-   0
+  "hex_screw_washer_nut015": [
+   60.0,
+   413.4,
+   34.4
   ],
-  "el_shaft": [
-   0,
-   -200,
-   0
+  "hex_screw_washer_nut016": [
+   60.0,
+   410.7,
+   -41.2
   ],
-  "el_sleeve": [
-   0,
-   200,
-   0
+  "hex_screw_washer_nut017": [
+   153.4,
+   414.9,
+   23.6
   ],
-  "brg_el_pos": [
-   0,
-   60,
-   0
+  "hex_screw_washer_nut018": [
+   153.4,
+   414.9,
+   -30.4
   ],
-  "brg_el_neg": [
-   0,
-   -60,
-   0
+  "hex_screw_washer_nut019": [
+   65.0,
+   414.9,
+   -30.4
   ],
-  "yoke_arm": [
-   0,
-   150,
-   100
+  "hex_screw_washer_nut020": [
+   65.0,
+   414.9,
+   22.7
   ],
-  "yoke_arm_neg": [
-   0,
-   -150,
-   100
+  "saddle_plate_front": [
+   109.2,
+   403.2,
+   -3.4
+  ],
+  "bar_right": [
+   60.0,
+   414.9,
+   -3.4
+  ],
+  "bar_left": [
+   158.4,
+   414.9,
+   -3.4
+  ],
+  "saddle_plate_left": [
+   150.6,
+   475.2,
+   -3.4
+  ],
+  "saddle_plate_right": [
+   67.8,
+   475.2,
+   -3.4
   ],
   "saddle": [
-   0,
-   0,
-   100
+   109.2,
+   397.8,
+   -3.4
   ],
-  "boom": [
-   0,
-   0,
-   200
+  "end_stop001": [
+   145.2,
+   416.4,
+   -31.7
   ],
-  "boom_clamp": [
-   0,
-   0,
-   300
+  "end_stop002": [
+   145.2,
+   416.9,
+   25.6
   ],
-  "boom_clamp_neg": [
-   0,
-   0,
-   300
+  "angle_bracket": [
+   109.2,
+   384.3,
+   -42.5
   ],
-  "clamp_bolts": [
-   0,
-   0,
-   380
+  "plate": [
+   103.2,
+   457.2,
+   -52.9
   ],
-  "lift_arm_pos": [
-   0,
-   120,
-   200
+  "hex_screw_washer_nut005": [
+   122.4,
+   461.2,
+   -43.0
   ],
-  "lift_arm_neg": [
-   0,
-   -120,
-   200
+  "hex_screw_washer_nut006": [
+   122.4,
+   461.2,
+   20.9
   ],
-  "counterweight_pos": [
-   0,
-   120,
-   200
+  "hex_screw_washer_nut007": [
+   96.0,
+   461.2,
+   -43.0
   ],
-  "counterweight_neg": [
-   0,
-   -120,
-   200
+  "hex_screw_washer_nut008": [
+   96.0,
+   461.2,
+   20.9
   ],
-  "yagi_145": [
-   0,
-   0,
-   300
+  "hex_screw_washer_nut009": [
+   125.4,
+   461.2,
+   -76.3
   ],
-  "yagi_435": [
-   0,
-   0,
-   300
+  "hex_screw_washer_nut010": [
+   125.4,
+   461.2,
+   -115.9
+  ],
+  "hex_screw_washer_nut011": [
+   82.8,
+   461.2,
+   -115.9
+  ],
+  "hex_screw_washer_nut012": [
+   82.8,
+   461.2,
+   -76.3
+  ],
+  "hall_switch_el": [
+   81.0,
+   447.3,
+   -3.4
+  ],
+  "pipe_clamp": [
+   86.4,
+   446.9,
+   -3.4
+  ],
+  "cap_screw_washer_nut001": [
+   86.4,
+   457.7,
+   8.8
+  ],
+  "cap_screw_washer_nut002": [
+   86.4,
+   457.7,
+   -15.5
+  ],
+  "hall_switch_az": [
+   109.2,
+   447.3,
+   -140.2
+  ],
+  "pipe_clamp001": [
+   109.2,
+   446.9,
+   -130.3
+  ],
+  "cap_screw_washer_nut003": [
+   117.3,
+   457.7,
+   -130.3
+  ],
+  "cap_screw_washer_nut004": [
+   101.1,
+   457.7,
+   -130.3
+  ],
+  "23_hs32_4004_s007_001": [
+   109.2,
+   575.6,
+   -30.4
+  ],
+  "cap_screw_washer_nut008": [
+   109.2,
+   548.6,
+   -30.4
+  ],
+  "motor_gasket001": [
+   109.2,
+   547.6,
+   -30.4
+  ],
+  "gearbox001": [
+   109.2,
+   504.4,
+   -12.4
+  ],
+  "rv30_ab": [
+   109.2,
+   497.7,
+   -3.5
+  ],
+  "dust_cap_left": [
+   128.4,
+   497.7,
+   -3.4
+  ],
+  "dust_cap_right": [
+   90.0,
+   497.7,
+   -3.4
+  ],
+  "hub_right": [
+   73.9,
+   497.7,
+   -3.4
+  ],
+  "hub_left": [
+   144.5,
+   497.7,
+   -3.4
+  ],
+  "23_hs32_4004_s007_002": [
+   91.2,
+   575.6,
+   -89.1
+  ],
+  "cap_screw_washer_nut009": [
+   91.2,
+   548.6,
+   -96.1
+  ],
+  "motor_gasket003": [
+   91.2,
+   547.6,
+   -96.1
+  ],
+  "gearbox002": [
+   103.2,
+   504.4,
+   -96.1
+  ],
+  "dust_cap": [
+   109.2,
+   497.7,
+   -67.3
+  ],
+  "rv30_as": [
+   109.1,
+   497.7,
+   -107.8
+  ],
+  "hub_az": [
+   109.2,
+   497.7,
+   -149.9
+  ],
+  "thrust_bearing": [
+   109.2,
+   497.7,
+   -138.4
+  ],
+  "dm542_t_v4_1_010_az": [
+   110.0,
+   662.2,
+   -61.9
+  ],
+  "dm542_t_v4_1_009_el": [
+   110.0,
+   638.8,
+   -61.9
+  ],
+  "cap_screw_washer_nut011": [
+   127.2,
+   623.3,
+   8.8
+  ],
+  "cap_screw_washer_nut012": [
+   91.2,
+   623.2,
+   8.8
+  ],
+  "cap_screw_washer_nut013": [
+   127.2,
+   623.2,
+   -132.5
+  ],
+  "cap_screw_washer_nut014": [
+   91.2,
+   623.2,
+   -132.5
+  ],
+  "enclosure": [
+   109.2,
+   659.7,
+   -61.9
+  ],
+  "enclosure_front": [
+   109.2,
+   626.4,
+   -61.9
+  ],
+  "enclosure_bottom": [
+   109.2,
+   658.8,
+   -124.4
+  ],
+  "enclosure_top": [
+   109.2,
+   658.8,
+   0.7
+  ],
+  "xl7015_dc_dc_stepdown_voltage_converter001": [
+   106.2,
+   681.9,
+   -40.3
+  ],
+  "xl7015_dc_dc_stepdown_voltage_converter002": [
+   120.0,
+   681.9,
+   -40.3
+  ],
+  "wemos_d1_mini_pro_v5": [
+   112.8,
+   678.7,
+   -78.1
+  ],
+  "controller": [
+   113.1,
+   675.0,
+   -61.9
+  ],
+  "2_4_ghz_antenna": [
+   109.2,
+   679.4,
+   52.4
+  ],
+  "connector_005": [
+   109.2,
+   679.5,
+   -5.3
+  ],
+  "sma": [
+   109.2,
+   679.5,
+   1.4
+  ],
+  "cover_corner_block001": [
+   140.4,
+   617.4,
+   25.4
+  ],
+  "cover_corner_block002": [
+   78.0,
+   617.4,
+   25.4
+  ],
+  "cover_corner_block003": [
+   140.4,
+   617.4,
+   -131.2
+  ],
+  "cover_corner_block004": [
+   78.0,
+   617.4,
+   -131.2
+  ],
+  "cover_corner_block005": [
+   78.0,
+   446.4,
+   25.4
+  ],
+  "cover_corner_block006": [
+   140.4,
+   446.4,
+   25.4
+  ],
+  "cover_corner_block007": [
+   78.0,
+   446.4,
+   -131.2
+  ],
+  "cover_corner_block008": [
+   140.4,
+   446.4,
+   -131.2
+  ],
+  "cover_back": [
+   109.2,
+   624.6,
+   -52.9
+  ],
+  "cover_front": [
+   109.2,
+   439.2,
+   -52.9
+  ],
+  "cover_bottom": [
+   109.2,
+   531.9,
+   -139.3
+  ],
+  "cover_top": [
+   109.2,
+   531.9,
+   33.5
+  ],
+  "cover": [
+   109.2,
+   531.9,
+   -52.9
+  ],
+  "cover_right": [
+   72.6,
+   531.9,
+   -52.9
+  ],
+  "cover_left": [
+   145.8,
+   531.9,
+   -52.9
+  ],
+  "mounting_assembly": [
+   109.2,
+   497.7,
+   -343.6
+  ],
+  "platform": [
+   109.2,
+   494.1,
+   -159.1
+  ],
+  "bracket001": [
+   109.2,
+   529.2,
+   -276.1
+  ],
+  "bracket": [
+   109.2,
+   523.8,
+   -287.3
+  ],
+  "u_bolt001": [
+   109.2,
+   504.4,
+   -375.1
+  ],
+  "u_bolt002": [
+   109.2,
+   504.4,
+   -199.6
+  ],
+  "hex_screw_washer_nut001": [
+   84.0,
+   533.4,
+   -170.8
+  ],
+  "hex_screw_washer_nut002": [
+   91.2,
+   540.9,
+   -169.3
+  ],
+  "hex_screw_washer_nut003": [
+   134.4,
+   533.4,
+   -170.8
+  ],
+  "hex_screw_washer_nut004": [
+   126.6,
+   540.9,
+   -169.3
+  ],
+  "bar003": [
+   109.2,
+   540.9,
+   -170.8
   ]
  },
- "stl_dir": "stl/lsr2",
- "cast_dir": "cast/lsr2",
- "cnc_dir": "cnc/lsr2",
- "floor_z": -1400.0,
- "lid_lift": 260,
- "cast_parts": [
-  "body",
-  "lid",
-  "mast_bracket",
-  "yoke_arm",
-  "saddle",
-  "boom_clamp"
+ "parts": [
+  {
+   "name": "saddle_assembly",
+   "part": "Unclassified",
+   "stl": "saddle_assembly.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": false
+  },
+  {
+   "name": "antenna_left",
+   "part": "Antenna",
+   "stl": "antenna_left.stl",
+   "category": "antenna",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": false
+  },
+  {
+   "name": "antenna_right",
+   "part": "Antenna",
+   "stl": "antenna_right.stl",
+   "category": "antenna",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": false
+  },
+  {
+   "name": "lift_arm_right",
+   "part": "LiftArm",
+   "stl": "lift_arm_right.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "lift_arm_left",
+   "part": "LiftArm",
+   "stl": "lift_arm_left.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "u_bolt003",
+   "part": "Hardware",
+   "stl": "u_bolt003.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "u_bolt004",
+   "part": "Hardware",
+   "stl": "u_bolt004.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut013",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut013.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut014",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut014.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut015",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut015.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut016",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut016.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut017",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut017.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut018",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut018.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut019",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut019.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut020",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut020.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "saddle_plate_front",
+   "part": "SaddlePlateFront",
+   "stl": "saddle_plate_front.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "bar_right",
+   "part": "Bar",
+   "stl": "bar_right.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "bar_left",
+   "part": "Bar",
+   "stl": "bar_left.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "saddle_plate_left",
+   "part": "SaddlePlateLeft",
+   "stl": "saddle_plate_left.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "saddle_plate_right",
+   "part": "SaddlePlateRight",
+   "stl": "saddle_plate_right.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "saddle",
+   "part": "Unclassified",
+   "stl": "saddle.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": false
+  },
+  {
+   "name": "end_stop001",
+   "part": "EndStop",
+   "stl": "end_stop001.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "end_stop002",
+   "part": "EndStop",
+   "stl": "end_stop002.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "angle_bracket",
+   "part": "Angle",
+   "stl": "angle_bracket.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "plate",
+   "part": "Plate",
+   "stl": "plate.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "hex_screw_washer_nut005",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut005.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut006",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut006.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut007",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut007.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut008",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut008.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut009",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut009.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut010",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut010.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut011",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut011.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut012",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut012.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hall_switch_el",
+   "part": "HallSwitch_NJK5002C",
+   "stl": "hall_switch_el.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "pipe_clamp",
+   "part": "PipeClamp",
+   "stl": "pipe_clamp.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "cap_screw_washer_nut001",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut001.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut002",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut002.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hall_switch_az",
+   "part": "HallSwitch_NJK5002C",
+   "stl": "hall_switch_az.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "pipe_clamp001",
+   "part": "PipeClamp",
+   "stl": "pipe_clamp001.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "cap_screw_washer_nut003",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut003.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut004",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut004.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "23_hs32_4004_s007_001",
+   "part": "Motor_NEMA23",
+   "stl": "23_hs32_4004_s007_001.stl",
+   "category": "motor_black",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut008",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut008.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "motor_gasket001",
+   "part": "MotorGasket",
+   "stl": "motor_gasket001.stl",
+   "category": "rubber",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "gearbox001",
+   "part": "Gearbox_NMRV30",
+   "stl": "gearbox001.stl",
+   "category": "gearbox_grey",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "rv30_ab",
+   "part": "Gearbox_NMRV30",
+   "stl": "rv30_ab.stl",
+   "category": "gearbox_grey",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "dust_cap_left",
+   "part": "DustCap",
+   "stl": "dust_cap_left.stl",
+   "category": "rubber",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "dust_cap_right",
+   "part": "DustCap",
+   "stl": "dust_cap_right.stl",
+   "category": "rubber",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "hub_right",
+   "part": "Hub",
+   "stl": "hub_right.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "hub_left",
+   "part": "Hub",
+   "stl": "hub_left.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "23_hs32_4004_s007_002",
+   "part": "Motor_NEMA23",
+   "stl": "23_hs32_4004_s007_002.stl",
+   "category": "motor_black",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut009",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut009.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "motor_gasket003",
+   "part": "MotorGasket",
+   "stl": "motor_gasket003.stl",
+   "category": "rubber",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "gearbox002",
+   "part": "Gearbox_NMRV30",
+   "stl": "gearbox002.stl",
+   "category": "gearbox_grey",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "dust_cap",
+   "part": "DustCap",
+   "stl": "dust_cap.stl",
+   "category": "rubber",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "rv30_as",
+   "part": "Gearbox_NMRV30",
+   "stl": "rv30_as.stl",
+   "category": "gearbox_grey",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hub_az",
+   "part": "Hub",
+   "stl": "hub_az.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "static",
+   "made": true
+  },
+  {
+   "name": "thrust_bearing",
+   "part": "ThrustBearing",
+   "stl": "thrust_bearing.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "static",
+   "made": false
+  },
+  {
+   "name": "dm542_t_v4_1_010_az",
+   "part": "Driver_DM542T",
+   "stl": "dm542_t_v4_1_010_az.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "dm542_t_v4_1_009_el",
+   "part": "Driver_DM542T",
+   "stl": "dm542_t_v4_1_009_el.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut011",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut011.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut012",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut012.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut013",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut013.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cap_screw_washer_nut014",
+   "part": "Hardware",
+   "stl": "cap_screw_washer_nut014.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "enclosure",
+   "part": "Unclassified",
+   "stl": "enclosure.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "enclosure_front",
+   "part": "EnclosureFront",
+   "stl": "enclosure_front.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "enclosure_bottom",
+   "part": "EnclosureBottom",
+   "stl": "enclosure_bottom.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "enclosure_top",
+   "part": "EnclosureTop",
+   "stl": "enclosure_top.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "xl7015_dc_dc_stepdown_voltage_converter001",
+   "part": "XL7015Converter",
+   "stl": "xl7015_dc_dc_stepdown_voltage_converter001.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "xl7015_dc_dc_stepdown_voltage_converter002",
+   "part": "XL7015Converter",
+   "stl": "xl7015_dc_dc_stepdown_voltage_converter002.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "wemos_d1_mini_pro_v5",
+   "part": "WemosD1MiniPro",
+   "stl": "wemos_d1_mini_pro_v5.stl",
+   "category": "electronics",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "controller",
+   "part": "Controller_Deltron",
+   "stl": "controller.stl",
+   "category": "gearbox_grey",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "2_4_ghz_antenna",
+   "part": "Antenna_2G4",
+   "stl": "2_4_ghz_antenna.stl",
+   "category": "antenna",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "connector_005",
+   "part": "SMA",
+   "stl": "connector_005.stl",
+   "category": "antenna",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "sma",
+   "part": "SMA",
+   "stl": "sma.stl",
+   "category": "antenna",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cover_corner_block001",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block001.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block002",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block002.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block003",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block003.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block004",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block004.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block005",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block005.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block006",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block006.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block007",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block007.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_corner_block008",
+   "part": "CoverCornerBlock",
+   "stl": "cover_corner_block008.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_back",
+   "part": "CoverBack",
+   "stl": "cover_back.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_front",
+   "part": "CoverFront",
+   "stl": "cover_front.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_bottom",
+   "part": "CoverBottom",
+   "stl": "cover_bottom.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_top",
+   "part": "CoverTop",
+   "stl": "cover_top.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover",
+   "part": "Unclassified",
+   "stl": "cover.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "cover_right",
+   "part": "CoverRight",
+   "stl": "cover_right.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "cover_left",
+   "part": "CoverLeft",
+   "stl": "cover_left.stl",
+   "category": "alu_sheet",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": true
+  },
+  {
+   "name": "mounting_assembly",
+   "part": "Unclassified",
+   "stl": "mounting_assembly.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "platform",
+   "part": "Platform",
+   "stl": "platform.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  },
+  {
+   "name": "bracket001",
+   "part": "Bracket",
+   "stl": "bracket001.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "static",
+   "made": true
+  },
+  {
+   "name": "bracket",
+   "part": "Unclassified",
+   "stl": "bracket.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "static",
+   "made": false
+  },
+  {
+   "name": "u_bolt001",
+   "part": "Hardware",
+   "stl": "u_bolt001.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "u_bolt002",
+   "part": "Hardware",
+   "stl": "u_bolt002.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut001",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut001.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut002",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut002.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut003",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut003.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "hex_screw_washer_nut004",
+   "part": "Hardware",
+   "stl": "hex_screw_washer_nut004.stl",
+   "category": "steel",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "az",
+   "made": false
+  },
+  {
+   "name": "bar003",
+   "part": "Bar",
+   "stl": "bar003.stl",
+   "category": "alu_plate",
+   "matrix": [
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0,
+    0,
+    0,
+    0,
+    0,
+    1.0
+   ],
+   "group": "el",
+   "made": true
+  }
  ],
- "cnc_parts": [
-  "body",
-  "lid",
-  "mast_bracket",
-  "yoke_arm",
-  "saddle",
-  "boom_clamp"
+ "part_models": {
+  "Unclassified": [
+   "saddle_assembly",
+   "saddle",
+   "enclosure",
+   "cover",
+   "mounting_assembly",
+   "bracket"
+  ],
+  "Antenna": [
+   "antenna_left",
+   "antenna_right"
+  ],
+  "LiftArm": [
+   "lift_arm_right",
+   "lift_arm_left"
+  ],
+  "Hardware": [
+   "u_bolt003",
+   "u_bolt004",
+   "hex_screw_washer_nut013",
+   "hex_screw_washer_nut014",
+   "hex_screw_washer_nut015",
+   "hex_screw_washer_nut016",
+   "hex_screw_washer_nut017",
+   "hex_screw_washer_nut018",
+   "hex_screw_washer_nut019",
+   "hex_screw_washer_nut020",
+   "hex_screw_washer_nut005",
+   "hex_screw_washer_nut006",
+   "hex_screw_washer_nut007",
+   "hex_screw_washer_nut008",
+   "hex_screw_washer_nut009",
+   "hex_screw_washer_nut010",
+   "hex_screw_washer_nut011",
+   "hex_screw_washer_nut012",
+   "cap_screw_washer_nut001",
+   "cap_screw_washer_nut002",
+   "cap_screw_washer_nut003",
+   "cap_screw_washer_nut004",
+   "cap_screw_washer_nut008",
+   "cap_screw_washer_nut009",
+   "cap_screw_washer_nut011",
+   "cap_screw_washer_nut012",
+   "cap_screw_washer_nut013",
+   "cap_screw_washer_nut014",
+   "u_bolt001",
+   "u_bolt002",
+   "hex_screw_washer_nut001",
+   "hex_screw_washer_nut002",
+   "hex_screw_washer_nut003",
+   "hex_screw_washer_nut004"
+  ],
+  "SaddlePlateFront": [
+   "saddle_plate_front"
+  ],
+  "Bar": [
+   "bar_right",
+   "bar_left",
+   "bar003"
+  ],
+  "SaddlePlateLeft": [
+   "saddle_plate_left"
+  ],
+  "SaddlePlateRight": [
+   "saddle_plate_right"
+  ],
+  "EndStop": [
+   "end_stop001",
+   "end_stop002"
+  ],
+  "Angle": [
+   "angle_bracket"
+  ],
+  "Plate": [
+   "plate"
+  ],
+  "HallSwitch_NJK5002C": [
+   "hall_switch_el",
+   "hall_switch_az"
+  ],
+  "PipeClamp": [
+   "pipe_clamp",
+   "pipe_clamp001"
+  ],
+  "Motor_NEMA23": [
+   "23_hs32_4004_s007_001",
+   "23_hs32_4004_s007_002"
+  ],
+  "MotorGasket": [
+   "motor_gasket001",
+   "motor_gasket003"
+  ],
+  "Gearbox_NMRV30": [
+   "gearbox001",
+   "rv30_ab",
+   "gearbox002",
+   "rv30_as"
+  ],
+  "DustCap": [
+   "dust_cap_left",
+   "dust_cap_right",
+   "dust_cap"
+  ],
+  "Hub": [
+   "hub_right",
+   "hub_left",
+   "hub_az"
+  ],
+  "ThrustBearing": [
+   "thrust_bearing"
+  ],
+  "Driver_DM542T": [
+   "dm542_t_v4_1_010_az",
+   "dm542_t_v4_1_009_el"
+  ],
+  "EnclosureFront": [
+   "enclosure_front"
+  ],
+  "EnclosureBottom": [
+   "enclosure_bottom"
+  ],
+  "EnclosureTop": [
+   "enclosure_top"
+  ],
+  "XL7015Converter": [
+   "xl7015_dc_dc_stepdown_voltage_converter001",
+   "xl7015_dc_dc_stepdown_voltage_converter002"
+  ],
+  "WemosD1MiniPro": [
+   "wemos_d1_mini_pro_v5"
+  ],
+  "Controller_Deltron": [
+   "controller"
+  ],
+  "Antenna_2G4": [
+   "2_4_ghz_antenna"
+  ],
+  "SMA": [
+   "connector_005",
+   "sma"
+  ],
+  "CoverCornerBlock": [
+   "cover_corner_block001",
+   "cover_corner_block002",
+   "cover_corner_block003",
+   "cover_corner_block004",
+   "cover_corner_block005",
+   "cover_corner_block006",
+   "cover_corner_block007",
+   "cover_corner_block008"
+  ],
+  "CoverBack": [
+   "cover_back"
+  ],
+  "CoverFront": [
+   "cover_front"
+  ],
+  "CoverBottom": [
+   "cover_bottom"
+  ],
+  "CoverTop": [
+   "cover_top"
+  ],
+  "CoverRight": [
+   "cover_right"
+  ],
+  "CoverLeft": [
+   "cover_left"
+  ],
+  "Platform": [
+   "platform"
+  ],
+  "Bracket": [
+   "bracket001"
+  ]
+ },
+ "laser_parts": [
+  "enclosure_front",
+  "enclosure_bottom",
+  "enclosure_top",
+  "cover_back",
+  "cover_front",
+  "cover_bottom",
+  "cover_top",
+  "cover_right",
+  "cover_left"
  ],
- "hero_el": 30.0
+ "cast_parts": [],
+ "cnc_parts": [],
+ "closeup_hide": [
+  "cover_corner_block001",
+  "cover_corner_block002",
+  "cover_corner_block003",
+  "cover_corner_block004",
+  "cover_corner_block005",
+  "cover_corner_block006",
+  "cover_corner_block007",
+  "cover_corner_block008",
+  "cover_back",
+  "cover_front",
+  "cover_bottom",
+  "cover_top",
+  "cover_right",
+  "cover_left"
+ ]
 }

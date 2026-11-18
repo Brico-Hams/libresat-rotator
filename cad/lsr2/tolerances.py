@@ -102,6 +102,41 @@ ROWS = [
     ('T25', 'Lid screw holes', 'lid, body', 'rim', 'M5 / Ø5.5', 'position Ø%.2f, thread 6H' % LOCAL['thread_pos'], LOCAL['thread_pos'], 3.2, 0.10, 0.05,
      'Clearance holes Ø5.5 in the lid absorb the position error; thread inserts or helicoil in the cast aluminium.', 'thread gauge, pin gauge', 'P'),
 ]
+CAST_ROWS = ROWS
+
+# Mk4 replica (default design). Nominals are on the SARCNET drawings in third_party/sarctrac-mk4/FreeCAD/Drawings (Plate, Rotator Assembly, Thrust Bearing Assembly, Cover *, Enclosure *);
+# the tolerances are our PARAMETRIC choices (laser-cut sheet and 3-axis CNC plate): VERIFY with the real gearbox and bearing before cutting.
+# Same 13 fields as ROWS; capabilities: laser = route A column, CNC plate = route B column.
+MK4_ROWS = [
+    ('M01', 'Plate datum face (gearbox side)', 'Plate 10 mm', '-', 'plane', 'flatness 0.10', 0.10, 3.2, 0.05, 0.03,
+     'Both NMRV30 gearbox flanges and the saddle bolt on it: a flat face keeps the AZ and EL gearboxes parallel without shims.', 'surface plate + feeler', 'P'),
+    ('M02', 'AZ gearbox spigot bore', 'Plate 10 mm', 'M01', 'per Plate.pdf', 'H8 (+0.039/0), position Ø0.10 to the AZ axis', 0.10, 1.6, 0.05, 0.03,
+     'Pilot of the NMRV30-G50-D11 output flange: the gearbox is located by the spigot and bolted with 4 x M8; MEASURE the real gearbox spigot diameter first.',
+     'bore gauge, CMM or pin + indicator', 'P'),
+    ('M03', 'EL gearbox spigot bore', 'Plate 10 mm', 'M01', 'per Plate.pdf', 'H8 (+0.039/0), position Ø0.10 to the EL axis', 0.10, 1.6, 0.05, 0.03,
+     'Same as M02 for the EL gearbox; the AZ-EL position sets the sweep clearance of the lift arms.', 'bore gauge, CMM', 'P'),
+    ('M04', 'Thrust-bearing seat (51206 housing washer)', 'Plate 10 mm', 'M01', 'per Thrust Bearing Assembly.pdf', 'H11 (+0.19/0), floor flatness 0.05', 0.19, 3.2, 0.05, 0.03,
+     'The housing washer is radially free (maker practice); the seat floor squareness keeps the load even on the balls.', 'bore gauge, indicator on the floor', 'P'),
+    ('M05', 'Hub bore on the stainless azimuth hub', 'Hub (turned)', '-', 'per drawing', 'H7 (+0.021/0) bore, g6 shaft seat', 0.021, 1.6, 0.01, 0.01,
+     'The hub rides on the gearbox output (11 mm key bore of the NMRV30 hollow shaft) and carries the shaft washer of the 51206 (j6 seat).', 'plug gauge, micrometer', 'P'),
+    ('M06', 'Saddle plates (3) and platform', 'Saddle Plate Left/Right/Front, Platform', 'M01', 'planes', 'hole position Ø0.20, flatness 0.10', 0.20, 3.2, 0.10, 0.05,
+     'Assembled with M8 bolts and the 2 x 40 mm U-bolts; the position error is absorbed by clearance holes; parallelism to the EL axis is removed by the pointing model.', 'caliper, feeler', 'P'),
+    ('M07', 'Laser-cut 2 mm outline (cover and enclosure panels)', 'Cover Top/Bottom/Front/Back/Left/Right, Enclosure Front/Bottom/Top', '-', 'per drawings', '+-0.10', 0.20, 3.2, 0.10, 0.10,
+     'Laser-cut 2 mm 5754/5083 sheet: +-0.1 mm is a normal cutting tolerance; panels meet at the 16 mm corner blocks with neoprene gasket, so it is not critical.', 'caliper, flat template', 'P'),
+    ('M08', 'Laser-cut holes and slots (2 mm)', 'Cover and enclosure panels', '-', 'per drawings', '+-0.10, hole position +-0.15', 0.30, 3.2, 0.10, 0.10,
+     'M5 screws into the 16 mm corner blocks, M16/M12 glands and the housing cut-outs: clearance absorbs the position error.', 'pin gauge', 'P'),
+    ('M09', 'Corner blocks (16 mm)', 'Cover Corner Block (8)', '-', 'per drawing', 'size +-0.10, tapped holes position 0.20', 0.20, 3.2, 0.10, 0.05,
+     'The cover panels bolt on them: the tapped holes must line up with the laser-cut holes.', 'thread gauge, caliper', 'P'),
+    ('M10', 'Lift arms (25 x 25 x 2 SHS) and bracket / angle', 'Lift Arm, Bracket, Angle', '-', 'per drawings', 'length +-0.5, hole position 0.30', 0.30, 6.3, 0.20, 0.10,
+     'Extrusion and saw-cut tolerances; the counterweight leaf and the boom bolts use clearance holes; balance is set at assembly.', 'caliper, tape', 'P'),
+]
+MK4_FINISHES = [('Machined fits and seats', 'Ra 0.8-1.6, no scratches along the axis, deburr and chamfer 0.5 x 45 deg'),
+                ('Laser-cut edges', 'deburr; no heat discolouration on seating faces'),
+                ('Aluminium parts', 'chromate conversion (conductive) or anodise; mask fits and threads'),
+                ('Stainless hubs', 'passivate; Tef-Gel on every joint with aluminium (galvanic corrosion at the coast)'),
+                ('Fasteners', 'A2/A4 with Tef-Gel; torques in LSR2_ASSEMBLY')]
+MK4_NOTE = ('Mk4 default (SARCNET drawings in `third_party/sarctrac-mk4/FreeCAD/Drawings/`): laser-cut 2 mm +-0.1 mm, CNC plate fits for the gearbox spigots and the bearing seats. '
+            'The datums are the plate face (M01) and the AZ / EL axes of the spigots. The cast-variant table (T01-T25: body, lid, shafts) is in the Optional cast/CNC variant section.')
 FINISHES = [('Machined fits and seats', 'Ra 0.8-1.6, no scratches along the axis, deburr and chamfer 0.5 x 45 deg'),
             ('Gasket groove and lid face', 'Ra 1.6 flanks, 3.2 face'),
             ('Cast surfaces', 'as cast Ra 12.5, shot-blast; no machining except the marked pads (stock %.1f mm per face, params.CAST)' % P.CAST['machining']),
@@ -124,16 +159,28 @@ def fit_rows():
 
 
 def self_test():
-    ids = [r[0] for r in ROWS]
-    assert len(ids) == len(set(ids)) and all(len(r) == 13 for r in ROWS)
-    for r in ROWS:
-        assert r[6] >= r[8] and r[6] >= r[9], (r[0], 'tolerance zone tighter than the process capability')
+    for rows in (ROWS, MK4_ROWS):
+        ids = [r[0] for r in rows]
+        assert len(ids) == len(set(ids)) and all(len(r) == 13 for r in rows)
+        for r in rows:
+            assert r[6] >= r[8] and r[6] >= r[9], (r[0], 'tolerance zone tighter than the process capability')
+    assert not {r[0] for r in ROWS} & {r[0] for r in MK4_ROWS}
     assert all(k in T for k in ('el_coax', 'az_el_perp', 'flat_lid', 'flat_base', 'datum_dist', 'bore_h7', 'seat_6206', 'seat_6004'))
     assert all(v[0] > v[1] for v in ISO.values()) and all(v[0] > v[1] for v in BEARING.values())
     assert ISO[('62', 'J7')][0] - ISO[('62', 'J7')][1] == 30 and ISO[('20', 'H7')][0] == 21 and ISO[('20', 'h6')][1] == -13
     for name, max_clear, _, mc, mi in fit_rows():
         assert mc > mi, name
-    print('tolerances self-test OK (%d rows)' % len(ROWS))
+    print('tolerances self-test OK (%d Mk4 rows, %d cast-variant rows)' % (len(MK4_ROWS), len(ROWS)))
+
+
+def _table(rows):
+    o = ['| ID | Feature | Part | Datum | Nominal (mm) | Tolerance / fit | Ra (µm) | Justification (mating part and process) | Tag |', '|---|---|---|---|---|---|---|---|---|']
+    return o + ['| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % (r[0], r[1], r[2], r[3], r[4], r[5], '' if r[7] is None else '%g' % r[7], r[10], r[12]) for r in rows]
+
+
+def _capability(rows, a, b):
+    o = ['| ID | Zone | %s | %s | Margin (zone / worst capability) |' % (a, b), '|---|---|---|---|---|']
+    return o + ['| %s | %g | %g | %g | %.1f |' % (r[0], r[6], r[8], r[9], r[6] / max(r[8], r[9])) for r in rows]
 
 
 def tolerances_md():
@@ -141,20 +188,28 @@ def tolerances_md():
          'Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams). REV %s. Source of every number: `cad/lsr2/tolerances.py` and `cad/lsr2/params.py` (`TOL`). '
          'Tags: **D** DATASHEET (ISO 286-2 limits, ISO 492 normal bearing class), **P** PARAMETRIC (our choice, editable in the table), **M** MEASURE (shop capability: ask the shop). '
          'Fits follow the bearing-maker practice described in the script docstring: **VERIFY with the maker table for the real bearing and load before the first cut**. '
-         'Related: [inspection sheet](LSR2_INSPECTION.md), [sizing](LSR2_SIZING.md), [route A](LSR2_ROUTE_A_CASTING.md), [route B](LSR2_ROUTE_B_CNC.md), [risks](LSR2_RISKS.md).\n' % P.REV,
-         '## Datums\n', '| Datum | Definition |', '|---|---|'] + ['| %s | %s |' % d for d in DATUMS]
-    o += ['\n## Tolerance table\n', '| ID | Feature | Part | Datum | Nominal (mm) | Tolerance / fit | Ra (µm) | Justification (mating part and process) | Tag |', '|---|---|---|---|---|---|---|---|---|']
-    o += ['| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % (r[0], r[1], r[2], r[3], r[4], r[5], '' if r[7] is None else '%g' % r[7], r[10], r[12]) for r in ROWS]
-    o += ['\n## Fits calculated from ISO 286-2 and ISO 492 limits (µm)\n', 'Hole = housing or bearing bore, shaft = shaft or bearing outer ring. Positive = clearance, negative = interference.\n',
+         'Related: [inspection sheet](LSR2_INSPECTION.md), [sizing](LSR2_SIZING.md), [Mk4 design](LSR2_MK4.md), [risks](LSR2_RISKS.md).\n' % P.REV,
+         '## SARCTrac Mk4 replica (default design)\n', MK4_NOTE + '\n']
+    o += _table(MK4_ROWS)
+    o += ['\n### Process capability check (zone against the assumed shop capability, mm)\n',
+          'Capabilities are **MEASURE** placeholders (typical laser and 3-axis CNC values, to be replaced with the quotes). The self-test fails if a zone is tighter than either capability.\n']
+    o += _capability(MK4_ROWS, 'Laser / sheet', 'CNC plate')
+    o += ['\n### Finishes\n', '| Surface | Finish |', '|---|---|'] + ['| %s | %s |' % f for f in MK4_FINISHES]
+    o += ['\n## Optional cast/CNC variant (`LSR2_DESIGN=cast`)\n',
+          'The rest of this document applies only to the optional cast/CNC variant ([route A](LSR2_ROUTE_A_CASTING.md), [route B](LSR2_ROUTE_B_CNC.md)).\n',
+          '### Datums\n', '| Datum | Definition |', '|---|---|'] + ['| %s | %s |' % d for d in DATUMS]
+    o += ['\n### Tolerance table\n']
+    o += _table(ROWS)
+    o += ['\n### Fits calculated from ISO 286-2 and ISO 492 limits (µm)\n', 'Hole = housing or bearing bore, shaft = shaft or bearing outer ring. Positive = clearance, negative = interference.\n',
           '| Pair | Max clearance | Max interference |', '|---|---|---|']
     o += ['| %s | %d | %d |' % (n, mc, -mi) if mi < 0 else '| %s | %d | 0 (clearance only, min %d) |' % (n, mc, mi) for n, _, _, mc, mi in fit_rows()]
-    o += ['\n## Process capability check (zone against the assumed shop capability, mm)\n',
-          'Capabilities are **MEASURE** placeholders (typical shop values, to be replaced with the foundry and CNC shop numbers). The self-test fails if a zone is tighter than either capability.\n',
-          '| ID | Zone | Route A (cast + machining) | Route B (CNC) | Margin (zone / worst capability) |', '|---|---|---|---|---|']
-    o += ['| %s | %g | %g | %g | %.1f |' % (r[0], r[6], r[8], r[9], r[6] / max(r[8], r[9])) for r in ROWS]
-    o += ['\n## Casting and finishes\n', CASTING + '\n', '| Surface | Finish |', '|---|---|'] + ['| %s | %s |' % f for f in FINISHES]
-    o += ['\n## Open decisions\n', '- Horizontal EL bores on route B (4th axis, angle plate or outsourced line boring): decides T06 and T13 capability.',
-          '- Doweling and line-boring the bolted slab stack of the body (T03).',
+    o += ['\n### Process capability check (zone against the assumed shop capability, mm)\n',
+          'Capabilities are **MEASURE** placeholders (typical shop values, to be replaced with the foundry and CNC shop numbers). The self-test fails if a zone is tighter than either capability.\n']
+    o += _capability(ROWS, 'Route A (cast + machining)', 'Route B (CNC)')
+    o += ['\n### Casting and finishes\n', CASTING + '\n', '| Surface | Finish |', '|---|---|'] + ['| %s | %s |' % f for f in FINISHES]
+    o += ['\n## Open decisions\n', '- Mk4: real gearbox spigot, bearing seat and hub dimensions (MEASURE the bought parts against the SARCNET drawings); laser and CNC shop capabilities from the quotes.',
+          '- Cast variant: horizontal EL bores on route B (4th axis, angle plate or outsourced line boring): decides T06 and T13 capability.',
+          '- Cast variant: doweling and line-boring the bolted slab stack of the body (T03).',
           '- Real shop capabilities and the foundry CT class: replace the MEASURE capabilities and re-run the self-test.',
           '- Fit selection (J7 / g6 / h6 / j6) to be confirmed with the maker table for the final load case; a tighter housing fit raises the preload risk in aluminium.',
           '- Real mast and boom tube tolerances (MEASURE the first sample).']
@@ -162,13 +217,19 @@ def tolerances_md():
 
 
 def inspection_md():
+    hdr = ['| ID | Feature | Part | Datum | Nominal (mm) | Tolerance | Method / gauge | Result | OK |', '|---|---|---|---|---|---|---|---|---|']
     o = ['# LSR-2 inspection sheet (generated by `cad/lsr2/tolerances.py`)\n',
-         'One sheet per finished body, lid, mast bracket, yoke arm pair, saddle and shaft. Fill the **Result** column on the first article and on every batch; the reason for each tolerance is in '
-         '[LSR2_TOLERANCES](LSR2_TOLERANCES.md). Rev %s. Serial: ______  Date: ______  Inspector: ______  Casting heat / bar lot: ______\n' % P.REV,
-         '| ID | Feature | Part | Datum | Nominal (mm) | Tolerance | Method / gauge | Result | OK |', '|---|---|---|---|---|---|---|---|---|']
+         'Fill the **Result** column on the first article and on every batch; the reason for each tolerance is in [LSR2_TOLERANCES](LSR2_TOLERANCES.md). Rev %s. '
+         'Serial: ______  Date: ______  Inspector: ______  Plate / bar lot: ______\n' % P.REV,
+         '## SARCTrac Mk4 replica (default design)\n',
+         'One sheet per plate, saddle set, hub set, cover set and lift-arm pair; nominals from the SARCNET drawings in `third_party/sarctrac-mk4/FreeCAD/Drawings/`.\n'] + hdr
+    o += ['| %s | %s | %s | %s | %s | %s | %s | | |' % (r[0], r[1], r[2], r[3], r[4], r[5], r[11]) for r in MK4_ROWS]
+    o += ['', 'Also record: mass of each part against `docs/BOM_LSR2.md` (made-part masses come from the build report), thread check of every tapped hole, burrs on laser-cut edges, and the free rotation torque '
+          'of the thrust-bearing stack after fitting (hand feel, then the bench value in [LSR2_TEST_PLAN](LSR2_TEST_PLAN.md)).',
+          '\n## Optional cast/CNC variant (`LSR2_DESIGN=cast`)\n',
+          'One sheet per finished body, lid, mast bracket, yoke arm pair, saddle and shaft. Casting heat / bar lot: ______\n'] + hdr
     o += ['| %s | %s | %s | %s | %s | %s | %s | | |' % (r[0], r[1], r[2], r[3], r[4], r[5], r[11]) for r in ROWS]
-    o += ['', 'Also record: visual (porosity, cold shuts, cracks at seats), mass of each part against `docs/BOM_LSR2.md`, thread check of every tapped hole, and the free rotation torque '
-          'of each bearing after fitting (hand feel, then the bench value in [LSR2_TEST_PLAN](LSR2_TEST_PLAN.md)).']
+    o += ['', 'Also record (cast variant): visual (porosity, cold shuts, cracks at seats).']
     return '\n'.join(o) + '\n'
 
 

@@ -1,739 +1,1786 @@
 {
-  "rev": "A0",
+  "rev": "mk4",
+  "design": "mk4",
+  "source": "third_party/sarctrac-mk4/FreeCAD/Rotator.FCStd",
+  "gear_ratio": 50,
   "parts": {
-    "body": {
-      "qty": 1,
-      "finished_cm3": 2395.976060561063,
-      "route_a": {
-        "rev": "A0",
-        "qty": 1,
-        "finished_cm3": 2395.976060561063,
-        "preform_cm3": 2639.062020375429,
-        "cast_cm3": 2639.062020375429,
-        "pattern_cm3": 12823.068341670134,
-        "pla_cm3": 3205.7670854175335,
-        "core_cm3": 9336.599823016239,
-        "machined_cm2": 371.01556645003234,
-        "pattern_pieces": 5,
-        "mockup_pieces": 2,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "wall-rib tee",
-            "d": 7.75,
-            "wall": 5.0,
-            "ratio": 1.55,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "wall corner",
-            "d": 6.89,
-            "wall": 5.0,
-            "ratio": 1.38,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "lid-screw post on wall",
-            "d": 9.45,
-            "wall": 5.0,
-            "ratio": 1.89,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "EL boss on side plate (boss 20 deep, plate+wall 14)",
-            "d": 20.0,
-            "wall": 14.0,
-            "ratio": 1.43,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "AZ pillar ring (r40, cast bore r28.5)",
-            "d": 11.5,
-            "wall": 5.0,
-            "ratio": 2.3,
-            "ok": false,
-            "mitigation": "chill at the pillar foot and riser on the pillar top; foundry to confirm"
-          },
-          {
-            "name": "AZ neck + floor + pillar foot block (z -12..15)",
-            "d": 27.0,
-            "wall": 5.0,
-            "ratio": 5.4,
-            "ok": false,
-            "mitigation": "chill under the neck; riser through the AZ core print; foundry to confirm"
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 2666.375274175475,
-          "pla_cm3": 1450.3626354668277,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -75.0,
-            -47.0
-          ],
-          [
-            211.0,
-            341.5
-          ]
-        ]
-      },
-      "route_b": {
-        "alloy": "6082-T6",
-        "qty": 1,
-        "finished_cm3": 2403.1178932793277,
-        "blank_cm3": 18386.16,
-        "pieces": [
-          "slab1",
-          "slab2",
-          "slab3",
-          "slab4",
-          "slab5"
-        ],
-        "setups": 15,
-        "blank_kg": 49.643,
-        "removed_cm3": 15983.042,
-        "minutes": 1440.536,
-        "stock_eur": 546.069,
-        "machine_eur": 960.357
-      }
+    "saddle_assembly": {
+      "part": "Unclassified",
+      "process": "bought",
+      "material": "bought",
+      "group": "el",
+      "volume_cm3": 453.332,
+      "mass_g": null,
+      "bbox": [
+        -652.0,
+        -152.0,
+        -20.01,
+        648.0,
+        -112.0,
+        19.99
+      ]
     },
-    "lid": {
-      "qty": 1,
-      "finished_cm3": 162.3200852778612,
-      "route_a": {
-        "rev": "A0",
-        "qty": 1,
-        "finished_cm3": 162.3200852778612,
-        "preform_cm3": 251.84999999999997,
-        "cast_cm3": 251.84999999999997,
-        "pattern_cm3": 262.1842827831048,
-        "pla_cm3": 65.5460706957762,
-        "core_cm3": 0.0,
-        "machined_cm2": 335.8,
-        "pattern_pieces": 1,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "plate",
-            "d": 7.5,
-            "wall": 7.5,
-            "ratio": 1.0,
-            "ok": true,
-            "mitigation": ""
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 268.64,
-          "pla_cm3": 150.18188548799998,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -75.0,
-            -98.0
-          ],
-          [
-            205.0,
-            98.0
-          ]
-        ]
-      },
-      "route_b": {
-        "alloy": "6061-T6",
-        "qty": 1,
-        "finished_cm3": 162.3200852778612,
-        "blank_cm3": 410.85,
-        "pieces": [
-          "lid"
-        ],
-        "setups": 2,
-        "blank_kg": 1.109,
-        "removed_cm3": 248.53,
-        "minutes": 66.569,
-        "stock_eur": 12.202,
-        "machine_eur": 44.379
-      }
+    "antenna_left": {
+      "part": "Antenna",
+      "process": "bought",
+      "material": "bought",
+      "group": "el",
+      "volume_cm3": 550.069,
+      "mass_g": null,
+      "bbox": [
+        405.5,
+        -1439.0,
+        -519.51,
+        790.5,
+        -169.0,
+        585.49
+      ]
     },
-    "mast_bracket": {
-      "qty": 1,
-      "finished_cm3": 426.9446735045112,
-      "route_a": {
-        "rev": "A0",
-        "qty": 1,
-        "finished_cm3": 426.9446735045112,
-        "preform_cm3": 497.28475077514224,
-        "cast_cm3": 497.28475077514224,
-        "pattern_cm3": 1356.6154601378921,
-        "pla_cm3": 339.15386503447303,
-        "core_cm3": 643.3597891199537,
-        "machined_cm2": 45.36459791783662,
-        "pattern_pieces": 2,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "tube ring (r38, cast bore r27.75)",
-            "d": 10.25,
-            "wall": 10.25,
-            "ratio": 1.0,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "pinch lug 24 x 28 x 32",
-            "d": 24.0,
-            "wall": 10.25,
-            "ratio": 2.34,
-            "ok": false,
-            "mitigation": "chill on the lug, feed from the tube; or CNC route"
-          },
-          {
-            "name": "shaft-pocket ring (r38, cast r13.0)",
-            "d": 25.0,
-            "wall": 6.0,
-            "ratio": 4.17,
-            "ok": false,
-            "mitigation": "riser at the cup centre; or CNC route"
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 508.56375562492263,
-          "pla_cm3": 184.39060743368827,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -80.0,
-            -187.5
-          ],
-          [
-            83.0,
-            23.0
-          ]
-        ]
-      },
-      "route_b": {
-        "alloy": "6082-T6",
-        "qty": 1,
-        "finished_cm3": 426.9446735045112,
-        "blank_cm3": 2426.08,
-        "pieces": [
-          "tube_clamp",
-          "top_plate"
-        ],
-        "setups": 4,
-        "blank_kg": 6.55,
-        "removed_cm3": 1999.135,
-        "minutes": 233.276,
-        "stock_eur": 72.055,
-        "machine_eur": 155.517
-      }
+    "antenna_right": {
+      "part": "Antenna",
+      "process": "bought",
+      "material": "bought",
+      "group": "el",
+      "volume_cm3": 550.069,
+      "mass_g": null,
+      "bbox": [
+        -1154.5,
+        -1439.0,
+        -159.51,
+        -49.5,
+        -169.0,
+        225.49
+      ]
     },
-    "yoke_arm": {
-      "qty": 2,
-      "finished_cm3": 77.12100355886754,
-      "route_a": {
-        "rev": "A0",
-        "qty": 2,
-        "finished_cm3": 77.12100355886754,
-        "preform_cm3": 87.17692579393969,
-        "cast_cm3": 87.17692579393969,
-        "pattern_cm3": 153.42773317669332,
-        "pla_cm3": 38.35693329417333,
-        "core_cm3": 14.09593353757571,
-        "machined_cm2": 24.566370614359176,
-        "pattern_pieces": 2,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "boss ring (r20, cast bore r7.5)",
-            "d": 12.5,
-            "wall": 10.0,
-            "ratio": 1.25,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "plate-flange tee",
-            "d": 12.25,
-            "wall": 10.0,
-            "ratio": 1.23,
-            "ok": true,
-            "mitigation": ""
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 88.95463033995416,
-          "pla_cm3": 44.02102639360795,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -45.0,
-            63.0
-          ],
-          [
-            75.0,
-            147.5
-          ]
-        ]
-      },
-      "route_b": {
-        "alloy": "6082-T6",
-        "qty": 2,
-        "finished_cm3": 77.12100355886754,
-        "blank_cm3": 583.84,
-        "pieces": [
-          "yoke_arm"
-        ],
-        "setups": 2,
-        "blank_kg": 1.576,
-        "removed_cm3": 506.719,
-        "minutes": 83.781,
-        "stock_eur": 17.34,
-        "machine_eur": 55.854
-      }
+    "lift_arm_right": {
+      "part": "LiftArm",
+      "process": "shs_25",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 296.31,
+      "mass_g": 1383.1,
+      "bbox": [
+        -624.5,
+        -270.0,
+        -28.87,
+        -579.5,
+        333.0,
+        74.99
+      ]
+    },
+    "lift_arm_left": {
+      "part": "LiftArm",
+      "process": "shs_25",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 296.31,
+      "mass_g": 1383.1,
+      "bbox": [
+        575.5,
+        -270.0,
+        -28.87,
+        620.5,
+        333.0,
+        74.99
+      ]
+    },
+    "u_bolt003": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 18.826,
+      "mass_g": null,
+      "bbox": [
+        -125.0,
+        -161.86,
+        -37.01,
+        -105.0,
+        -80.0,
+        36.99
+      ]
+    },
+    "u_bolt004": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 18.826,
+      "mass_g": null,
+      "bbox": [
+        105.0,
+        -161.86,
+        -37.01,
+        125.0,
+        -80.0,
+        36.99
+      ]
+    },
+    "hex_screw_washer_nut013": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        74.0,
+        -119.3,
+        -50.01,
+        90.0,
+        -74.0,
+        -34.01
+      ]
+    },
+    "hex_screw_washer_nut014": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        74.0,
+        -116.3,
+        33.99,
+        90.0,
+        -71.0,
+        49.99
+      ]
+    },
+    "hex_screw_washer_nut015": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        -90.0,
+        -116.3,
+        33.99,
+        -74.0,
+        -71.0,
+        49.99
+      ]
+    },
+    "hex_screw_washer_nut016": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        -90.0,
+        -119.3,
+        -50.01,
+        -74.0,
+        -74.0,
+        -34.01
+      ]
+    },
+    "hex_screw_washer_nut017": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        51.0,
+        -100.0,
+        21.99,
+        96.3,
+        -84.0,
+        37.99
+      ]
+    },
+    "hex_screw_washer_nut018": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        51.0,
+        -100.0,
+        -38.01,
+        96.3,
+        -84.0,
+        -22.01
+      ]
+    },
+    "hex_screw_washer_nut019": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        -96.3,
+        -100.0,
+        -38.01,
+        -51.0,
+        -84.0,
+        -22.01
+      ]
+    },
+    "hex_screw_washer_nut020": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        -96.3,
+        -100.0,
+        20.99,
+        -51.0,
+        -84.0,
+        36.99
+      ]
+    },
+    "saddle_plate_front": {
+      "part": "SaddlePlateFront",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 274.848,
+      "mass_g": 742.1,
+      "bbox": [
+        -140.0,
+        -110.0,
+        -50.01,
+        140.0,
+        -100.0,
+        49.99
+      ]
+    },
+    "bar_right": {
+      "part": "Bar",
+      "process": "sawn_bar",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 22.383,
+      "mass_g": 60.4,
+      "bbox": [
+        -90.0,
+        -100.0,
+        -50.01,
+        -74.0,
+        -84.0,
+        49.99
+      ]
+    },
+    "bar_left": {
+      "part": "Bar",
+      "process": "sawn_bar",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 22.383,
+      "mass_g": 60.4,
+      "bbox": [
+        74.0,
+        -100.0,
+        -50.01,
+        90.0,
+        -84.0,
+        49.99
+      ]
+    },
+    "saddle_plate_left": {
+      "part": "SaddlePlateLeft",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 147.534,
+      "mass_g": 398.3,
+      "bbox": [
+        64.0,
+        -100.0,
+        -50.01,
+        74.0,
+        50.0,
+        49.99
+      ]
+    },
+    "saddle_plate_right": {
+      "part": "SaddlePlateRight",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 146.748,
+      "mass_g": 396.2,
+      "bbox": [
+        -74.0,
+        -100.0,
+        -50.01,
+        -64.0,
+        50.0,
+        49.99
+      ]
     },
     "saddle": {
-      "qty": 1,
-      "finished_cm3": 97.35406926692363,
-      "route_a": {
-        "rev": "A0",
-        "qty": 1,
-        "finished_cm3": 97.35406926692363,
-        "preform_cm3": 163.43600000000006,
-        "cast_cm3": 163.43600000000006,
-        "pattern_cm3": 171.70187111382884,
-        "pla_cm3": 42.92546777845721,
-        "core_cm3": 0.0,
-        "machined_cm2": 294.0,
-        "pattern_pieces": 1,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "plate 8 + stock",
-            "d": 13.0,
-            "wall": 13.0,
-            "ratio": 1.0,
-            "ok": true,
-            "mitigation": ""
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 176.00799999999995,
-          "pla_cm3": 73.67072484799999,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -35.0,
-            -130.0
-          ],
-          [
-            85.0,
-            130.0
-          ]
-        ]
-      },
-      "route_b": {
-        "alloy": "6061-T6",
-        "qty": 1,
-        "finished_cm3": 97.35406926692363,
-        "blank_cm3": 244.57199999999997,
-        "pieces": [
-          "saddle"
-        ],
-        "setups": 2,
-        "blank_kg": 0.66,
-        "removed_cm3": 147.218,
-        "minutes": 59.815,
-        "stock_eur": 7.264,
-        "machine_eur": 39.876
-      }
-    },
-    "boom_clamp": {
-      "qty": 2,
-      "finished_cm3": 19.713203649089614,
-      "route_a": {
-        "rev": "A0",
-        "qty": 2,
-        "finished_cm3": 19.713203649089614,
-        "preform_cm3": 31.5,
-        "cast_cm3": 31.5,
-        "pattern_cm3": 33.15389692101246,
-        "pla_cm3": 8.288474230253115,
-        "core_cm3": 0.0,
-        "machined_cm2": 42.0,
-        "pattern_pieces": 1,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "block 10 + stock",
-            "d": 15.0,
-            "wall": 15.0,
-            "ratio": 1.0,
-            "ok": true,
-            "mitigation": ""
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 33.6,
-          "pla_cm3": 15.187301199999999,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -35.0,
-            20.0
-          ],
-          [
-            85.0,
-            100.0
-          ]
-        ]
-      },
-      "route_b": {
-        "alloy": "6061-T6",
-        "qty": 2,
-        "finished_cm3": 19.713203649089614,
-        "blank_cm3": 65.415,
-        "pieces": [
-          "boom_clamp"
-        ],
-        "setups": 2,
-        "blank_kg": 0.177,
-        "removed_cm3": 45.702,
-        "minutes": 53.047,
-        "stock_eur": 1.943,
-        "machine_eur": 35.365
-      }
-    }
-  },
-  "shafts": {
-    "az_shaft": {
-      "volume_cm3": 95.54,
-      "mass_g": 759.5,
-      "length_mm": 240.0,
-      "stock_d_mm": 33.0,
-      "stock_l_mm": 250.0,
-      "steps": [
-        [
-          -50.0,
-          111.0,
-          30.0
-        ],
-        [
-          111.0,
-          190.0,
-          14.0
-        ]
-      ],
-      "bores": [
-        [
-          -50.0,
-          97.0,
-          16.0
-        ]
+      "part": "Unclassified",
+      "process": "bought",
+      "material": "bought",
+      "group": "el",
+      "volume_cm3": 10.0,
+      "mass_g": null,
+      "bbox": [
+        -140.0,
+        -112.0,
+        -25.01,
+        140.0,
+        -110.0,
+        24.99
       ]
     },
-    "el_shaft": {
-      "volume_cm3": 54.948,
-      "mass_g": 436.8,
-      "length_mm": 241.0,
-      "stock_d_mm": 23.0,
-      "stock_l_mm": 251.0,
-      "steps": [
-        [
-          -120.0,
-          -3.0,
-          20.0
-        ],
-        [
-          -3.0,
-          121.0,
-          14.0
-        ]
-      ],
-      "bores": []
-    },
-    "el_sleeve": {
-      "volume_cm3": 9.133,
-      "mass_g": 72.6,
-      "length_mm": 57.0,
-      "stock_d_mm": 23.0,
-      "stock_l_mm": 67.0,
-      "steps": [
-        [
-          63.0,
-          120.0,
-          20.0
-        ]
-      ],
-      "bores": [
-        [
-          63.0,
-          120.0,
-          14.0
-        ]
+    "end_stop001": {
+      "part": "EndStop",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 0.459,
+      "mass_g": 1.2,
+      "bbox": [
+        56.0,
+        -100.13,
+        -40.78,
+        64.0,
+        -80.47,
+        -22.06
       ]
-    }
-  },
-  "items": {
-    "cross_boom": {
-      "volume_cm3": 710.4,
-      "mass_g": 1918.1,
-      "section_mm": [
+    },
+    "end_stop002": {
+      "part": "EndStop",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 0.459,
+      "mass_g": 1.2,
+      "bbox": [
+        56.0,
+        -100.0,
+        22.1,
+        64.0,
+        -79.61,
+        42.33
+      ]
+    },
+    "angle_bracket": {
+      "part": "Angle",
+      "process": "sawn_bar",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 32.767,
+      "mass_g": 88.5,
+      "bbox": [
+        -92.0,
+        -142.0,
+        -59.51,
+        92.0,
+        -110.0,
+        -27.51
+      ]
+    },
+    "plate": {
+      "part": "Plate",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 186.776,
+      "mass_g": 504.3,
+      "bbox": [
+        -60.0,
+        -50.0,
+        -150.0,
         40.0,
-        40.0,
-        3.0
-      ],
-      "length_mm": 1600.0
+        -40.0,
+        40.0
+      ]
     },
-    "lift_arm": {
-      "volume_cm3": 82.865,
-      "mass_g": 223.7
+    "hex_screw_washer_nut005": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        16.0,
+        -55.0,
+        -50.0,
+        28.0,
+        -26.0,
+        -38.0
+      ]
     },
-    "counterweight": {
-      "mass_g": 1020.0,
-      "length_mm": 145.5
-    }
-  },
-  "mass_check": {
-    "body": {
-      "finished_kg": 6.421,
-      "inputs_kg": 5.4,
-      "differs_over_10pct": true
+    "hex_screw_washer_nut006": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        16.0,
+        -55.0,
+        21.0,
+        28.0,
+        -26.0,
+        33.0
+      ]
     },
-    "lid": {
-      "finished_kg": 0.435,
-      "inputs_kg": 1.3,
-      "differs_over_10pct": true
-    }
-  },
-  "gearbox": {
-    "source": "nmrv030",
-    "halves": {
-      "gearbox_half_low": {
-        "rev": "A0",
-        "qty": 2,
-        "finished_cm3": 117.78110873722852,
-        "preform_cm3": 154.14010129310714,
-        "cast_cm3": 154.14010129310714,
-        "pattern_cm3": 254.48608329551445,
-        "pla_cm3": 63.62152082387861,
-        "core_cm3": 183.7913071331397,
-        "machined_cm2": 123.63548412343586,
-        "pattern_pieces": 1,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "face disc around the wheel pocket (r40, pocket r24)",
-            "d": 16.0,
-            "wall": 5.0,
-            "ratio": 3.2,
-            "ok": false,
-            "mitigation": "riser on the disc face and chill ring around the pocket; foundry to confirm"
-          },
-          {
-            "name": "output boss ring (r27.5, cast hole r18.5)",
-            "d": 9.0,
-            "wall": 5.0,
-            "ratio": 1.8,
-            "ok": true,
-            "mitigation": "riser on the boss face; foundry to confirm"
-          },
-          {
-            "name": "worm tube wall (r22, seat r17.5)",
-            "d": 4.5,
-            "wall": 4.5,
-            "ratio": 1.0,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "fin-tube tee",
-            "d": 6.5,
-            "wall": 4.0,
-            "ratio": 1.62,
-            "ok": true,
-            "mitigation": ""
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 160.9146603282813,
-          "pla_cm3": 70.3396698817335,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -65.0,
-            -65.0
-          ],
-          [
-            82.5,
-            83.5
-          ]
-        ],
-        "corebox_ok": true
-      },
-      "gearbox_half_up": {
-        "rev": "A0",
-        "qty": 2,
-        "finished_cm3": 115.22842362166439,
-        "preform_cm3": 154.14033125932494,
-        "cast_cm3": 154.14033125932494,
-        "pattern_cm3": 254.4860911327277,
-        "pla_cm3": 63.62152278318192,
-        "core_cm3": 183.79130758368424,
-        "machined_cm2": 123.63548414572375,
-        "pattern_pieces": 1,
-        "mockup_pieces": 1,
-        "stock_mm": 2.5,
-        "hot_spots": [
-          {
-            "name": "face disc around the wheel pocket (r40, pocket r24)",
-            "d": 16.0,
-            "wall": 5.0,
-            "ratio": 3.2,
-            "ok": false,
-            "mitigation": "riser on the disc face and chill ring around the pocket; foundry to confirm"
-          },
-          {
-            "name": "output boss ring (r27.5, cast hole r18.5)",
-            "d": 9.0,
-            "wall": 5.0,
-            "ratio": 1.8,
-            "ok": true,
-            "mitigation": "riser on the boss face; foundry to confirm"
-          },
-          {
-            "name": "worm tube wall (r22, seat r17.5)",
-            "d": 4.5,
-            "wall": 4.5,
-            "ratio": 1.0,
-            "ok": true,
-            "mitigation": ""
-          },
-          {
-            "name": "fin-tube tee",
-            "d": 6.5,
-            "wall": 4.0,
-            "ratio": 1.62,
-            "ok": true,
-            "mitigation": ""
-          }
-        ],
-        "lost_pla": {
-          "stock_mm": 3.0,
-          "cast_cm3": 160.9148931954102,
-          "pla_cm3": 70.33969430746048,
-          "watertight": true
-        },
-        "dowels": [
-          [
-            -65.0,
-            -65.0
-          ],
-          [
-            82.5,
-            83.5
-          ]
-        ],
-        "corebox_ok": true
-      }
+    "hex_screw_washer_nut007": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        -28.0,
+        -55.0,
+        -50.0,
+        -16.0,
+        -26.0,
+        -38.0
+      ]
     },
-    "wg30": {
-      "gear": {
-        "d1": 20.0,
-        "d2": 40.0,
-        "a": 30.0,
-        "ratio": 80.0,
-        "gamma": 1.4320961841646465,
-        "lead": 1.5707963267948966,
-        "tip1": 21.0,
-        "root1": 18.8,
-        "tip2": 41.0,
-        "root2": 38.8,
-        "q_for_a": 40.0
-      },
-      "eta_run": 0.3192315462339126,
-      "eta_hold": 0.18972691070741168
+    "hex_screw_washer_nut008": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        -28.0,
+        -55.0,
+        21.0,
+        -16.0,
+        -26.0,
+        33.0
+      ]
     },
-    "housing_area_cm2": 677.5866547071832,
-    "internals_cm3": {
-      "wheel": 30.135584155420787,
-      "worm": 22.250769792021213,
-      "bearings": 46.6879938231613
+    "hex_screw_washer_nut009": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        21.0,
+        -55.0,
+        -87.0,
+        33.0,
+        -26.0,
+        -75.0
+      ]
     },
-    "interference_mm3": {
-      "az/body": {
-        "envelope": 6021.539
-      },
-      "az/lid": {
-        "envelope": 0.0
-      },
-      "az/mast_bracket": {
-        "envelope": 0.0
-      },
-      "el/body": {
-        "envelope": 5614.519
-      },
-      "el/lid": {
-        "envelope": 0.0
-      },
-      "el/mast_bracket": {
-        "envelope": 0.0
-      }
+    "hex_screw_washer_nut010": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        21.0,
+        -55.0,
+        -131.0,
+        33.0,
+        -26.0,
+        -119.0
+      ]
     },
-    "el_sweep_extra_mm3": 0.0
-  },
-  "checks": {
-    "limit_mm3": 1.0,
-    "interference_mm3": {
-      "body/lid": 0.0,
-      "body/mast_bracket": 0.0,
-      "lid/mast_bracket": 0.0
+    "hex_screw_washer_nut011": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        -50.0,
+        -55.0,
+        -131.0,
+        -38.0,
+        -26.0,
+        -119.0
+      ]
     },
-    "failures": [],
-    "passed": true,
-    "el_sweep": {
-      "range_deg": [
+    "hex_screw_washer_nut012": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 1.532,
+      "mass_g": null,
+      "bbox": [
+        -50.0,
+        -55.0,
+        -87.0,
+        -38.0,
+        -26.0,
+        -75.0
+      ]
+    },
+    "hall_switch_el": {
+      "part": "HallSwitch_NJK5002C",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 4.405,
+      "mass_g": null,
+      "bbox": [
+        -74.0,
+        -62.0,
+        -6.0,
+        -20.0,
+        -50.0,
+        6.0
+      ]
+    },
+    "pipe_clamp": {
+      "part": "PipeClamp",
+      "process": "sawn_bar",
+      "material": "steel_A2",
+      "group": "el",
+      "volume_cm3": 0.627,
+      "mass_g": 5.0,
+      "bbox": [
+        -43.75,
+        -63.0,
+        -21.0,
+        -32.25,
+        -50.0,
+        21.0
+      ]
+    },
+    "cap_screw_washer_nut001": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.855,
+      "mass_g": null,
+      "bbox": [
+        -43.0,
+        -57.0,
+        8.5,
+        -33.0,
+        -32.0,
+        18.5
+      ]
+    },
+    "cap_screw_washer_nut002": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.855,
+      "mass_g": null,
+      "bbox": [
+        -43.0,
+        -57.0,
+        -18.5,
+        -33.0,
+        -32.0,
+        -8.5
+      ]
+    },
+    "hall_switch_az": {
+      "part": "HallSwitch_NJK5002C",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 4.405,
+      "mass_g": null,
+      "bbox": [
+        -6.0,
+        -62.0,
+        -178.0,
+        6.0,
+        -50.0,
+        -126.0
+      ]
+    },
+    "pipe_clamp001": {
+      "part": "PipeClamp",
+      "process": "sawn_bar",
+      "material": "steel_A2",
+      "group": "el",
+      "volume_cm3": 0.627,
+      "mass_g": 5.0,
+      "bbox": [
+        -21.0,
+        -63.0,
+        -146.75,
+        21.0,
+        -50.0,
+        -135.25
+      ]
+    },
+    "cap_screw_washer_nut003": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.855,
+      "mass_g": null,
+      "bbox": [
+        8.5,
+        -57.0,
+        -146.0,
+        18.5,
+        -32.0,
+        -136.0
+      ]
+    },
+    "cap_screw_washer_nut004": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.855,
+      "mass_g": null,
+      "bbox": [
+        -18.5,
+        -57.0,
+        -146.0,
+        -8.5,
+        -32.0,
+        -136.0
+      ]
+    },
+    "23_hs32_4004_s007_001": {
+      "part": "Motor_NEMA23",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 242.414,
+      "mass_g": null,
+      "bbox": [
+        -28.5,
+        35.0,
+        -58.5,
+        28.5,
+        138.0,
+        -1.5
+      ]
+    },
+    "cap_screw_washer_nut008": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 2.204,
+      "mass_g": null,
+      "bbox": [
+        -29.0,
+        46.0,
+        -59.0,
+        29.0,
+        67.0,
+        -1.0
+      ]
+    },
+    "motor_gasket001": {
+      "part": "MotorGasket",
+      "process": "cut_gasket",
+      "material": "neoprene",
+      "group": "az",
+      "volume_cm3": 3.45,
+      "mass_g": 4.3,
+      "bbox": [
         -30.0,
-        150.0
-      ],
-      "step_deg": 5,
-      "moving": [
-        "boom",
-        "boom_clamp",
-        "boom_clamp_neg",
-        "counterweight_neg",
-        "counterweight_pos",
-        "lift_arm_neg",
-        "lift_arm_pos",
-        "saddle",
-        "yoke_arm",
-        "yoke_arm_neg"
-      ],
-      "worst_mm3": 0.0,
-      "worst_at": null
+        55.0,
+        -60.0,
+        30.0,
+        56.0,
+        -0.0
+      ]
+    },
+    "gearbox001": {
+      "part": "Gearbox_NMRV30",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 312.221,
+      "mass_g": null,
+      "bbox": [
+        -31.5,
+        -40.0,
+        -60.0,
+        31.5,
+        55.0,
+        40.0
+      ]
+    },
+    "rv30_ab": {
+      "part": "Gearbox_NMRV30",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 20.609,
+      "mass_g": null,
+      "bbox": [
+        -63.97,
+        -9.93,
+        -10.15,
+        64.03,
+        9.97,
+        9.75
+      ]
+    },
+    "dust_cap_left": {
+      "part": "DustCap",
+      "process": "moulded",
+      "material": "neoprene",
+      "group": "az",
+      "volume_cm3": 23.224,
+      "mass_g": 29.0,
+      "bbox": [
+        22.0,
+        -37.5,
+        -37.5,
+        42.0,
+        37.5,
+        37.5
+      ]
+    },
+    "dust_cap_right": {
+      "part": "DustCap",
+      "process": "moulded",
+      "material": "neoprene",
+      "group": "az",
+      "volume_cm3": 23.224,
+      "mass_g": 29.0,
+      "bbox": [
+        -42.0,
+        -37.5,
+        -37.5,
+        -22.0,
+        37.5,
+        37.5
+      ]
+    },
+    "hub_right": {
+      "part": "Hub",
+      "process": "turned",
+      "material": "steel_A2",
+      "group": "el",
+      "volume_cm3": 28.836,
+      "mass_g": 228.7,
+      "bbox": [
+        -80.0,
+        -28.75,
+        -28.3,
+        -37.6,
+        28.75,
+        28.3
+      ]
+    },
+    "hub_left": {
+      "part": "Hub",
+      "process": "turned",
+      "material": "steel_A2",
+      "group": "el",
+      "volume_cm3": 28.836,
+      "mass_g": 228.7,
+      "bbox": [
+        37.6,
+        -28.75,
+        -28.3,
+        80.0,
+        28.75,
+        28.3
+      ]
+    },
+    "23_hs32_4004_s007_002": {
+      "part": "Motor_NEMA23",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 242.414,
+      "mass_g": null,
+      "bbox": [
+        -58.5,
+        35.0,
+        -131.5,
+        -1.5,
+        138.0,
+        -59.0
+      ]
+    },
+    "cap_screw_washer_nut009": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 2.204,
+      "mass_g": null,
+      "bbox": [
+        -59.0,
+        46.0,
+        -132.0,
+        -1.0,
+        67.0,
+        -74.0
+      ]
+    },
+    "motor_gasket003": {
+      "part": "MotorGasket",
+      "process": "cut_gasket",
+      "material": "neoprene",
+      "group": "az",
+      "volume_cm3": 3.45,
+      "mass_g": 4.3,
+      "bbox": [
+        -60.0,
+        55.0,
+        -133.0,
+        0.0,
+        56.0,
+        -73.0
+      ]
+    },
+    "gearbox002": {
+      "part": "Gearbox_NMRV30",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 312.221,
+      "mass_g": null,
+      "bbox": [
+        -60.0,
+        -40.0,
+        -134.5,
+        40.0,
+        55.0,
+        -71.5
+      ]
+    },
+    "dust_cap": {
+      "part": "DustCap",
+      "process": "moulded",
+      "material": "neoprene",
+      "group": "az",
+      "volume_cm3": 23.224,
+      "mass_g": 29.0,
+      "bbox": [
+        -37.5,
+        -37.5,
+        -81.0,
+        37.5,
+        37.5,
+        -61.0
+      ]
+    },
+    "rv30_as": {
+      "part": "Gearbox_NMRV30",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 16.73,
+      "mass_g": null,
+      "bbox": [
+        -10.15,
+        -9.93,
+        -166.98,
+        9.75,
+        9.97,
+        -64.98
+      ]
+    },
+    "hub_az": {
+      "part": "Hub",
+      "process": "turned",
+      "material": "steel_A2",
+      "group": "static",
+      "volume_cm3": 28.836,
+      "mass_g": 228.7,
+      "bbox": [
+        -28.3,
+        -28.75,
+        -184.0,
+        28.3,
+        28.75,
+        -141.6
+      ]
+    },
+    "thrust_bearing": {
+      "part": "ThrustBearing",
+      "process": "bought",
+      "material": "bought",
+      "group": "static",
+      "volume_cm3": 77.838,
+      "mass_g": null,
+      "bbox": [
+        -35.15,
+        -35.25,
+        -168.0,
+        35.15,
+        35.25,
+        -132.0
+      ]
+    },
+    "dm542_t_v4_1_010_az": {
+      "part": "Driver_DM542T",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 89.332,
+      "mass_g": null,
+      "bbox": [
+        -41.4,
+        170.0,
+        -124.0,
+        44.0,
+        195.5,
+        -6.0
+      ]
+    },
+    "dm542_t_v4_1_009_el": {
+      "part": "Driver_DM542T",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 89.332,
+      "mass_g": null,
+      "bbox": [
+        -41.4,
+        144.0,
+        -124.0,
+        44.0,
+        169.5,
+        -6.0
+      ]
+    },
+    "cap_screw_washer_nut011": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.791,
+      "mass_g": null,
+      "bbox": [
+        25.0,
+        129.0,
+        8.5,
+        35.0,
+        150.0,
+        18.5
+      ]
+    },
+    "cap_screw_washer_nut012": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.791,
+      "mass_g": null,
+      "bbox": [
+        -35.0,
+        129.0,
+        8.5,
+        -25.0,
+        150.0,
+        18.5
+      ]
+    },
+    "cap_screw_washer_nut013": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.791,
+      "mass_g": null,
+      "bbox": [
+        25.0,
+        129.0,
+        -148.5,
+        35.0,
+        150.0,
+        -138.5
+      ]
+    },
+    "cap_screw_washer_nut014": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 0.791,
+      "mass_g": null,
+      "bbox": [
+        -35.0,
+        129.0,
+        -148.5,
+        -25.0,
+        150.0,
+        -138.5
+      ]
+    },
+    "enclosure": {
+      "part": "Unclassified",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 123.192,
+      "mass_g": null,
+      "bbox": [
+        -52.0,
+        142.0,
+        -150.0,
+        52.0,
+        218.0,
+        20.0
+      ]
+    },
+    "enclosure_front": {
+      "part": "EnclosureFront",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 29.228,
+      "mass_g": 77.7,
+      "bbox": [
+        -52.0,
+        142.0,
+        -136.0,
+        52.0,
+        144.0,
+        6.0
+      ]
+    },
+    "enclosure_bottom": {
+      "part": "EnclosureBottom",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 20.05,
+      "mass_g": 53.3,
+      "bbox": [
+        -49.0,
+        144.0,
+        -136.0,
+        49.0,
+        214.0,
+        -133.0
+      ]
+    },
+    "enclosure_top": {
+      "part": "EnclosureTop",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 20.495,
+      "mass_g": 54.5,
+      "bbox": [
+        -49.0,
+        144.0,
+        3.0,
+        49.0,
+        214.0,
+        6.0
+      ]
+    },
+    "xl7015_dc_dc_stepdown_voltage_converter001": {
+      "part": "XL7015Converter",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 3.862,
+      "mass_g": null,
+      "bbox": [
+        -15.8,
+        198.8,
+        -62.75,
+        5.8,
+        210.5,
+        -19.25
+      ]
+    },
+    "xl7015_dc_dc_stepdown_voltage_converter002": {
+      "part": "XL7015Converter",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 3.862,
+      "mass_g": null,
+      "bbox": [
+        7.2,
+        198.8,
+        -62.75,
+        28.8,
+        210.5,
+        -19.25
+      ]
+    },
+    "wemos_d1_mini_pro_v5": {
+      "part": "WemosD1MiniPro",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 1.472,
+      "mass_g": null,
+      "bbox": [
+        -6.8,
+        199.0,
+        -100.1,
+        18.8,
+        203.24,
+        -65.9
+      ]
+    },
+    "controller": {
+      "part": "Controller_Deltron",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 15.0,
+      "mass_g": null,
+      "bbox": [
+        -31.0,
+        196.0,
+        -115.0,
+        44.0,
+        198.0,
+        -15.0
+      ]
+    },
+    "2_4_ghz_antenna": {
+      "part": "Antenna_2G4",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 5.849,
+      "mass_g": null,
+      "bbox": [
+        -5.05,
+        196.93,
+        8.25,
+        4.95,
+        206.92,
+        115.75
+      ]
+    },
+    "connector_005": {
+      "part": "SMA",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 0.501,
+      "mass_g": null,
+      "bbox": [
+        -4.59,
+        198.02,
+        -17.99,
+        4.65,
+        206.02,
+        13.81
+      ]
+    },
+    "sma": {
+      "part": "SMA",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 0.081,
+      "mass_g": null,
+      "bbox": [
+        -5.05,
+        196.94,
+        2.41,
+        5.11,
+        207.1,
+        8.11
+      ]
+    },
+    "cover_corner_block001": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        44.0,
+        126.0,
+        24.0,
+        60.0,
+        140.0,
+        40.0
+      ]
+    },
+    "cover_corner_block002": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        -60.0,
+        126.0,
+        24.0,
+        -44.0,
+        140.0,
+        40.0
+      ]
+    },
+    "cover_corner_block003": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        44.0,
+        126.0,
+        -150.0,
+        60.0,
+        140.0,
+        -134.0
+      ]
+    },
+    "cover_corner_block004": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        -60.0,
+        126.0,
+        -150.0,
+        -44.0,
+        140.0,
+        -134.0
+      ]
+    },
+    "cover_corner_block005": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        -60.0,
+        -64.0,
+        24.0,
+        -44.0,
+        -50.0,
+        40.0
+      ]
+    },
+    "cover_corner_block006": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        44.0,
+        -64.0,
+        24.0,
+        60.0,
+        -50.0,
+        40.0
+      ]
+    },
+    "cover_corner_block007": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        -60.0,
+        -64.0,
+        -150.0,
+        -44.0,
+        -50.0,
+        -134.0
+      ]
+    },
+    "cover_corner_block008": {
+      "part": "CoverCornerBlock",
+      "process": "cnc_block_16mm",
+      "material": "alu_6082",
+      "group": "az",
+      "volume_cm3": 3.38,
+      "mass_g": 9.1,
+      "bbox": [
+        44.0,
+        -64.0,
+        -150.0,
+        60.0,
+        -50.0,
+        -134.0
+      ]
+    },
+    "cover_back": {
+      "part": "CoverBack",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 45.078,
+      "mass_g": 119.9,
+      "bbox": [
+        -60.0,
+        140.0,
+        -150.0,
+        60.0,
+        142.0,
+        40.0
+      ]
+    },
+    "cover_front": {
+      "part": "CoverFront",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 45.543,
+      "mass_g": 121.1,
+      "bbox": [
+        -60.0,
+        -66.0,
+        -150.0,
+        60.0,
+        -64.0,
+        40.0
+      ]
+    },
+    "cover_bottom": {
+      "part": "CoverBottom",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 43.13,
+      "mass_g": 114.7,
+      "bbox": [
+        -62.0,
+        -66.0,
+        -152.0,
+        62.0,
+        142.0,
+        -150.0
+      ]
+    },
+    "cover_top": {
+      "part": "CoverTop",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 51.499,
+      "mass_g": 137.0,
+      "bbox": [
+        -62.0,
+        -66.0,
+        40.0,
+        62.0,
+        142.0,
+        42.0
+      ]
+    },
+    "cover": {
+      "part": "Unclassified",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 2.944,
+      "mass_g": null,
+      "bbox": [
+        -64.35,
+        -68.35,
+        -154.35,
+        64.35,
+        144.35,
+        44.35
+      ]
+    },
+    "cover_right": {
+      "part": "CoverRight",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 73.699,
+      "mass_g": 196.0,
+      "bbox": [
+        -62.0,
+        -66.0,
+        -150.0,
+        -60.0,
+        142.0,
+        40.0
+      ]
+    },
+    "cover_left": {
+      "part": "CoverLeft",
+      "process": "laser_2mm",
+      "material": "alu_5083",
+      "group": "az",
+      "volume_cm3": 73.699,
+      "mass_g": 196.0,
+      "bbox": [
+        60.0,
+        -66.0,
+        -150.0,
+        62.0,
+        142.0,
+        40.0
+      ]
+    },
+    "mounting_assembly": {
+      "part": "Unclassified",
+      "process": "bought",
+      "material": "bought",
+      "group": "az",
+      "volume_cm3": 145.77,
+      "mass_g": null,
+      "bbox": [
+        -29.98,
+        -29.9,
+        -578.0,
+        29.98,
+        30.0,
+        -178.0
+      ]
+    },
+    "platform": {
+      "part": "Platform",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 116.748,
+      "mass_g": 315.2,
+      "bbox": [
+        -50.0,
+        -64.0,
+        -178.0,
+        50.0,
+        56.0,
+        -168.0
+      ]
+    },
+    "bracket001": {
+      "part": "Bracket",
+      "process": "cnc_plate_10mm",
+      "material": "alu_6082",
+      "group": "static",
+      "volume_cm3": 245.853,
+      "mass_g": 663.8,
+      "bbox": [
+        -50.0,
+        30.0,
+        -428.0,
+        50.0,
+        40.0,
+        -178.0
+      ]
+    },
+    "bracket": {
+      "part": "Unclassified",
+      "process": "bought",
+      "material": "bought",
+      "group": "static",
+      "volume_cm3": 6.0,
+      "mass_g": null,
+      "bbox": [
+        -25.0,
+        28.0,
+        -428.0,
+        25.0,
+        30.0,
+        -203.0
+      ]
+    },
+    "u_bolt001": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 21.585,
+      "mass_g": null,
+      "bbox": [
+        -45.0,
+        -40.0,
+        -423.0,
+        45.0,
+        55.0,
+        -403.0
+      ]
+    },
+    "u_bolt002": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 21.585,
+      "mass_g": null,
+      "bbox": [
+        -45.0,
+        -40.0,
+        -228.0,
+        45.0,
+        55.0,
+        -208.0
+      ]
+    },
+    "hex_screw_washer_nut001": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        -50.0,
+        17.0,
+        -194.0,
+        -34.0,
+        62.3,
+        -178.0
+      ]
+    },
+    "hex_screw_washer_nut002": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        -38.0,
+        40.0,
+        -207.0,
+        -22.0,
+        56.0,
+        -161.7
+      ]
+    },
+    "hex_screw_washer_nut003": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        34.0,
+        17.0,
+        -194.0,
+        50.0,
+        62.3,
+        -178.0
+      ]
+    },
+    "hex_screw_washer_nut004": {
+      "part": "Hardware",
+      "process": "bought",
+      "material": "steel_A2",
+      "group": "az",
+      "volume_cm3": 3.669,
+      "mass_g": null,
+      "bbox": [
+        21.0,
+        40.0,
+        -207.0,
+        37.0,
+        56.0,
+        -161.7
+      ]
+    },
+    "bar003": {
+      "part": "Bar",
+      "process": "sawn_bar",
+      "material": "alu_6082",
+      "group": "el",
+      "volume_cm3": 22.383,
+      "mass_g": 60.4,
+      "bbox": [
+        -50.0,
+        40.0,
+        -194.0,
+        50.0,
+        56.0,
+        -178.0
+      ]
     }
+  },
+  "totals": {
+    "instances": 101,
+    "made": 41,
+    "bought": 60,
+    "made_volume_cm3": 2405.76,
+    "made_mass_g": 7992.9,
+    "assembly_bbox_mm": [
+      -1154.5,
+      -1439.0,
+      -578.0,
+      790.5,
+      333.0,
+      585.5
+    ]
+  },
+  "interference": {
+    "limit_mm3": 1.0,
+    "angles_deg": [
+      -30,
+      0,
+      45,
+      90,
+      150
+    ],
+    "hits": [
+      {
+        "el": "saddle_plate_left",
+        "other": "plate",
+        "angle": -30,
+        "mm3": 115.32
+      },
+      {
+        "el": "saddle_plate_left",
+        "other": "dust_cap_left",
+        "angle": -30,
+        "mm3": 1478.07
+      },
+      {
+        "el": "saddle_plate_left",
+        "other": "cover_corner_block006",
+        "angle": -30,
+        "mm3": 307.66
+      },
+      {
+        "el": "saddle_plate_left",
+        "other": "cover_front",
+        "angle": -30,
+        "mm3": 753.2
+      },
+      {
+        "el": "saddle_plate_left",
+        "other": "cover_left",
+        "angle": -30,
+        "mm3": 3561.6
+      },
+      {
+        "el": "pipe_clamp001",
+        "other": "cover_right",
+        "angle": -30,
+        "mm3": 53.4
+      },
+      {
+        "el": "hub_left",
+        "other": "cover_top",
+        "angle": -30,
+        "mm3": 1290.91
+      },
+      {
+        "el": "hub_left",
+        "other": "cover_left",
+        "angle": -30,
+        "mm3": 513.25
+      },
+      {
+        "el": "platform",
+        "other": "plate",
+        "angle": -30,
+        "mm3": 2680.98
+      },
+      {
+        "el": "platform",
+        "other": "motor_gasket003",
+        "angle": -30,
+        "mm3": 268.1
+      },
+      {
+        "el": "platform",
+        "other": "cover_right",
+        "angle": -30,
+        "mm3": 2641.89
+      },
+      {
+        "el": "bar003",
+        "other": "motor_gasket003",
+        "angle": -30,
+        "mm3": 258.6
+      },
+      {
+        "el": "bar003",
+        "other": "cover_right",
+        "angle": -30,
+        "mm3": 392.66
+      },
+      {
+        "el": "hub_right",
+        "other": "dust_cap_right",
+        "angle": 0,
+        "mm3": 2378.91
+      },
+      {
+        "el": "hub_left",
+        "other": "dust_cap_left",
+        "angle": 0,
+        "mm3": 2378.91
+      },
+      {
+        "el": "saddle_plate_right",
+        "other": "plate",
+        "angle": 45,
+        "mm3": 6999.91
+      },
+      {
+        "el": "saddle_plate_right",
+        "other": "hub_az",
+        "angle": 45,
+        "mm3": 881.05
+      },
+      {
+        "el": "saddle_plate_right",
+        "other": "cover_front",
+        "angle": 45,
+        "mm3": 1444.79
+      },
+      {
+        "el": "saddle_plate_right",
+        "other": "cover_bottom",
+        "angle": 45,
+        "mm3": 1663.52
+      },
+      {
+        "el": "hub_right",
+        "other": "hub_az",
+        "angle": 45,
+        "mm3": 36.76
+      }
+    ],
+    "worst_mm3": 6999.912,
+    "skipped": null,
+    "seconds": 35.9
+  },
+  "missing_from_parts": [
+    "Bracket",
+    "Cover",
+    "Enclosure",
+    "MountingAssembly",
+    "Saddle",
+    "SaddleAssembly"
+  ],
+  "checks": {
+    "failures": [],
+    "passed": true
   }
 }

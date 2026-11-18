@@ -1,6 +1,6 @@
 # LSR-2 prototype test plan (Pruebas del prototipo)
 
-Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams). REV A0, phase 11e. Progressive tests of the first prototype, in three stages: **unloaded**, **with test loads**, **with the target antenna** once the supports have been validated. A stage starts only when the previous one is signed off. Predicted values come from [LSR2_SIZING](LSR2_SIZING.md); the calibration chain is in [CALIBRATION](CALIBRATION.md); inspection of the parts before this plan is [LSR2_INSPECTION](LSR2_INSPECTION.md); risks are in [LSR2_RISKS](LSR2_RISKS.md).
+Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams). REV A0, phase 11e. **Phase 12:** the default LSR-2 is the SARCTrac Mk4 replica ([LSR2_MK4](LSR2_MK4.md)); the stages and criteria below apply to both designs. Mk4 specifics: firmware ratio 50 (666.7 steps/s at 12 °/s, motor 100 rpm), NJK-5002C Hall index and mechanical end-stop test (each end stop must disable its driver), power-down detect test, WiFi link test (Wemos dongle to Wemos D1 Mini Pro), and the holding-torque check against the sizing report (any check below target in [LSR2_SIZING](LSR2_SIZING.md) is a test gate). Progressive tests of the first prototype, in three stages: **unloaded**, **with test loads**, **with the target antenna** once the supports have been validated. A stage starts only when the previous one is signed off. Predicted values come from [LSR2_SIZING](LSR2_SIZING.md); the calibration chain is in [CALIBRATION](CALIBRATION.md); inspection of the parts before this plan is [LSR2_INSPECTION](LSR2_INSPECTION.md); risks are in [LSR2_RISKS](LSR2_RISKS.md).
 
 ## Fixed bench (Banco fijo)
 
@@ -27,7 +27,7 @@ Authors: Anatol EA5KAO, Diego EA5JEF, Pedro Roca Molina (BricoHams). REV A0, pha
 | S1-5 | Contact-free travel | slow full travel AZ ±360°, EL -30…150° with the real harness and coax | no contact between boom, yoke, lift arms and body, cables not stressed, bend radius ≥ 10 × OD (min distance logged) |
 | S1-6 | Stopping and soft limits | approach each limit at 12°/s, bumper test | stops inside the 9.6° margin, no hard-stop impact, stop distance recorded |
 | S1-7 | Reference recovery | power cut during motion (20 times), restart, home on the index sensors | position recovered to ≤ 0.1° each time; the 2200 µF bank saves the position (PWRFAIL) |
-| S1-8 | Temperature | 30 min of continuous tracking at 3 A, ambient noted | driver wall ≤ 60 °C and no thermal shutdown (PARAMETRIC; check the DM542 datasheet limit) |
+| S1-8 | Temperature | 30 min of continuous tracking at 4 A (Mk4 default; 3 A in the cast variant) | driver wall ≤ 60 °C and no thermal shutdown (PARAMETRIC; check the DM542T datasheet limit) |
 
 ## Stage 2: test loads
 

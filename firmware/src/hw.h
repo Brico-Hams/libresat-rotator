@@ -35,8 +35,8 @@ typedef struct {
     float    imu_el_zero, imu_el_dir;       // boom IMU calibration
     float    tilt_zero[2];                  // base IMU level calibration (roll, pitch)
     float    park_az, park_el;
-    float    home_az;                       // azimuth of the AZ index (LSR-1 hall magnet; LSR-2 lower edge of the slot)
-    float    home_el;                       // LSR-2: elevation of the EL index slot edge (horizon = 0)
+    float    home_az;                       // azimuth of the AZ index (LSR-1 hall magnet; LSR-2 lower edge of the Hall/magnet window or slot)
+    float    home_el;                       // LSR-2: elevation of the EL index edge (horizon = 0)
     float    backlash[2];                   // output backlash in deg (XCAL BACKLASH), applied to the reported/controlled angle
     int32_t  enc_dir[2];                    // encoder sense vs step direction (+1/-1, 0 = disabled)
     int32_t  last_pos[2];                   // position saved when idle (microsteps)
